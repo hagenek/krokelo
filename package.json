@@ -4,8 +4,7 @@
   "sideEffects": false,
   "type": "module",
   "scripts": {
-    "build": "run-s build:*",
-    "build:remix": "remix build",
+    "build": "remix build",
     "dev": "remix dev --manual",
     "format": "prettier --write .",
     "generate:css": "tailwindcss -o ./app/styles/tailwind.css",
