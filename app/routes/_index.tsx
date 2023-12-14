@@ -36,14 +36,14 @@ type RouteData = {
 
 export const meta: MetaFunction = () => {
   return [
-    { title: "Very cool app | Remix" },
+    { title: "SB1U Krok Champions" },
     {
       property: "og:title",
-      content: "Very cool app",
+      content: "SB1U Krokinole Champions",
     },
     {
       name: "description",
-      content: "This app is the best",
+      content: "Her kan du registrere resultater fra SB1U Krokinolekamper.",
     },
   ];
 };

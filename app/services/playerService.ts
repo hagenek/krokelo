@@ -2,7 +2,7 @@
 import EloRank from 'elo-rank';
 import { prisma } from "../prismaClient";
 
-const elo = new EloRank(30);
+const elo = new EloRank(50);
 
 export const getPlayers = async () => {
     const players = await prisma.player.findMany({
@@ -20,7 +20,7 @@ export const createPlayer = async (name: string) => {
     return await prisma.player.create({
         data: {
             name,
-            currentELO: 1000 // Starting ELO rating
+            currentELO: 1500 // Starting ELO rating
         },
     });
 };
