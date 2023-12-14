@@ -4,11 +4,15 @@
   "sideEffects": false,
   "type": "module",
   "scripts": {
-    "build": "remix build",
+    "build": "run-s build:*",
+    "build:remix": "remix build",
     "dev": "remix dev --manual",
-    "lint": "eslint --ignore-path .gitignore --cache --cache-location ./node_modules/.cache/eslint .",
-    "start-prod": "remix-serve ./app/build/index.js",
-    "start": "remix-serve ./build/index.js",
+    "format": "prettier --write .",
+    "generate:css": "tailwindcss -o ./app/styles/tailwind.css",
+    "setup": "run-s setup:db setup:app",
+    "setup:db": "prisma migrate dev",
+    "deploy:db": "prisma migrate deploy",
+    "start": "remix-serve build",
     "typecheck": "tsc"
   },
   "dependencies": {
