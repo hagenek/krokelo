@@ -11,7 +11,7 @@
     "setup": "run-s setup:db setup:app",
     "setup:db": "prisma migrate dev",
     "deploy:db": "prisma migrate deploy",
-    "start": "remix-serve build",
+    "start": "remix-serve build/index.js",
     "typecheck": "tsc"
   },
   "dependencies": {
