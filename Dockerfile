@@ -1,5 +1,5 @@
 # base node image
-FROM node:21.4-alpine3.18 as base
+FROM node:20-bullseye-slim as base
 
 # set for base and all layer that inherit from it
 ENV NODE_ENV production
