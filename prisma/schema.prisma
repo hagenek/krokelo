@@ -1,0 +1,46 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Player {
+  id              Int      @id @default(autoincrement())
+  name            String   @unique
+  currentELO      Int      @default(1000) // Starting ELO rating
+  matchesAsWinner Match[]  @relation("MatchWinner")
+  matchesAsLoser  Match[]  @relation("MatchLoser")
+  eloLogs         ELOLog[]
+  Match           Match[]
+}
+
+model Match {
+  id        Int      @id @default(autoincrement())
+  date      DateTime @default(now())
+  winnerId  Int
+  loserId   Int
+  winnerELO Int // ELO of winner at time of match
+  loserELO  Int // ELO of loser at time of match
+  winner    Player   @relation("MatchWinner", fields: [winnerId], references: [id])
+  loser     Player   @relation("MatchLoser", fields: [loserId], references: [id])
+  Player    Player?  @relation(fields: [playerId], references: [id])
+  playerId  Int?
+
+  @@index([winnerId, loserId])
+}
+
+model ELOLog {
+  id       Int      @id @default(autoincrement())
+  playerId Int
+  elo      Int // ELO rating at this log entry
+  date     DateTime @default(now())
+  player   Player   @relation(fields: [playerId], references: [id])
+
+  @@index([playerId])
+}
