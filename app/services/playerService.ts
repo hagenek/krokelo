@@ -12,7 +12,7 @@ export const getPlayers = async () => {
             eloLogs: true
         }
     });
-    console.log(players);
+    (players);
     return players;
 };
 

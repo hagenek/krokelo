@@ -1,7 +1,7 @@
 // routes/index.tsx
 import type { MetaFunction, LoaderFunction, ActionFunction } from "@remix-run/node";
 import { useLoaderData, Form } from "@remix-run/react";
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { createPlayer, getPlayers } from "../services/playerService";
 import { recordMatch, updateELO, findPlayerByName, calculateNewELOs, logELO } from '../services/playerService';
 
@@ -90,23 +90,58 @@ export default function Index() {
   const [player2, setPlayer2] = useState("");
   const [winner, setWinner] = useState("");
 
-  const toggleDarkMode = () => {
-    if (localStorage.theme === 'dark' ||
-      (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+  const [darkMode, setDarkMode] = useState(false);
+
+
+  useEffect(() => {
+    // Check if dark mode is set in localStorage
+    let isDarkMode = false
+    if (localStorage) {
+      isDarkMode = localStorage.getItem('theme') === 'dark';
+    }
+    setDarkMode(isDarkMode);
+
+    // Apply the appropriate class to the document
+    if (isDarkMode) {
       document.documentElement.classList.add('dark');
-      localStorage.theme = 'light';
     } else {
       document.documentElement.classList.remove('dark');
-      localStorage.theme = 'dark';
+    }
+  }, []);
+
+  const isFormValid = player1.trim() && player2.trim() && winner.trim();
+
+
+  const toggleDarkMode = () => {
+    // Toggle dark mode state
+    const newMode = !darkMode;
+    setDarkMode(newMode);
+
+    // Update localStorage and document class
+    localStorage.setItem('theme', newMode ? 'dark' : 'light');
+    if (newMode) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
     }
   };
 
   return (
     <div className={`container dark:bg-gray-800 dark:text-white mx-auto p-4 max-w-2xl`}>
-      <button onClick={toggleDarkMode} className="mb-4 p-2 bg-gray-200 dark:bg-gray-700 rounded">
-        Toggle Dark Mode
-      </button>
-      <h1 className="text-3xl font-bold text-center mb-6 dark:text-white">Krokinole ELO List</h1>
+      <div className="flex items-center justify-center mb-4">
+        <span className="mr-2">Light</span>
+        <button
+          onClick={toggleDarkMode}
+          className={`relative inline-flex items-center h-6 rounded-full w-11 focus:outline-none ${darkMode ? 'bg-blue-600' : 'bg-gray-200'}`}
+        >
+          <span
+            className={`transform transition ease-in-out duration-200 ${darkMode ? 'translate-x-6' : 'translate-x-1'
+              } inline-block w-4 h-4 transform bg-white rounded-full`}
+          />
+        </button>
+        <span className="ml-2">Dark</span>
+      </div>
+      <h1 className="text-4xl font-arial font-bold text-center mb-6 dark:text-white">SB1U Krokinole Champions</h1>
       <div className="flex-col justify-center">
         <details className="mb-4">
           <summary className="dark:text-white">How to Use</summary>
@@ -128,43 +163,56 @@ export default function Index() {
           <img
             src="https://i.ibb.co/kB8pCL3/DALL-E-2023-12-14-13-12-01-Create-a-logo-for-a-Crokinole-match-recording-application-with-a-1960s-vi.png"
             alt="man-pushing-krokinole-stone-uphill"
-            className="w-1/2"
+            className="w-1/2 rounded"
           />
         </div>
         <Form method="post" className="mb-8">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-            <input
-              type="text"
-              name="player1"
-              value={player1}
-              onChange={(e) => setPlayer1(e.target.value)}
-              className="border border-gray-300 rounded px-3 py-2 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 dark:bg-gray-800 dark:border-gray-600 dark:text-white"
-              placeholder="Player 1"
-            />
-            <input
-              type="text"
-              name="player2"
-              value={player2}
-              onChange={(e) => setPlayer2(e.target.value)}
-              className="border border-gray-300 rounded px-3 py-2 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 dark:bg-gray-800 dark:border-gray-600 dark:text-white"
-              placeholder="Player 2"
-            />
+            <div>
+              <label htmlFor="player1" className="block dark:text-white text-sm font-medium text-gray-700">Spiller 1</label>
+              <input
+                id="player1"
+                type="text"
+                name="player1"
+                value={player1}
+                onChange={(e) => setPlayer1(e.target.value)}
+                className="border border-gray-300 rounded px-3 py-2 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 dark:bg-gray-800 dark:border-gray-600 dark:text-white mt-1"
+                placeholder="Player 1"
+              />
+            </div>
+            <div>
+              <label htmlFor="player2" className="block text-sm dark:text-white font-medium text-gray-700">Spiller 2</label>
+              <input
+                id="player2"
+                type="text"
+                name="player2"
+                value={player2}
+                onChange={(e) => setPlayer2(e.target.value)}
+                className="border border-gray-300 rounded px-3 py-2 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 dark:bg-gray-800 dark:border-gray-600 dark:text-white mt-1"
+                placeholder="Player 2"
+              />
+            </div>
           </div>
+          <label htmlFor="winner" className="block text-sm dark:text-white font-medium text-gray-700">Hvem vant?</label>
+
           <select
+            id="winner"
             name="winner"
             value={winner}
             onChange={(e) => setWinner(e.target.value)}
             className="border border-gray-300 rounded px-3 py-2 mb-4 w-full md:w-auto focus:border-blue-500 focus:ring-1 focus:ring-blue-500 dark:bg-gray-800 dark:border-gray-600 dark:text-white"
           >
-            <option value="">Select the Winner</option>
+            <option value="">Velg vinner</option>
             <option value={player1}>{player1}</option>
             <option value={player2}>{player2}</option>
           </select>
-          <button type="submit" className="m-4 bg-blue-600 hover:bg-blue-700 focus:ring-4 focus:ring-blue-300 focus:outline-none text-white px-4 py-2 rounded">
-            Submit Result
+          <button disabled={!isFormValid} // Disable the button if the form is not valid
+            type="submit"
+            className="m-4 bg-blue-600 dark:bg-gray-400 dark:text-black hover:bg-blue-700 focus:ring-4 focus:ring-blue-300 focus:outline-none text-white px-4 py-2 rounded">
+            Lagre resultat
           </button>
         </Form>
-        <h2 className="text-2xl font-semibold mb-3 dark:text-white">Players:</h2>
+        <h2 className="text-2xl font-semibold mb-3 dark:text-white">Spillere:</h2>
         <table className="min-w-full table-auto">
           <thead>
             <tr>
