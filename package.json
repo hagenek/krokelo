@@ -7,6 +7,7 @@
     "build": "remix build",
     "dev": "remix dev --manual",
     "lint": "eslint --ignore-path .gitignore --cache --cache-location ./node_modules/.cache/eslint .",
+    "start-prod": "remix-serve ./app/build/index.js",
     "start": "remix-serve ./build/index.js",
     "typecheck": "tsc"
   },
