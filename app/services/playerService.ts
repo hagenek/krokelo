@@ -5,9 +5,15 @@ import { prisma } from "../prismaClient";
 const elo = new EloRank(30);
 
 export const getPlayers = async () => {
-    const players = await prisma.player.findMany();
-    console.log(players)
-    return players
+    const players = await prisma.player.findMany({
+        include: {
+            matchesAsWinner: true,
+            matchesAsLoser: true,
+            eloLogs: true
+        }
+    });
+    console.log(players);
+    return players;
 };
 
 export const createPlayer = async (name: string) => {
