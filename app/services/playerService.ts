@@ -79,3 +79,59 @@ export const calculateNewELOs = (currentELOPlayer1: number, currentELOPlayer2: n
         newELOPlayer2
     };
 };
+
+
+
+// Create a new team with two players
+export const createTeam = async (player1Id: number, player2Id: number) => {
+    return await prisma.team.create({
+        data: {
+            players: {
+                connect: [{ id: player1Id }, { id: player2Id }]
+            }
+        }
+    });
+};
+
+// Record a team match and update ELO for both teams
+export const recordTeamMatch = async (winnerTeamId: number, loserTeamId: number, winnerELO: number, loserELO: number) => {
+    return await prisma.teamMatch.create({
+        data: {
+            winnerTeamId,
+            loserTeamId,
+            winnerELO,
+            loserELO
+        }
+    });
+};
+
+// Calculate new ELOs for team matches
+export const calculateNewTeamELOs = (currentELOTeam1: number, currentELOTeam2: number, team1IsWinner: boolean) => {
+    const team1Score = team1IsWinner ? 1 : 0;
+    const team2Score = team1IsWinner ? 0 : 1;
+
+    const expectedScoreTeam1 = elo.getExpected(currentELOTeam1, currentELOTeam2);
+    const expectedScoreTeam2 = elo.getExpected(currentELOTeam2, currentELOTeam1);
+
+    const newELOTeam1 = elo.updateRating(expectedScoreTeam1, team1Score, currentELOTeam1);
+    const newELOTeam2 = elo.updateRating(expectedScoreTeam2, team2Score, currentELOTeam2);
+
+    return {
+        newELOTeam1,
+        newELOTeam2
+    };
+};
+
+// Update ELO for each player in a team
+export const updateTeamELO = async (teamId: number, newELO: number) => {
+    const team = await prisma.team.findUnique({
+        where: { id: teamId },
+        include: { players: true }
+    });
+
+    if (team && team.players) {
+        for (const player of team.players) {
+            await updateELO(player.id, newELO);
+        }
+    }
+};

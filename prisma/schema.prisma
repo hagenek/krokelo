@@ -13,11 +13,15 @@ generator client {
 model Player {
   id              Int      @id @default(autoincrement())
   name            String   @unique
-  currentELO      Int      @default(1000) // Starting ELO rating
+  currentELO      Int      @default(1500) // Starting ELO rating
   matchesAsWinner Match[]  @relation("MatchWinner")
   matchesAsLoser  Match[]  @relation("MatchLoser")
   eloLogs         ELOLog[]
   Match           Match[]
+  Team            Team?    @relation(fields: [teamId], references: [id])
+  teamId          Int?
+  @relation(fields: [teamId], references: [id])
+  teams           Team[]   @relation("TeamMembers")
 }
 
 model Match {
@@ -31,6 +35,7 @@ model Match {
   loser     Player   @relation("MatchLoser", fields: [loserId], references: [id])
   Player    Player?  @relation(fields: [playerId], references: [id])
   playerId  Int?
+  matchType String? // '1v1' or '2v2'
 
   @@index([winnerId, loserId])
 }
@@ -43,4 +48,25 @@ model ELOLog {
   player   Player   @relation(fields: [playerId], references: [id])
 
   @@index([playerId])
+}
+
+model Team {
+  id                  Int         @id @default(autoincrement())
+  players             Player[]    @relation("TeamMembers")
+  teamMatchesAsWinner TeamMatch[] @relation("TeamMatchWinner")
+  teamMatchesAsLoser  TeamMatch[] @relation("TeamMatchLoser")
+  Player              Player[]
+}
+
+model TeamMatch {
+  id           Int      @id @default(autoincrement())
+  date         DateTime @default(now())
+  winnerTeamId Int
+  loserTeamId  Int
+  winnerELO    Int // ELO of winning team at time of match
+  loserELO     Int // ELO of losing team at time of match
+  winnerTeam   Team     @relation("TeamMatchWinner", fields: [winnerTeamId], references: [id])
+  loserTeam    Team     @relation("TeamMatchLoser", fields: [loserTeamId], references: [id])
+
+  @@index([winnerTeamId, loserTeamId])
 }

@@ -167,51 +167,78 @@ export default function Index() {
           />
         </div>
         <Form method="post" className="mb-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-            <div>
-              <label htmlFor="player1" className="block dark:text-white text-sm font-medium text-gray-700">Spiller 1</label>
-              <input
-                id="player1"
-                type="text"
-                name="player1"
-                value={player1}
-                onChange={(e) => setPlayer1(e.target.value)}
-                className="border border-gray-300 rounded px-3 py-2 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 dark:bg-gray-800 dark:border-gray-600 dark:text-white mt-1"
-                placeholder="Player 1"
-              />
-            </div>
-            <div>
-              <label htmlFor="player2" className="block text-sm dark:text-white font-medium text-gray-700">Spiller 2</label>
-              <input
-                id="player2"
-                type="text"
-                name="player2"
-                value={player2}
-                onChange={(e) => setPlayer2(e.target.value)}
-                className="border border-gray-300 rounded px-3 py-2 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 dark:bg-gray-800 dark:border-gray-600 dark:text-white mt-1"
-                placeholder="Player 2"
-              />
-            </div>
-          </div>
-          <label htmlFor="winner" className="block text-sm dark:text-white font-medium text-gray-700">Hvem vant?</label>
+  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+    {/* Team 1 */}
+    <div>
+      <h3 className="block dark:text-white text-sm font-medium text-gray-700">Team 1</h3>
+      <label htmlFor="team1player1" className="block dark:text-white text-sm font-medium text-gray-700">Spiller 1</label>
+      <input
+        id="team1player1"
+        type="text"
+        name="team1player1"
+        value={team1player1}
+        onChange={(e) => setTeam1Player1(e.target.value)}
+        className="border border-gray-300 rounded px-3 py-2 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 dark:bg-gray-800 dark:border-gray-600 dark:text-white mt-1"
+        placeholder="Team 1 Player 1"
+      />
+      <label htmlFor="team1player2" className="block text-sm dark:text-white font-medium text-gray-700">Spiller 2</label>
+      <input
+        id="team1player2"
+        type="text"
+        name="team1player2"
+        value={team1player2}
+        onChange={(e) => setTeam1Player2(e.target.value)}
+        className="border border-gray-300 rounded px-3 py-2 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 dark:bg-gray-800 dark:border-gray-600 dark:text-white mt-1"
+        placeholder="Team 1 Player 2"
+      />
+    </div>
 
-          <select
-            id="winner"
-            name="winner"
-            value={winner}
-            onChange={(e) => setWinner(e.target.value)}
-            className="border border-gray-300 rounded px-3 py-2 mb-4 w-full md:w-auto focus:border-blue-500 focus:ring-1 focus:ring-blue-500 dark:bg-gray-800 dark:border-gray-600 dark:text-white"
-          >
-            <option value="">Velg vinner</option>
-            <option value={player1}>{player1}</option>
-            <option value={player2}>{player2}</option>
-          </select>
-          <button disabled={!isFormValid} // Disable the button if the form is not valid
-            type="submit"
-            className="m-4 bg-blue-600 dark:bg-gray-400 dark:text-black hover:bg-blue-700 focus:ring-4 focus:ring-blue-300 focus:outline-none text-white px-4 py-2 rounded">
-            Lagre resultat
-          </button>
-        </Form>
+    {/* Team 2 */}
+    <div>
+      <h3 className="block dark:text-white text-sm font-medium text-gray-700">Team 2</h3>
+      <label htmlFor="team2player1" className="block dark:text-white text-sm font-medium text-gray-700">Spiller 1</label>
+      <input
+        id="team2player1"
+        type="text"
+        name="team2player1"
+        value={team2player1}
+        onChange={(e) => setTeam2Player1(e.target.value)}
+        className="border border-gray-300 rounded px-3 py-2 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 dark:bg-gray-800 dark:border-gray-600 dark:text-white mt-1"
+        placeholder="Team 2 Player 1"
+      />
+      <label htmlFor="team2player2" className="block text-sm dark:text-white font-medium text-gray-700">Spiller 2</label>
+      <input
+        id="team2player2"
+        type="text"
+        name="team2player2"
+        value={team2player2}
+        onChange={(e) => setTeam2Player2(e.target.value)}
+        className="border border-gray-300 rounded px-3 py-2 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 dark:bg-gray-800 dark:border-gray-600 dark:text-white mt-1"
+        placeholder="Team 2 Player 2"
+      />
+    </div>
+  </div>
+
+  <label htmlFor="winner" className="block text-sm dark:text-white font-medium text-gray-700">Hvem vant?</label>
+  <select
+    id="winner"
+    name="winner"
+    value={winner}
+    onChange={(e) => setWinner(e.target.value)}
+    className="border border-gray-300 rounded px-3 py-2 mb-4 w-full md:w-auto focus:border-blue-500 focus:ring-1 focus:ring-blue-500 dark:bg-gray-800 dark:border-gray-600 dark:text-white"
+  >
+    <option value="">Velg vinner</option>
+    <option value="team1">Team 1</option>
+    <option value="team2">Team 2</option>
+  </select>
+
+  <button disabled={!isFormValid} // Disable the button if the form is not valid
+    type="submit"
+    className="m-4 bg-blue-600 dark:bg-gray-400 dark:text-black hover:bg-blue-700 focus:ring-4 focus:ring-blue-300 focus:outline-none text-white px-4 py-2 rounded">
+    Lagre resultat
+  </button>
+</Form>
+
         <h2 className="text-2xl font-semibold mb-3 dark:text-white">Spillere:</h2>
         <table className="min-w-full table-auto">
           <thead>
@@ -229,7 +256,7 @@ export default function Index() {
                 <td className="px-4 py-2 font-semibold dark:text-white">{player.name}</td>
                 <td className="px-4 py-2 align-middle text-center dark:text-white">{player.matchesAsWinner.length}</td>
                 <td className="px-4 py-2 align-middle text-center dark:text-white">{player.matchesAsLoser.length}</td>
-                <td className="px-4 py-2 align-middle text-center dark:text-white">{player.matchesAsLoser.length + player.matchesAsWinner.}</td>
+                <td className="px-4 py-2 align-middle text-center dark:text-white">{player.matchesAsLoser.length + player.matchesAsWinner.length}</td>
                 <td className="px-4 py-2 align-middle text-center dark:text-white">{player.currentELO}</td>
               </tr>
             ))}
