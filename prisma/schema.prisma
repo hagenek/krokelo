@@ -1,6 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
@@ -11,17 +8,18 @@ generator client {
 }
 
 model Player {
-  id              Int      @id @default(autoincrement())
-  name            String   @unique
-  currentELO      Int      @default(1500) // Starting ELO rating
-  matchesAsWinner Match[]  @relation("MatchWinner")
-  matchesAsLoser  Match[]  @relation("MatchLoser")
-  eloLogs         ELOLog[]
-  Match           Match[]
-  Team            Team?    @relation(fields: [teamId], references: [id])
-  teamId          Int?
-  @relation(fields: [teamId], references: [id])
-  teams           Team[]   @relation("TeamMembers")
+  id               Int                @id @default(autoincrement())
+  name             String             @unique
+  currentELO       Int                @default(1500) // Starting ELO rating
+  currentTeamELO   Int                @default(1500) // Starting ELO rating
+  matchesAsWinner  Match[]            @relation("MatchWinner")
+  matchesAsLoser   Match[]            @relation("MatchLoser")
+  eloLogs          ELOLog[]
+  Match            Match[]
+  Team             Team?              @relation(fields: [teamId], references: [id])
+  teamId           Int? // Added teamId to reflect ALTER TABLE migration
+  teams            Team[]             @relation("TeamMembers")
+  TeamPlayerELOLog TeamPlayerELOLog[]
 }
 
 model Match {
@@ -35,7 +33,7 @@ model Match {
   loser     Player   @relation("MatchLoser", fields: [loserId], references: [id])
   Player    Player?  @relation(fields: [playerId], references: [id])
   playerId  Int?
-  matchType String? // '1v1' or '2v2'
+  matchType String? // Added matchType to reflect ALTER TABLE migration
 
   @@index([winnerId, loserId])
 }
@@ -50,12 +48,34 @@ model ELOLog {
   @@index([playerId])
 }
 
+model TeamPlayerELOLog {
+  id       Int      @id @default(autoincrement())
+  playerId Int
+  elo      Int // ELO rating at this log entry for team player
+  date     DateTime @default(now())
+  Player   Player   @relation(fields: [playerId], references: [id])
+
+  @@index([playerId])
+}
+
+model TeamELOLog {
+  id     Int      @id @default(autoincrement())
+  teamId Int
+  elo    Int // ELO rating at this log entry for team
+  date   DateTime @default(now())
+  team   Team     @relation(fields: [teamId], references: [id])
+
+  @@index([teamId])
+}
+
 model Team {
-  id                  Int         @id @default(autoincrement())
-  players             Player[]    @relation("TeamMembers")
-  teamMatchesAsWinner TeamMatch[] @relation("TeamMatchWinner")
-  teamMatchesAsLoser  TeamMatch[] @relation("TeamMatchLoser")
-  Player              Player[]
+  id                  Int          @id @default(autoincrement())
+  players             Player[]     @relation("TeamMembers")
+  teamMatchesAsWinner TeamMatch[]  @relation("TeamMatchWinner")
+  teamMatchesAsLoser  TeamMatch[]  @relation("TeamMatchLoser")
+  currentELO          Int          @default(1500) // Starting ELO rating for team
+  Player              Player[] // Updated to reflect the new relationship
+  TeamELOLog          TeamELOLog[]
 }
 
 model TeamMatch {
@@ -69,4 +89,13 @@ model TeamMatch {
   loserTeam    Team     @relation("TeamMatchLoser", fields: [loserTeamId], references: [id])
 
   @@index([winnerTeamId, loserTeamId])
+}
+
+// Reflects the creation of the TeamMembers table
+model TeamMembers {
+  A Int @id
+  B Int
+
+  @@unique([A, B])
+  @@index([B])
 }

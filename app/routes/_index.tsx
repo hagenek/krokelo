@@ -3,7 +3,7 @@ import type { MetaFunction, LoaderFunction, ActionFunction } from "@remix-run/no
 import { useLoaderData, Form } from "@remix-run/react";
 import { useEffect, useState } from 'react';
 import { createPlayer, getPlayers } from "../services/playerService";
-import { recordMatch, updateELO, findPlayerByName, calculateNewELOs, logELO } from '../services/playerService';
+import { recordMatch, updateELO, findPlayerByName, calculateNewELOs, logIndividualELO } from '../services/playerService';
 
 export type Match = {
   id: number;
@@ -73,9 +73,12 @@ export const action: ActionFunction = async ({ request }) => {
 
     await recordMatch(winnerId, loserId, newELOPlayer1, newELOPlayer2);
     await updateELO(player1.id, newELOPlayer1);
-    await logELO(player1.id, newELOPlayer1); // Log the new ELO for player 1
+    await logIndividualELO(player1.id, newELOPlayer1); // Log the new ELO for player 1
     await updateELO(player2.id, newELOPlayer2);
-    await logELO(player2.id, newELOPlayer2); // Log the new ELO for player 2
+    await logIndividualELO(player2.id, newELOPlayer2); // Log the new ELO for player 2
+    formData.set('player1', '');
+    formData.set('player2', '');
+    formData.set('winner', '');
 
   }
 
@@ -143,98 +146,8 @@ export default function Index() {
       </div>
       <h1 className="text-4xl font-arial font-bold text-center mb-6 dark:text-white">SB1U Krokinole Champions</h1>
       <div className="flex-col justify-center">
-        <details className="mb-4">
-          <summary className="dark:text-white">How to Use</summary>
-          <div className="dark:text-gray-400">
-            <h2 className="text-xl font-semibold mb-3 dark:text-white">How to use:</h2>
-            <p className="mb-3">
-              Enter the names of the players and select the winner. The ELOs will be updated automatically.
-            </p>
-            <p className="mb-3">
-              If a player is not in the list, enter their name and submit the form. They will be added to the list and their ELO will be set to 1000.
-            </p>
-            <p className="mb-3">
-              If you want to see the ELO history for a player, click on their name in the table below.
-            </p>
-          </div>
-        </details>
-
-        <div className="flex justify-center mb-6">
-          <img
-            src="https://i.ibb.co/kB8pCL3/DALL-E-2023-12-14-13-12-01-Create-a-logo-for-a-Crokinole-match-recording-application-with-a-1960s-vi.png"
-            alt="man-pushing-krokinole-stone-uphill"
-            className="w-1/2 rounded"
-          />
-        </div>
-        <Form method="post" className="mb-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-            <div>
-              <label htmlFor="player1" className="block dark:text-white text-sm font-medium text-gray-700">Spiller 1</label>
-              <input
-                id="player1"
-                type="text"
-                name="player1"
-                value={player1}
-                onChange={(e) => setPlayer1(e.target.value)}
-                className="border border-gray-300 rounded px-3 py-2 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 dark:bg-gray-800 dark:border-gray-600 dark:text-white mt-1"
-                placeholder="Player 1"
-              />
-            </div>
-            <div>
-              <label htmlFor="player2" className="block text-sm dark:text-white font-medium text-gray-700">Spiller 2</label>
-              <input
-                id="player2"
-                type="text"
-                name="player2"
-                value={player2}
-                onChange={(e) => setPlayer2(e.target.value)}
-                className="border border-gray-300 rounded px-3 py-2 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 dark:bg-gray-800 dark:border-gray-600 dark:text-white mt-1"
-                placeholder="Player 2"
-              />
-            </div>
-          </div>
-          <label htmlFor="winner" className="block text-sm dark:text-white font-medium text-gray-700">Hvem vant?</label>
-
-          <select
-            id="winner"
-            name="winner"
-            value={winner}
-            onChange={(e) => setWinner(e.target.value)}
-            className="border border-gray-300 rounded px-3 py-2 mb-4 w-full md:w-auto focus:border-blue-500 focus:ring-1 focus:ring-blue-500 dark:bg-gray-800 dark:border-gray-600 dark:text-white"
-          >
-            <option value="">Velg vinner</option>
-            <option value={player1}>{player1}</option>
-            <option value={player2}>{player2}</option>
-          </select>
-          <button disabled={!isFormValid} // Disable the button if the form is not valid
-            type="submit"
-            className="m-4 bg-blue-600 dark:bg-gray-400 dark:text-black hover:bg-blue-700 focus:ring-4 focus:ring-blue-300 focus:outline-none text-white px-4 py-2 rounded">
-            Lagre resultat
-          </button>
-        </Form>
-        <h2 className="text-2xl font-semibold mb-3 dark:text-white">Spillere:</h2>
-        <table className="min-w-full table-auto">
-          <thead>
-            <tr>
-              <th className="px-4 py-2 dark:text-white">Name</th>
-              <th className="px-4 py-2 dark:text-white">Wins</th>
-              <th className="px-4 py-2 dark:text-white">Losses</th>
-              <th className="px-4 py-2 dark:text-white"># Matches</th>
-              <th className="px-4 py-2 dark:text-white">ELO</th>
-            </tr>
-          </thead>
-          <tbody>
-            {players.sort((a, b) => b.currentELO - a.currentELO).map((player) => (
-              <tr key={player.id} className="border-t dark:border-gray-700 text-xl">
-                <td className="px-4 py-2 font-semibold dark:text-white">{player.name}</td>
-                <td className="px-4 py-2 align-middle text-center dark:text-white">{player.matchesAsWinner.length}</td>
-                <td className="px-4 py-2 align-middle text-center dark:text-white">{player.matchesAsLoser.length}</td>
-                <td className="px-4 py-2 align-middle text-center dark:text-white">{player.matchesAsLoser.length + player.matchesAsWinner.}</td>
-                <td className="px-4 py-2 align-middle text-center dark:text-white">{player.currentELO}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        <button>1v1</button>
+        <button>2v2</button>
       </div>
     </div>
   );

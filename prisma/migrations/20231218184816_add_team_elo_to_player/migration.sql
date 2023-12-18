@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE "Player" ADD COLUMN     "currentTeamELO" INTEGER NOT NULL DEFAULT 1500;
