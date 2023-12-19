@@ -93,6 +93,12 @@ export default function Index() {
     const [player2, setPlayer2] = useState("");
     const [winner, setWinner] = useState("");
 
+    const resetForm = () => {
+        setPlayer1("");
+        setPlayer2("");
+        setWinner("");
+    }
+
     const isFormValid = player1.trim() && player2.trim() && winner.trim();
 
 
@@ -117,7 +123,7 @@ export default function Index() {
                 </details>
 
                 <div className="flex justify-center mb-6">
-                    <img src="img/1v1krok.png" alt="1v1" className="w-full rounded" />
+                    <img src="img/1v1krok.png" alt="1v1" className="w-1/3 rounded" />
                 </div>
                 <Form method="post" className="mb-8">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
@@ -160,6 +166,7 @@ export default function Index() {
                         <option value={player2}>{player2}</option>
                     </select>
                     <button disabled={!isFormValid} // Disable the button if the form is not valid
+                        onClick={resetForm}
                         type="submit"
                         className="m-4 bg-blue-600 dark:bg-gray-400 dark:text-black hover:bg-blue-700 focus:ring-4 focus:ring-blue-300 focus:outline-none text-white px-4 py-2 rounded">
                         Lagre resultat

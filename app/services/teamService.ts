@@ -1,3 +1,4 @@
+import { Team } from "@prisma/client";
 import { prisma } from "../prismaClient"
 
 // Function to calculate the number of wins for a team
@@ -58,3 +59,65 @@ export const calculateTotalMatches = async (teamId: number) => {
     const losses = await calculateTeamLosses(teamId);
     return wins + losses;
 };
+
+type PlayerTeamStats = {
+    totalMatches: number;
+    wins: number;
+    losses: number;
+  };
+
+async function getPlayerTeamMatchStats(playerId: number): Promise<PlayerTeamStats> {
+    // Find the teams that the player is a part of
+    const playerTeams = await prisma.player.findUnique({
+      where: { id: playerId },
+      include: { teams: true }
+    });
+  
+    if (!playerTeams || !playerTeams.teams) {
+      return { totalMatches: 0, wins: 0, losses: 0 };
+    }
+  
+    let totalMatches = 0;
+    let totalWins = 0;
+    let totalLosses = 0;
+  
+    // Iterate over each team and count matches, wins, and losses
+    for (const team of playerTeams.teams) {
+      const teamMatches = await prisma.teamMatch.findMany({
+        where: {
+          OR: [
+            { winnerTeamId: team.id },
+            { loserTeamId: team.id }
+          ]
+        }
+      });
+  
+      totalMatches += teamMatches.length;
+  
+      // Count wins and losses
+      teamMatches.forEach(match => {
+        if (match.winnerTeamId === team.id) {
+          totalWins++;
+        } else {
+          totalLosses++;
+        }
+      });
+    }
+  
+    // Return the statistics
+    return { totalMatches, wins: totalWins, losses: totalLosses }
+  }
+
+  export type TeamMatchStats = {
+    [key: number]: PlayerTeamStats
+  }
+  
+  export async function getMultiplePlayerTeamMatchStats(playerIds: number[]): Promise<TeamMatchStats>  {
+    const stats: TeamMatchStats = {};
+  
+    for (const playerId of playerIds) {
+      stats[playerId] = await getPlayerTeamMatchStats(playerId)
+    }
+  
+    return stats;
+  }

@@ -1,11 +1,29 @@
 // routes/index.tsx
-import type { MetaFunction, LoaderFunction, ActionFunction } from "@remix-run/node";
+import type {
+  MetaFunction,
+  LoaderFunction,
+  ActionFunction,
+} from "@remix-run/node";
 import { useLoaderData, Form } from "@remix-run/react";
-import { useEffect, useState } from 'react';
+import { useEffect, useState } from "react";
 import { redirect } from "@remix-run/node";
-import { calculateNewIndividualELOs, createPlayer, createTeam, getPlayers, updateAndLogELOs } from "../services/playerService";
-import { calculateTeamLosses, calculateTeamWins, getTeams } from "../services/teamService";
-import { recordMatch, updateELO, findPlayerByName, calculateNewELOs, recordTeamMatch, calculateNewTeamELOs } from '../services/playerService';
+import {
+  calculateNewIndividualELOs,
+  createPlayer,
+  createTeam,
+  getPlayers,
+  updateAndLogELOs,
+} from "../services/playerService";
+import {
+  TeamMatchStats,
+  getMultiplePlayerTeamMatchStats,
+  getTeams,
+} from "../services/teamService";
+import {
+  findPlayerByName,
+  recordTeamMatch,
+  calculateNewTeamELOs,
+} from "../services/playerService";
 
 export type Match = {
   id: number;
@@ -32,6 +50,11 @@ type Player = {
   matchesAsWinner: Match[];
   matchesAsLoser: Match[];
   eloLogs: ELOLog[];
+  teamStats: {
+    totalMatches: number;
+    wins: number;
+    losses: number;
+  };
 };
 type RouteData = {
   players: Player[];
@@ -55,106 +78,177 @@ export const meta: MetaFunction = () => {
 export const loader: LoaderFunction = async () => {
   const players = await getPlayers();
   const teams = await getTeams();
-  return { players, teams };
+
+  // Get IDs of all players
+  const playerIds = players.map((player) => player.id);
+
+  // Fetch team match stats for all players
+  const teamMatchStats = await getMultiplePlayerTeamMatchStats(playerIds);
+
+  // Add the stats to the players
+  const playersWithStats = players.map((player) => ({
+    ...player,
+    teamStats: teamMatchStats[player.id] || {
+      totalMatches: 0,
+      wins: 0,
+      losses: 0,
+    },
+  }));
+
+  return { players: playersWithStats, teams };
 };
-
-
 
 export const action: ActionFunction = async ({ request }) => {
   console.log("Executing action function!");
 
   try {
     const formData = await request.formData();
-    console.log('Form data received:', Object.fromEntries(formData));
+    console.log("Form data received:", Object.fromEntries(formData));
 
-    const team1Player1Name = formData.get('team1player1');
-    const team1Player2Name = formData.get('team1player2');
-    const team2Player1Name = formData.get('team2player1');
-    const team2Player2Name = formData.get('team2player2');
+    const team1Player1Name = formData.get("team1player1");
+    const team1Player2Name = formData.get("team1player2");
+    const team2Player1Name = formData.get("team2player1");
+    const team2Player2Name = formData.get("team2player2");
 
-    const allPlayerNames = [team1Player1Name, team1Player2Name, team2Player1Name, team2Player2Name];
+    const allPlayerNames = [
+      team1Player1Name,
+      team1Player2Name,
+      team2Player1Name,
+      team2Player2Name,
+    ];
     const uniqueNames = new Set(allPlayerNames);
 
     if (uniqueNames.size !== allPlayerNames.length) {
       console.error("A player cannot be on both teams.");
       // Handle the error appropriately, e.g., return an error message to the client
       return {
-        error: "Each player must be unique and cannot be part of both teams."
+        error: "Each player must be unique and cannot be part of both teams.",
       };
     }
 
-    const winningTeam = formData.get('winningTeam'); // Field to indicate the winning team
+    const resetForm = () => {
+      formData.set("team1player1", "");
+      formData.set("team1player2", "");
+      formData.set("team2player1", "");
+      formData.set("team2player2", "");
+    };
 
-    if (typeof team1Player1Name === 'string' && typeof team1Player2Name === 'string' &&
-      typeof team2Player1Name === 'string' && typeof team2Player2Name === 'string' &&
-      typeof winningTeam === 'string') {
+    const winningTeam = formData.get("winningTeam"); // Field to indicate the winning team
 
-      console.log('Team player names:', team1Player1Name, team1Player2Name, team2Player1Name, team2Player2Name);
-      console.log('Winning team:', winningTeam);
+    if (
+      typeof team1Player1Name === "string" &&
+      typeof team1Player2Name === "string" &&
+      typeof team2Player1Name === "string" &&
+      typeof team2Player2Name === "string" &&
+      typeof winningTeam === "string"
+    ) {
+      console.log(
+        "Team player names:",
+        team1Player1Name,
+        team1Player2Name,
+        team2Player1Name,
+        team2Player2Name
+      );
+      console.log("Winning team:", winningTeam);
 
-      const team1Player1 = await findPlayerByName(team1Player1Name) || await createPlayer(team1Player1Name);
-      const team1Player2 = await findPlayerByName(team1Player2Name) || await createPlayer(team1Player2Name);
+      const team1Player1 =
+        (await findPlayerByName(team1Player1Name)) ||
+        (await createPlayer(team1Player1Name));
+      const team1Player2 =
+        (await findPlayerByName(team1Player2Name)) ||
+        (await createPlayer(team1Player2Name));
 
-      console.log('Team 1 players:', team1Player1, team1Player2);
+      console.log("Team 1 players:", team1Player1, team1Player2);
 
-      const team2Player1 = await findPlayerByName(team2Player1Name) || await createPlayer(team2Player1Name);
-      const team2Player2 = await findPlayerByName(team2Player2Name) || await createPlayer(team2Player2Name);
-      console.log('Team 2 players:', team2Player1, team2Player2);
+      const team2Player1 =
+        (await findPlayerByName(team2Player1Name)) ||
+        (await createPlayer(team2Player1Name));
+      const team2Player2 =
+        (await findPlayerByName(team2Player2Name)) ||
+        (await createPlayer(team2Player2Name));
+      console.log("Team 2 players:", team2Player1, team2Player2);
 
       // Create or find teams
       const team1 = await createTeam(team1Player1.id, team1Player2.id);
       const team2 = await createTeam(team2Player1.id, team2Player2.id);
-      console.log('Teams:', team1, team2);
+      console.log("Teams:", team1, team2);
 
-      const team1IsWinner = winningTeam.trim().toLowerCase() === 'team1';
-      console.log('Team 1 is winner:', team1IsWinner);
+      const team1IsWinner = winningTeam.trim().toLowerCase() === "team1";
+      console.log("Team 1 is winner:", team1IsWinner);
 
-      console.log("Old ELOS", team1.currentELO, team2.currentELO)
+      console.log("Old ELOS", team1.currentELO, team2.currentELO);
       // Calculate new ELOs for each team
-      const { newELOTeam1, newELOTeam2 } = calculateNewTeamELOs(team1.currentELO, team2.currentELO, team1IsWinner);
-      console.log('New ELOs:', newELOTeam1, newELOTeam2);
+      const { newELOTeam1, newELOTeam2 } = calculateNewTeamELOs(
+        team1.currentELO,
+        team2.currentELO,
+        team1IsWinner
+      );
+      console.log("New ELOs:", newELOTeam1, newELOTeam2);
 
-      console.log("team1player1 currrent elo", team1Player1.currentELO)
-      console.log("team1player2 currrent elo", team1Player2.currentELO)
-      console.log("team2player1 currrent elo", team2Player1.currentELO)
-      console.log("team2player2 currrent elo", team2Player2.currentELO)
+      console.log("team1player1 currrent elo", team1Player1.currentELO);
+      console.log("team1player2 currrent elo", team1Player2.currentELO);
+      console.log("team2player1 currrent elo", team2Player1.currentELO);
+      console.log("team2player2 currrent elo", team2Player2.currentELO);
 
-      const { newELOPlayer1Team1, newELOPlayer2Team1, newELOPlayer1Team2, newELOPlayer2Team2 } = calculateNewIndividualELOs(
-        team1Player1.currentTeamELO, team1Player2.currentTeamELO, team2Player1.currentTeamELO, team2Player2.currentTeamELO, team1IsWinner
+      const {
+        newELOPlayer1Team1,
+        newELOPlayer2Team1,
+        newELOPlayer1Team2,
+        newELOPlayer2Team2,
+      } = calculateNewIndividualELOs(
+        team1Player1.currentTeamELO,
+        team1Player2.currentTeamELO,
+        team2Player1.currentTeamELO,
+        team2Player2.currentTeamELO,
+        team1IsWinner
       );
 
-      console.log('New individual ELOs:', newELOPlayer1Team1, newELOPlayer2Team1, newELOPlayer1Team2, newELOPlayer2Team2);
+      console.log(
+        "New individual ELOs:",
+        newELOPlayer1Team1,
+        newELOPlayer2Team1,
+        newELOPlayer1Team2,
+        newELOPlayer2Team2
+      );
 
       await updateAndLogELOs(
-        team1.id, newELOTeam1,
-        team2.id, newELOTeam2,
-        team1Player1.id, newELOPlayer1Team1,
-        team1Player2.id, newELOPlayer2Team1,
-        team2Player1.id, newELOPlayer1Team2,
-        team2Player2.id, newELOPlayer2Team2
+        team1.id,
+        newELOTeam1,
+        team2.id,
+        newELOTeam2,
+        team1Player1.id,
+        newELOPlayer1Team1,
+        team1Player2.id,
+        newELOPlayer2Team1,
+        team2Player1.id,
+        newELOPlayer1Team2,
+        team2Player2.id,
+        newELOPlayer2Team2
       );
       // Determine winner and loser team IDs
       const winnerTeamId = team1IsWinner ? team1.id : team2.id;
       const loserTeamId = team1IsWinner ? team2.id : team1.id;
-      console.log('Winner and loser team IDs:', winnerTeamId, loserTeamId);
+      console.log("Winner and loser team IDs:", winnerTeamId, loserTeamId);
 
       // Record team match
-      await recordTeamMatch(winnerTeamId, loserTeamId, newELOTeam1, newELOTeam2);
+      await recordTeamMatch(
+        winnerTeamId,
+        loserTeamId,
+        newELOTeam1,
+        newELOTeam2
+      );
 
-      formData.set('team1player1', '');
-      formData.set('team1player2', "");
-      formData.set('team2player1', "");
-      formData.set('team2player2', "");
-
+      formData.set("team1player1", "");
+      formData.set("team1player2", "");
+      formData.set("team2player1", "");
+      formData.set("team2player2", "");
     }
   } catch (error) {
-    console.error('Error in action function:', error);
+    console.error("Error in action function:", error);
   }
 
-  return redirect('/team');
+  return redirect("/team");
 };
-
-
 
 export default function Index() {
   const { players, teams } = useLoaderData<RouteData>();
@@ -167,23 +261,21 @@ export default function Index() {
 
   const [darkMode, setDarkMode] = useState(false);
 
-
   useEffect(() => {
     // Check if dark mode is set in localStorage
-    let isDarkMode = false
+    let isDarkMode = false;
     if (localStorage) {
-      isDarkMode = localStorage.getItem('theme') === 'dark';
+      isDarkMode = localStorage.getItem("theme") === "dark";
     }
     setDarkMode(isDarkMode);
 
     // Apply the appropriate class to the document
     if (isDarkMode) {
-      document.documentElement.classList.add('dark');
+      document.documentElement.classList.add("dark");
     } else {
-      document.documentElement.classList.remove('dark');
+      document.documentElement.classList.remove("dark");
     }
   }, []);
-
 
   const toggleDarkMode = () => {
     // Toggle dark mode state
@@ -191,162 +283,220 @@ export default function Index() {
     setDarkMode(newMode);
 
     // Update localStorage and document class
-    localStorage.setItem('theme', newMode ? 'dark' : 'light');
+    localStorage.setItem("theme", newMode ? "dark" : "light");
     if (newMode) {
-      document.documentElement.classList.add('dark');
+      document.documentElement.classList.add("dark");
     } else {
-      document.documentElement.classList.remove('dark');
+      document.documentElement.classList.remove("dark");
     }
   };
 
   return (
-    <div className={`container dark:bg-gray-800 dark:text-white mx-auto p-4 max-w-2xl`}>
+    <div className="flex flex-col justify-center items-center dark:bg-gray-800 dark:text-white mx-auto">
       <div className="flex-col justify-center">
-        <details className="mb-4">
-          <summary className="dark:text-white">How to Use</summary>
-          <div className="dark:text-gray-400">
-            <h2 className="text-xl font-semibold mb-3 dark:text-white">How to use:</h2>
-            <p className="mb-3">
-              Enter the names of the players and select the winner. The ELOs will be updated automatically.
-            </p>
-            <p className="mb-3">
-              If a player is not in the list, enter their name and submit the form. They will be added to the list and their ELO will be set to 1000.
-            </p>
-            <p className="mb-3">
-              If you want to see the ELO history for a player, click on their name in the table below.
-            </p>
+        <div className="flex-col items-center text-center justify-center">
+          <h1 className="text-3xl">2v2</h1>
+          <div className="flex justify-center mb-6">
+            <img src="img/1v1krok.png" alt="1v1" className="w-1/3 rounded" />
           </div>
-        </details>
-        <Form method="post" className="mb-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-            {/* Team 1 */}
-            <div>
-              <h3 className="block dark:text-white text-sm font-medium text-gray-700">Team 1</h3>
-              <label htmlFor="team1player1" className="block dark:text-white text-sm font-medium text-gray-700">Spiller 1</label>
-              <input
-                id="team1player1"
-                type="text"
-                name="team1player1"
-                value={team1Player1}
-                onChange={(e) => setTeam1Player1(e.target.value)}
-                className="border border-gray-300 rounded px-3 py-2 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 dark:bg-gray-800 dark:border-gray-600 dark:text-white mt-1"
-                placeholder="Team 1 Player 1"
-              />
-              <label htmlFor="team1player2" className="block text-sm dark:text-white font-medium text-gray-700">Spiller 2</label>
-              <input
-                id="team1player2"
-                type="text"
-                name="team1player2"
-                value={team1Player2}
-                onChange={(e) => setTeam1Player2(e.target.value)}
-                className="border border-gray-300 rounded px-3 py-2 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 dark:bg-gray-800 dark:border-gray-600 dark:text-white mt-1"
-                placeholder="Team 1 Player 2"
-              />
+          <Form method="post" className="mb-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Team 1 */}
+              <div className="gap-2">
+                <h3 className="block dark:text-white text-lg font-medium text-gray-700">
+                  Lag 1
+                </h3>
+                <label
+                  htmlFor="team1player1"
+                  className="block dark:text-white text-sm font-medium text-gray-700"
+                >
+                  Spiller 1
+                </label>
+                <input
+                  id="team1player1"
+                  type="text"
+                  name="team1player1"
+                  value={team1Player1}
+                  onChange={(e) => setTeam1Player1(e.target.value)}
+                  className="border border-gray-300 rounded px-3 py-2 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 dark:bg-gray-800 dark:border-gray-600 dark:text-white mt-1"
+                  placeholder="Team 1 Player 1"
+                />
+                <label
+                  htmlFor="team1player2"
+                  className="block text-sm dark:text-white font-medium text-gray-700"
+                >
+                  Spiller 2
+                </label>
+                <input
+                  id="team1player2"
+                  type="text"
+                  name="team1player2"
+                  value={team1Player2}
+                  onChange={(e) => setTeam1Player2(e.target.value)}
+                  className="border border-gray-300 rounded px-3 py-2 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 dark:bg-gray-800 dark:border-gray-600 dark:text-white mt-1"
+                  placeholder="Team 1 Player 2"
+                />
+              </div>
+
+              {/* Team 2 */}
+              <div>
+                <h3 className="block dark:text-white text-lg font-medium text-gray-700">
+                  Lag 2
+                </h3>
+                <label
+                  htmlFor="team2player1"
+                  className="block dark:text-white text-sm font-medium text-gray-700"
+                >
+                  Spiller 1
+                </label>
+                <input
+                  id="team2player1"
+                  type="text"
+                  name="team2player1"
+                  value={team2Player1}
+                  onChange={(e) => setTeam2Player1(e.target.value)}
+                  className="border border-gray-300 rounded px-3 py-2 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 dark:bg-gray-800 dark:border-gray-600 dark:text-white mt-1"
+                  placeholder="Team 2 Player 1"
+                />
+                <label
+                  htmlFor="team2player2"
+                  className="block text-sm dark:text-white font-medium text-gray-700"
+                >
+                  Spiller 2
+                </label>
+                <input
+                  id="team2player2"
+                  type="text"
+                  name="team2player2"
+                  value={team2Player2}
+                  onChange={(e) => setTeam2Player2(e.target.value)}
+                  className="border border-gray-300 rounded px-3 py-2 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 dark:bg-gray-800 dark:border-gray-600 dark:text-white mt-1"
+                  placeholder="Team 2 Player 2"
+                />
+              </div>
             </div>
 
-            {/* Team 2 */}
-            <div>
-              <h3 className="block dark:text-white text-sm font-medium text-gray-700">Team 2</h3>
-              <label htmlFor="team2player1" className="block dark:text-white text-sm font-medium text-gray-700">Spiller 1</label>
-              <input
-                id="team2player1"
-                type="text"
-                name="team2player1"
-                value={team2Player1}
-                onChange={(e) => setTeam2Player1(e.target.value)}
-                className="border border-gray-300 rounded px-3 py-2 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 dark:bg-gray-800 dark:border-gray-600 dark:text-white mt-1"
-                placeholder="Team 2 Player 1"
-              />
-              <label htmlFor="team2player2" className="block text-sm dark:text-white font-medium text-gray-700">Spiller 2</label>
-              <input
-                id="team2player2"
-                type="text"
-                name="team2player2"
-                value={team2Player2}
-                onChange={(e) => setTeam2Player2(e.target.value)}
-                className="border border-gray-300 rounded px-3 py-2 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 dark:bg-gray-800 dark:border-gray-600 dark:text-white mt-1"
-                placeholder="Team 2 Player 2"
-              />
-            </div>
-          </div>
+            <label
+              htmlFor="winningTeam"
+              className="block text-sm dark:text-white font-medium text-gray-700"
+            >
+              Hvem vant?
+            </label>
+            <select
+              id="winningTeam"
+              name="winningTeam"
+              value={winner}
+              onChange={(e) => setWinner(e.target.value)}
+              className="border border-gray-300 rounded px-3 py-2 mb-4 md:w-auto focus:border-blue-500 focus:ring-1 focus:ring-blue-500 dark:bg-gray-800 dark:border-gray-600 dark:text-white"
+            >
+              <option value="">Velg vinner</option>
+              <option value="team1">Team 1</option>
+              <option value="team2">Team 2</option>
+            </select>
 
-          <label htmlFor="winningTeam" className="block text-sm dark:text-white font-medium text-gray-700">Hvem vant?</label>
-          <select
-            id="winningTeam"
-            name="winningTeam"
-            value={winner}
-            onChange={(e) => setWinner(e.target.value)}
-            className="border border-gray-300 rounded px-3 py-2 mb-4 w-full md:w-auto focus:border-blue-500 focus:ring-1 focus:ring-blue-500 dark:bg-gray-800 dark:border-gray-600 dark:text-white"
-          >
-            <option value="">Velg vinner</option>
-            <option value="team1">Team 1</option>
-            <option value="team2">Team 2</option>
-          </select>
+            <button
+              type="submit"
+              className="m-4 bg-blue-600 dark:bg-gray-400 dark:text-black hover:bg-blue-700 focus:ring-4 focus:ring-blue-300 focus:outline-none text-white px-4 py-2 rounded"
+            >
+              Lagre resultat
+            </button>
+          </Form>
+        </div>
 
-          <button
-            type="submit"
-            className="m-4 bg-blue-600 dark:bg-gray-400 dark:text-black hover:bg-blue-700 focus:ring-4 focus:ring-blue-300 focus:outline-none text-white px-4 py-2 rounded">
-            Lagre resultat
-          </button>
-        </Form>
-
-        <table className="min-w-full table-auto mb">
-          <thead>
-            <tr>
-              <th className="px-4 py-2 dark:text-white">Lagnavn</th> {/* Team Name */}
-              <th className="px-4 py-2 dark:text-white">Seire</th> {/* Wins */}
-              <th className="px-4 py-2 dark:text-white">Tap</th> {/* Losses */}
-              <th className="px-4 py-2 dark:text-white">Antall Kamper</th> {/* # Matches */}
-              <th className="px-4 py-2 dark:text-white">ELO</th> {/* ELO */}
-            </tr>
-          </thead>
-          <tbody>
-            {teams.sort((a, b) => b.currentELO - a.currentELO).map((team: any) => (
-              <tr key={team.id} className="border-t dark:border-gray-700 text-xl">
-                <td className="px-4 py-2 font-semibold dark:text-white">
-                  {team.players.map((player: Player) => player.name).join(' & ')}
-                </td>
-                <td className="px-4 py-2 align-middle text-center dark:text-white">
-                  {team.wins}
-                </td>
-                <td className="px-4 py-2 align-middle text-center dark:text-white">
-                  {team.losses}
-                </td>
-                <td className="px-4 py-2 align-middle text-center dark:text-white">
-                  {team.totalMatches}
-                </td>
-                <td className="px-4 py-2 align-middle text-center dark:text-white">
-                  {team.currentELO}
-                </td>
+        <div>
+          <h2 className="text-xl m-2 font-semibold mb-3 dark:text-white">
+            Lagranking
+          </h2>
+          <table className="min-w-full table-auto mb">
+            <thead>
+              <tr>
+                <th className="px-4 py-2 dark:text-white">Lagnavn</th>{" "}
+                {/* Team Name */}
+                <th className="px-4 py-2 dark:text-white">Seire</th>{" "}
+                {/* Wins */}
+                <th className="px-4 py-2 dark:text-white">Tap</th>{" "}
+                {/* Losses */}
+                {/*               <th className="px-4 py-2 xs:hidden dark:text-white">
+                Antall Kamper
+              </th> */}{" "}
+                {/* # Matches */}
+                <th className="px-4 py-2 dark:text-white">ELO</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {teams
+                .sort((a, b) => b.currentELO - a.currentELO)
+                .map((team: any) => (
+                  <tr
+                    key={team.id}
+                    className="border-t dark:border-gray-700 text-lg"
+                  >
+                    <td className="px-4 py-2 text-md font-semibold dark:text-white">
+                      {team.players
+                        .map((player: Player) => player.name)
+                        .join(" & ")}
+                    </td>
+                    <td className="px-4 py-2 align-middle text-center dark:text-white">
+                      {team.wins}
+                    </td>
+                    <td className="px-4 py-2 align-middle text-center dark:text-white">
+                      {team.losses}
+                    </td>
+                    {/*                   <td className="px-4 py-2 align-middle text-center dark:text-white">
+                    {team.totalMatches}
+                  </td> */}
+                    <td className="px-4 py-2 align-middle text-center dark:text-white">
+                      {team.currentELO}
+                    </td>
+                  </tr>
+                ))}
+            </tbody>
+          </table>
+        </div>
 
-
-        <h2 className="text-2xl font-semibold mb-3 dark:text-white">Spillere:</h2>
-        <table className="min-w-full table-auto">
-          <thead>
-            <tr>
-              <th className="px-4 py-2 dark:text-white">Name</th>
-              <th className="px-4 py-2 dark:text-white">Wins</th>
-              <th className="px-4 py-2 dark:text-white">Losses</th>
-              <th className="px-4 py-2 dark:text-white"># Matches</th>
-              <th className="px-4 py-2 dark:text-white">ELO</th>
-            </tr>
-          </thead>
-          <tbody>
-            {players.sort((a, b) => b.currentTeamELO - a.currentTeamELO).map((player) => (
-              <tr key={player.id} className="border-t dark:border-gray-700 text-xl">
-                <td className="px-4 py-2 font-semibold dark:text-white">{player.name}</td>
-                <td className="px-4 py-2 align-middle text-center dark:text-white">{player.matchesAsWinner.length}</td>
-                <td className="px-4 py-2 align-middle text-center dark:text-white">{player.matchesAsLoser.length}</td>
-                <td className="px-4 py-2 align-middle text-center dark:text-white">{player.matchesAsLoser.length + player.matchesAsWinner.length}</td>
-                <td className="px-4 py-2 align-middle text-center dark:text-white">{player.currentTeamELO}</td>
+        <div className="flex-col justify-center text-center mt-12">
+          <h2 className="text-xl m-2 font-semibold mb-3 dark:text-white">
+            Individuell ranking ved lagspill top 3
+          </h2>
+          <table className="min-w-full table-auto">
+            <thead>
+              <tr>
+                <th className="px-4 py-2 dark:text-white">Name</th>
+                <th className="px-4 py-2 dark:text-white">Wins</th>
+                <th className="px-4 py-2 dark:text-white">Losses</th>
+                <th className="px-4 py-2 dark:text-white"># Matches</th>
+                <th className="px-4 py-2 dark:text-white">ELO</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {players
+                .sort((a, b) => b.currentTeamELO - a.currentTeamELO)
+                .slice(0, 3)
+                .map((player) => (
+                  <tr
+                    key={player.id}
+                    className="border-t dark:border-gray-700 text-md md:text-xl"
+                  >
+                    <td className="px-4 py-2 font-semibold dark:text-white">
+                      {player.name}
+                    </td>
+                    <td className="px-4 py-2 align-middle text-center dark:text-white">
+                      {player.teamStats.wins}
+                    </td>
+                    <td className="px-4 py-2 align-middle text-center dark:text-white">
+                      {player.teamStats.losses}
+                    </td>
+                    <td className="px-4 py-2 align-middle text-center dark:text-white">
+                      {player.teamStats.totalMatches}
+                    </td>
+                    <td className="px-4 py-2 align-middle text-center dark:text-white">
+                      {player.currentTeamELO}
+                    </td>
+                  </tr>
+                ))}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );

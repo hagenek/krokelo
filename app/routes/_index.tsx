@@ -88,27 +88,18 @@ export const action: ActionFunction = async ({ request }) => {
 
 
 export default function Index() {
-  const { players } = useLoaderData<RouteData>();
-  const [player1, setPlayer1] = useState("");
-  const [player2, setPlayer2] = useState("");
-  const [winner, setWinner] = useState("");
-
-  const isFormValid = player1.trim() && player2.trim() && winner.trim();
-
 
   return (
-    <div className={`container dark:bg-gray-800 dark:text-white mx-auto p-4 max-w-2xl`}>
-      <div>
+    <div className={`dark:bg-gray-800 h-screen dark:text-white`}>
         <div className="grid gap-4">
-          <Link to="/individual" className="h-1/3 dark:bg-gray-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded flex flex-col items-center">
-            <img src="img/1v1krok.png" alt="1v1" className="w-full rounded" />
+          <Link to="/individual" className="  hover:bg-blue-700 text-white font-bold py-2 px-4 rounded flex flex-col items-center">
             <span className="text-2xl dark:text-white text-gray-900 mt-2">1v1</span>
+            <img src="img/1v1krok.png" alt="1v1" className="w-1/2 rounded" />
           </Link>
-          <Link to="/team" className="h-1/3 dark:bg-gray-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded flex flex-col items-center">
-            <img src="img/2v2krok.png" alt="2v2" className="w-full rounded" />
+          <Link to="/team" className=" hover:bg-blue-700 text-white font-bold py-2 px-4 rounded flex flex-col items-center">
             <span className="text-2xl mt-2 dark:text-white text-gray-900">2v2</span>
+            <img src="img/2v2krok.png" alt="2v2" className="w-1/2 rounded" />
           </Link>
-        </div>
       </div>
     </div>
   );
