@@ -233,11 +233,7 @@ export default function Index() {
         </details>
 
         <div className="flex justify-center mb-6">
-          <img
-            src="https://i.ibb.co/kB8pCL3/DALL-E-2023-12-14-13-12-01-Create-a-logo-for-a-Crokinole-match-recording-application-with-a-1960s-vi.png"
-            alt="man-pushing-krokinole-stone-uphill"
-            className="w-1/2 rounded"
-          />
+          <img src="img/2v2krok.png" alt="2v2" className="w-1/2 rounded" />
         </div>
         <Form method="post" className="mb-8">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">

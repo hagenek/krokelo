@@ -1,6 +1,6 @@
 // routes/index.tsx
 import type { MetaFunction, LoaderFunction, ActionFunction } from "@remix-run/node";
-import { useLoaderData, Form } from "@remix-run/react";
+import { useLoaderData, Form, Link } from "@remix-run/react";
 import { useEffect, useState } from 'react';
 import { createPlayer, getPlayers } from "../services/playerService";
 import { recordMatch, updateELO, findPlayerByName, calculateNewELOs, logIndividualELO } from '../services/playerService';
@@ -93,61 +93,32 @@ export default function Index() {
   const [player2, setPlayer2] = useState("");
   const [winner, setWinner] = useState("");
 
-  const [darkMode, setDarkMode] = useState(false);
-
-
-  useEffect(() => {
-    // Check if dark mode is set in localStorage
-    let isDarkMode = false
-    if (localStorage) {
-      isDarkMode = localStorage.getItem('theme') === 'dark';
-    }
-    setDarkMode(isDarkMode);
-
-    // Apply the appropriate class to the document
-    if (isDarkMode) {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-    }
-  }, []);
-
   const isFormValid = player1.trim() && player2.trim() && winner.trim();
 
 
-  const toggleDarkMode = () => {
-    // Toggle dark mode state
-    const newMode = !darkMode;
-    setDarkMode(newMode);
-
-    // Update localStorage and document class
-    localStorage.setItem('theme', newMode ? 'dark' : 'light');
-    if (newMode) {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-    }
-  };
-
   return (
     <div className={`container dark:bg-gray-800 dark:text-white mx-auto p-4 max-w-2xl`}>
-      <div className="flex items-center justify-center mb-4">
-        <span className="mr-2">Light</span>
-        <button
-          onClick={toggleDarkMode}
-          className={`relative inline-flex items-center h-6 rounded-full w-11 focus:outline-none ${darkMode ? 'bg-blue-600' : 'bg-gray-200'}`}
-        >
-          <span
-            className={`transform transition ease-in-out duration-200 ${darkMode ? 'translate-x-6' : 'translate-x-1'
-              } inline-block w-4 h-4 transform bg-white rounded-full`}
+      <div className="flex-col justify-center mb-8">
+        <h1 className="text-4xl font-arial font-bold text-center mb-6 dark:text-white">SB1U Krokinole</h1>
+        <div className="flex items-center justify-center">
+          <img
+            src="https://i.ibb.co/kB8pCL3/DALL-E-2023-12-14-13-12-01-Create-a-logo-for-a-Crokinole-match-recording-application-with-a-1960s-vi.png"
+            alt="man-pushing-krokinole-stone-uphill"
+            className="w-1/3 rounded"
           />
-        </button>
-        <span className="ml-2">Dark</span>
+        </div>
       </div>
-      <h1 className="text-4xl font-arial font-bold text-center mb-6 dark:text-white">SB1U Krokinole Champions</h1>
-      <div className="flex-col justify-center">
-        <button>1v1</button>
-        <button>2v2</button>
+      <div>
+        <div className="grid grid-cols-2 gap-4">
+          <Link to="/individual" className="dark:bg-gray-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded flex flex-col items-center">
+            <img src="img/1v1krok.png" alt="1v1" className="w-full rounded" />
+            <span className="text-2xl dark:text-white text-gray-900 mt-2">1v1</span>
+          </Link>
+          <Link to="/team" className="dark:bg-gray-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded flex flex-col items-center">
+            <img src="img/2v2krok.png" alt="2v2" className="w-full rounded" />
+            <span className="text-2xl mt-2 dark:text-white text-gray-900">2v2</span>
+          </Link>
+        </div>
       </div>
     </div>
   );
