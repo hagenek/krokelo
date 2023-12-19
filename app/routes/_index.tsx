@@ -98,23 +98,13 @@ export default function Index() {
 
   return (
     <div className={`container dark:bg-gray-800 dark:text-white mx-auto p-4 max-w-2xl`}>
-      <div className="flex-col justify-center mb-8">
-        <h1 className="text-4xl font-arial font-bold text-center mb-6 dark:text-white">SB1U Krokinole</h1>
-        <div className="flex items-center justify-center">
-          <img
-            src="https://i.ibb.co/kB8pCL3/DALL-E-2023-12-14-13-12-01-Create-a-logo-for-a-Crokinole-match-recording-application-with-a-1960s-vi.png"
-            alt="man-pushing-krokinole-stone-uphill"
-            className="w-1/3 rounded"
-          />
-        </div>
-      </div>
       <div>
-        <div className="grid grid-cols-2 gap-4">
-          <Link to="/individual" className="dark:bg-gray-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded flex flex-col items-center">
+        <div className="grid gap-4">
+          <Link to="/individual" className="h-1/3 dark:bg-gray-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded flex flex-col items-center">
             <img src="img/1v1krok.png" alt="1v1" className="w-full rounded" />
             <span className="text-2xl dark:text-white text-gray-900 mt-2">1v1</span>
           </Link>
-          <Link to="/team" className="dark:bg-gray-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded flex flex-col items-center">
+          <Link to="/team" className="h-1/3 dark:bg-gray-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded flex flex-col items-center">
             <img src="img/2v2krok.png" alt="2v2" className="w-full rounded" />
             <span className="text-2xl mt-2 dark:text-white text-gray-900">2v2</span>
           </Link>

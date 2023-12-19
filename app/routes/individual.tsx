@@ -93,57 +93,11 @@ export default function Index() {
     const [player2, setPlayer2] = useState("");
     const [winner, setWinner] = useState("");
 
-    const [darkMode, setDarkMode] = useState(false);
-
-
-    useEffect(() => {
-        // Check if dark mode is set in localStorage
-        let isDarkMode = false
-        if (localStorage) {
-            isDarkMode = localStorage.getItem('theme') === 'dark';
-        }
-        setDarkMode(isDarkMode);
-
-        // Apply the appropriate class to the document
-        if (isDarkMode) {
-            document.documentElement.classList.add('dark');
-        } else {
-            document.documentElement.classList.remove('dark');
-        }
-    }, []);
-
     const isFormValid = player1.trim() && player2.trim() && winner.trim();
 
 
-    const toggleDarkMode = () => {
-        // Toggle dark mode state
-        const newMode = !darkMode;
-        setDarkMode(newMode);
-
-        // Update localStorage and document class
-        localStorage.setItem('theme', newMode ? 'dark' : 'light');
-        if (newMode) {
-            document.documentElement.classList.add('dark');
-        } else {
-            document.documentElement.classList.remove('dark');
-        }
-    };
-
     return (
         <div className={`container dark:bg-gray-800 dark:text-white mx-auto p-4 max-w-2xl`}>
-            <div className="flex items-center justify-center mb-4">
-                <span className="mr-2">Light</span>
-                <button
-                    onClick={toggleDarkMode}
-                    className={`relative inline-flex items-center h-6 rounded-full w-11 focus:outline-none ${darkMode ? 'bg-blue-600' : 'bg-gray-200'}`}
-                >
-                    <span
-                        className={`transform transition ease-in-out duration-200 ${darkMode ? 'translate-x-6' : 'translate-x-1'
-                            } inline-block w-4 h-4 transform bg-white rounded-full`}
-                    />
-                </button>
-                <span className="ml-2">Dark</span>
-            </div>
             <h1 className="text-4xl font-arial font-bold text-center mb-6 dark:text-white">SB1U Krokinole 1v1</h1>
             <div className="flex-col justify-center">
                 <details className="mb-4">

@@ -10,6 +10,7 @@ import {
     Scripts,
     ScrollRestoration,
 } from "@remix-run/react";
+import Layout from "./layout";
 
 export const links: LinksFunction = () => [
     { rel: "stylesheet", href: stylesheet },
@@ -25,7 +26,7 @@ export default function App() {
                 <Links />
             </head>
             <body className="dark:bg-gray-800">
-                <Outlet />
+                <Layout />
                 <ScrollRestoration />
                 <Scripts />
                 <LiveReload />

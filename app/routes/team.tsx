@@ -201,20 +201,6 @@ export default function Index() {
 
   return (
     <div className={`container dark:bg-gray-800 dark:text-white mx-auto p-4 max-w-2xl`}>
-      <div className="flex items-center justify-center mb-4">
-        <span className="mr-2">Light</span>
-        <button
-          onClick={toggleDarkMode}
-          className={`relative inline-flex items-center h-6 rounded-full w-11 focus:outline-none ${darkMode ? 'bg-blue-600' : 'bg-gray-200'}`}
-        >
-          <span
-            className={`transform transition ease-in-out duration-200 ${darkMode ? 'translate-x-6' : 'translate-x-1'
-              } inline-block w-4 h-4 transform bg-white rounded-full`}
-          />
-        </button>
-        <span className="ml-2">Dark</span>
-      </div>
-      <h1 className="text-4xl font-arial font-bold text-center mb-6 dark:text-white">SB1U Krokinole 2v2</h1>
       <div className="flex-col justify-center">
         <details className="mb-4">
           <summary className="dark:text-white">How to Use</summary>
@@ -231,10 +217,6 @@ export default function Index() {
             </p>
           </div>
         </details>
-
-        <div className="flex justify-center mb-6">
-          <img src="img/2v2krok.png" alt="2v2" className="w-1/2 rounded" />
-        </div>
         <Form method="post" className="mb-8">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
             {/* Team 1 */}
