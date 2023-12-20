@@ -4,7 +4,8 @@ import type {
   LoaderFunction,
   ActionFunction,
 } from "@remix-run/node";
-import { useLoaderData, Form } from "@remix-run/react";
+import CreatableSelect from "react-select/creatable";
+import { useLoaderData, Form, useFetcher } from "@remix-run/react";
 import { useEffect, useState } from "react";
 import { redirect } from "@remix-run/node";
 import {
@@ -42,7 +43,7 @@ type ELOLog = {
   date: string;
 };
 
-type Player = {
+export type Player = {
   id: number;
   name: string;
   currentELO: number;
@@ -103,12 +104,16 @@ export const action: ActionFunction = async ({ request }) => {
 
   try {
     const formData = await request.formData();
+    console.log("FOrmdata", formData);
     console.log("Form data received:", Object.fromEntries(formData));
 
-    const team1Player1Name = formData.get("team1player1");
-    const team1Player2Name = formData.get("team1player2");
-    const team2Player1Name = formData.get("team2player1");
-    const team2Player2Name = formData.get("team2player2");
+    const {
+      team1Player1: team1Player1Name,
+      team1Player2: team1Player2Name,
+      team2Player1: team2Player1Name,
+      team2Player2: team2Player2Name,
+      winner: winningTeam,
+    } = Object.fromEntries(formData);
 
     const allPlayerNames = [
       team1Player1Name,
@@ -116,6 +121,7 @@ export const action: ActionFunction = async ({ request }) => {
       team2Player1Name,
       team2Player2Name,
     ];
+
     const uniqueNames = new Set(allPlayerNames);
 
     if (uniqueNames.size !== allPlayerNames.length) {
@@ -125,15 +131,6 @@ export const action: ActionFunction = async ({ request }) => {
         error: "Each player must be unique and cannot be part of both teams.",
       };
     }
-
-    const resetForm = () => {
-      formData.set("team1player1", "");
-      formData.set("team1player2", "");
-      formData.set("team2player1", "");
-      formData.set("team2player2", "");
-    };
-
-    const winningTeam = formData.get("winningTeam"); // Field to indicate the winning team
 
     if (
       typeof team1Player1Name === "string" &&
@@ -158,37 +155,26 @@ export const action: ActionFunction = async ({ request }) => {
         (await findPlayerByName(team1Player2Name)) ||
         (await createPlayer(team1Player2Name));
 
-      console.log("Team 1 players:", team1Player1, team1Player2);
-
       const team2Player1 =
         (await findPlayerByName(team2Player1Name)) ||
         (await createPlayer(team2Player1Name));
+
       const team2Player2 =
         (await findPlayerByName(team2Player2Name)) ||
         (await createPlayer(team2Player2Name));
-      console.log("Team 2 players:", team2Player1, team2Player2);
 
       // Create or find teams
       const team1 = await createTeam(team1Player1.id, team1Player2.id);
       const team2 = await createTeam(team2Player1.id, team2Player2.id);
-      console.log("Teams:", team1, team2);
 
       const team1IsWinner = winningTeam.trim().toLowerCase() === "team1";
-      console.log("Team 1 is winner:", team1IsWinner);
 
-      console.log("Old ELOS", team1.currentELO, team2.currentELO);
       // Calculate new ELOs for each team
       const { newELOTeam1, newELOTeam2 } = calculateNewTeamELOs(
         team1.currentELO,
         team2.currentELO,
         team1IsWinner
       );
-      console.log("New ELOs:", newELOTeam1, newELOTeam2);
-
-      console.log("team1player1 currrent elo", team1Player1.currentELO);
-      console.log("team1player2 currrent elo", team1Player2.currentELO);
-      console.log("team2player1 currrent elo", team2Player1.currentELO);
-      console.log("team2player2 currrent elo", team2Player2.currentELO);
 
       const {
         newELOPlayer1Team1,
@@ -237,11 +223,6 @@ export const action: ActionFunction = async ({ request }) => {
         newELOTeam1,
         newELOTeam2
       );
-
-      formData.set("team1player1", "");
-      formData.set("team1player2", "");
-      formData.set("team2player1", "");
-      formData.set("team2player2", "");
     }
   } catch (error) {
     console.error("Error in action function:", error);
@@ -253,42 +234,62 @@ export const action: ActionFunction = async ({ request }) => {
 export default function Index() {
   const { players, teams } = useLoaderData<RouteData>();
 
+  const fetcher = useFetcher();
+
   const [team1Player1, setTeam1Player1] = useState("");
   const [team1Player2, setTeam1Player2] = useState("");
   const [team2Player1, setTeam2Player1] = useState("");
   const [team2Player2, setTeam2Player2] = useState("");
   const [winner, setWinner] = useState("");
 
-  const [darkMode, setDarkMode] = useState(false);
+  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
 
-  useEffect(() => {
-    // Check if dark mode is set in localStorage
-    let isDarkMode = false;
-    if (localStorage) {
-      isDarkMode = localStorage.getItem("theme") === "dark";
+    // Simple validation
+    if (
+      !team1Player1 ||
+      !team1Player2 ||
+      !team2Player1 ||
+      !team2Player2 ||
+      !winner
+    ) {
+      alert("All fields are required!");
+      return;
     }
-    setDarkMode(isDarkMode);
 
-    // Apply the appropriate class to the document
-    if (isDarkMode) {
-      document.documentElement.classList.add("dark");
-    } else {
-      document.documentElement.classList.remove("dark");
-    }
-  }, []);
+    // Use the fetcher form to submit
+    fetcher.submit(
+      { team1Player1, team1Player2, team2Player1, team2Player2, winner },
+      { method: "post" }
+    );
 
-  const toggleDarkMode = () => {
-    // Toggle dark mode state
-    const newMode = !darkMode;
-    setDarkMode(newMode);
+    // Reset form fields
+    setTeam1Player1("");
+    setTeam1Player2("");
+    setTeam2Player1("");
+    setTeam2Player2("");
+    setWinner("");
+  };
 
-    // Update localStorage and document class
-    localStorage.setItem("theme", newMode ? "dark" : "light");
-    if (newMode) {
-      document.documentElement.classList.add("dark");
-    } else {
-      document.documentElement.classList.remove("dark");
-    }
+  const playerOptions = players.map((player) => ({
+    value: player.name,
+    label: player.name,
+  }));
+
+  const handleTeam1Player1Change = (newValue: any) => {
+    setTeam1Player1(newValue ? newValue.value : "");
+  };
+
+  const handleTeam1Player2Change = (newValue: any) => {
+    setTeam1Player2(newValue ? newValue.value : "");
+  };
+
+  const handleTeam2Player1Change = (newValue: any) => {
+    setTeam2Player1(newValue ? newValue.value : "");
+  };
+
+  const handleTeam2Player2Change = (newValue: any) => {
+    setTeam2Player2(newValue ? newValue.value : "");
   };
 
   return (
@@ -299,7 +300,7 @@ export default function Index() {
           <div className="flex justify-center mb-6">
             <img src="img/1v1krok.png" alt="1v1" className="w-1/3 rounded" />
           </div>
-          <Form method="post" className="mb-8">
+          <fetcher.Form method="post" onSubmit={handleSubmit} className="mb-8">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {/* Team 1 */}
               <div className="gap-2">
@@ -312,14 +313,13 @@ export default function Index() {
                 >
                   Spiller 1
                 </label>
-                <input
+                <CreatableSelect
                   id="team1player1"
-                  type="text"
-                  name="team1player1"
-                  value={team1Player1}
-                  onChange={(e) => setTeam1Player1(e.target.value)}
-                  className="border border-gray-300 rounded px-3 py-2 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 dark:bg-gray-800 dark:border-gray-600 dark:text-white mt-1"
-                  placeholder="Team 1 Player 1"
+                  isClearable
+                  onChange={handleTeam1Player1Change}
+                  options={playerOptions}
+                  className="mt-1 w-3/4 dark:text-black"
+                  placeholder="Select or create Player 1 on Team 1"
                 />
                 <label
                   htmlFor="team1player2"
@@ -327,14 +327,13 @@ export default function Index() {
                 >
                   Spiller 2
                 </label>
-                <input
+                <CreatableSelect
                   id="team1player2"
-                  type="text"
-                  name="team1player2"
-                  value={team1Player2}
-                  onChange={(e) => setTeam1Player2(e.target.value)}
-                  className="border border-gray-300 rounded px-3 py-2 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 dark:bg-gray-800 dark:border-gray-600 dark:text-white mt-1"
-                  placeholder="Team 1 Player 2"
+                  isClearable
+                  onChange={handleTeam1Player2Change}
+                  options={playerOptions}
+                  className="mt-1 w-3/4 dark:text-black"
+                  placeholder="Select or create Player 2 on Team 1"
                 />
               </div>
 
@@ -349,14 +348,13 @@ export default function Index() {
                 >
                   Spiller 1
                 </label>
-                <input
+                <CreatableSelect
                   id="team2player1"
-                  type="text"
-                  name="team2player1"
-                  value={team2Player1}
-                  onChange={(e) => setTeam2Player1(e.target.value)}
-                  className="border border-gray-300 rounded px-3 py-2 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 dark:bg-gray-800 dark:border-gray-600 dark:text-white mt-1"
-                  placeholder="Team 2 Player 1"
+                  isClearable
+                  onChange={handleTeam2Player1Change}
+                  options={playerOptions}
+                  className="mt-1 w-3/4 dark:text-black"
+                  placeholder="Select or create Player 1 on Team 2"
                 />
                 <label
                   htmlFor="team2player2"
@@ -364,14 +362,13 @@ export default function Index() {
                 >
                   Spiller 2
                 </label>
-                <input
+                <CreatableSelect
                   id="team2player2"
-                  type="text"
-                  name="team2player2"
-                  value={team2Player2}
-                  onChange={(e) => setTeam2Player2(e.target.value)}
-                  className="border border-gray-300 rounded px-3 py-2 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 dark:bg-gray-800 dark:border-gray-600 dark:text-white mt-1"
-                  placeholder="Team 2 Player 2"
+                  isClearable
+                  onChange={handleTeam2Player2Change}
+                  options={playerOptions}
+                  className="mt-1 w-3/4 dark:text-black"
+                  placeholder="Select or create Player 2 on Team 2"
                 />
               </div>
             </div>
@@ -400,7 +397,7 @@ export default function Index() {
             >
               Lagre resultat
             </button>
-          </Form>
+          </fetcher.Form>
         </div>
 
         <div>
