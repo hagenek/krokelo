@@ -20,7 +20,7 @@ const NavMenu = () => {
 
   return (
     <nav className="mb-4 flex justify-end mr-4 relative">
-      <div className="hidden md:flex justify-between items-center">
+      <div className="hidden md:flex w-full justify-between items-center">
         {menuItems.map((item) => (
           <Link
             key={item.name}
@@ -42,7 +42,6 @@ const NavMenu = () => {
           viewBox="0 0 24 24"
           strokeWidth={1.5}
           stroke="currentColor"
-          dataSlot="icon"
           className="w-12 h-12"
         >
           <path
@@ -55,29 +54,52 @@ const NavMenu = () => {
 
       <AnimatePresence>
         {isMenuOpen && (
-          <motion.ul
-            initial="closed"
-            animate="open"
-            exit="closed"
-            variants={menuVariants}
-            className="flex flex-col items-center justify-center fixed inset-0 bg-white dark:bg-gray-800 text-2xl z-50"
-          >
-            {menuItems.map((item) => (
-              <motion.li
-                key={item.name}
-                className="mb-4"
-                whileTap={{ scale: 0.95 }}
+          <>
+            <button
+              onClick={() => setIsMenuOpen(false)}
+              style={{ zIndex: "999" }}
+              className="absolute text-white top-0 right-0 m-8"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                strokeWidth={1.5}
+                stroke="currentColor"
+                className="w-12 h-12"
               >
-                <Link
-                  to={item.path}
-                  className="dark:text-white hover:underline"
-                  onClick={() => setIsMenuOpen(false)}
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              </svg>
+            </button>
+
+            <motion.ul
+              initial="closed"
+              animate="open"
+              exit="closed"
+              variants={menuVariants}
+              className="flex flex-col items-center justify-center fixed inset-0 bg-white dark:bg-gray-800 text-2xl z-40"
+            >
+              {menuItems.map((item) => (
+                <motion.li
+                  key={item.name}
+                  className="mb-4"
+                  whileTap={{ scale: 0.95 }}
                 >
-                  {item.name}
-                </Link>
-              </motion.li>
-            ))}
-          </motion.ul>
+                  <Link
+                    to={item.path}
+                    className="dark:text-white hover:underline"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    {item.name}
+                  </Link>
+                </motion.li>
+              ))}
+            </motion.ul>
+          </>
         )}
       </AnimatePresence>
     </nav>

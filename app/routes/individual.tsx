@@ -55,7 +55,7 @@ export const action: ActionFunction = async ({ request }) => {
   const formData = await request.formData();
   const player1Name = formData.get("player1");
   const player2Name = formData.get("player2");
-  const winner = formData.get("winner"); // Assuming you have a field to indicate the winner
+  const winner = formData.get("winner");
 
   if (
     typeof player1Name === "string" &&
@@ -213,15 +213,16 @@ export default function Index() {
                 placeholder="Add Player 2"
               />
             </div>
+          </div>
 
-            <div className="">
+          <div className="grid grid-cols-2 w-full mt-4">
+            <div>
               <label
                 htmlFor="winner"
                 className="block text-sm dark:text-white font-medium text-gray-700"
               >
                 Hvem vant?
               </label>
-
               <Select
                 id="winner"
                 name="winner"
@@ -231,19 +232,22 @@ export default function Index() {
                 }
                 onChange={handleWinnerChange}
                 options={winnerOptions}
-                className="mb-4 m-auto dark:text-black w-2/3"
+                className="mb-4 m-auto w-1/2 dark:text-black"
                 classNamePrefix="react-select"
               />
+            </div>
+            <div className="flex justify-center">
               <button
                 disabled={!isFormValid} // Disable the button if the form is not valid
                 type="submit"
-                className="m-4 bg-blue-600 dark:bg-gray-400 dark:text-black hover:bg-blue-700 focus:ring-4 focus:ring-blue-300 focus:outline-none text-white px-4 py-2 rounded"
+                className="m-4 w-1/2 text-center bg-blue-600 dark:bg-gray-400 dark:text-black hover:bg-blue-700 focus:ring-4 focus:ring-blue-300 focus:outline-none text-white px-4 py-2 rounded"
               >
                 Lagre resultat
               </button>
             </div>
           </div>
         </fetcher.Form>
+
         <h2 className="text-2xl font-semibold mb-3 dark:text-white">
           Spillere:
         </h2>
@@ -253,7 +257,6 @@ export default function Index() {
               <th className="px-4 py-2 dark:text-white">Name</th>
               <th className="px-4 py-2 dark:text-white">Wins</th>
               <th className="px-4 py-2 dark:text-white">Losses</th>
-              <th className="px-4 py-2 dark:text-white"># Matches</th>
               <th className="px-4 py-2 dark:text-white">ELO</th>
             </tr>
           </thead>
@@ -261,10 +264,11 @@ export default function Index() {
           <tbody>
             {players
               .sort((a, b) => b.currentELO - a.currentELO)
+              .filter((a) => a.currentELO !== 1500)
               .map((player) => (
                 <tr
                   key={player.id}
-                  className="border-t dark:border-gray-700 text-xl"
+                  className="border-t dark:border-gray-700 text-lg"
                 >
                   <td className="px-4 py-2 font-semibold dark:text-white">
                     {player.name}
@@ -274,10 +278,6 @@ export default function Index() {
                   </td>
                   <td className="px-4 py-2 align-middle text-center dark:text-white">
                     {player.matchesAsLoser.length}
-                  </td>
-                  <td className="px-4 py-2 align-middle text-center dark:text-white">
-                    {player.matchesAsLoser.length +
-                      player.matchesAsWinner.length}
                   </td>
                   <td className="px-4 py-2 align-middle text-center dark:text-white">
                     {player.currentELO}

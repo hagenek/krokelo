@@ -312,14 +312,20 @@ export default function Index() {
     <div className="flex flex-col justify-center items-center dark:bg-gray-800 dark:text-white mx-auto">
       <div className="flex-col justify-center">
         <div className="flex-col items-center text-center justify-center">
-          <h1 className="text-3xl">2v2</h1>
-          <div className="flex justify-center mb-6">
-            <img src="img/1v1krok.png" alt="1v1" className="w-1/3 rounded" />
+          <div className="flex md:flex-col justify-center">
+            <div className="text-4xl self-center md:text-3xl mb-2 md:mb-6 p-8 md:p-0">
+              2 mot 2
+            </div>
+            <div className="flex self-center justify-center items-center w-1/3">
+              <div className="md:items-center mb-6 ">
+                <img src="img/1v1krok.png" alt="1v1" className="rounded" />
+              </div>
+            </div>
           </div>
           <fetcher.Form method="post" onSubmit={handleSubmit} className="mb-8">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {/* Team 1 */}
-              <div className="gap-2">
+              <div className="gap-2 md:gap-6">
                 <h3 className="block dark:text-white text-lg font-medium text-gray-700">
                   Lag 1
                 </h3>
@@ -393,31 +399,33 @@ export default function Index() {
               </div>
             </div>
 
-            <label
-              htmlFor="winningTeam"
-              className="block text-sm dark:text-white font-medium text-gray-700"
-            >
-              Hvem vant?
-            </label>
+            <div className="mt-4">
+              <label
+                htmlFor="winningTeam"
+                className="block text-sm dark:text-white font-medium text-gray-700"
+              >
+                Hvem vant?
+              </label>
 
-            <Select
-              id="winner"
-              name="winner"
-              value={
-                winnerOptions.find((option) => option.value === winner) || null
-              }
-              onChange={handleWinnerChange}
-              options={winnerOptions}
-              className="mb-4 m-auto dark:text-black w-2/3"
-              classNamePrefix="react-select"
-            />
-
-            <button
-              type="submit"
-              className="m-4 bg-blue-600 dark:bg-gray-400 dark:text-black hover:bg-blue-700 focus:ring-4 focus:ring-blue-300 focus:outline-none text-white px-4 py-2 rounded"
-            >
-              Lagre resultat
-            </button>
+              <Select
+                id="winner"
+                name="winner"
+                value={
+                  winnerOptions.find((option) => option.value === winner) ||
+                  null
+                }
+                onChange={handleWinnerChange}
+                options={winnerOptions}
+                className="mb-4 md:w-1/2 m-auto dark:text-black w-2/3"
+                classNamePrefix="react-select"
+              />
+              <button
+                type="submit"
+                className="m-4 bg-blue-600 dark:bg-white dark:text-black hover:bg-blue-700 dark:hover:bg-gray-400 focus:ring-4 focus:ring-blue-300 focus:outline-none text-white px-4 py-2 rounded"
+              >
+                Lagre resultat
+              </button>
+            </div>
           </fetcher.Form>
         </div>
       </div>
