@@ -3,9 +3,11 @@ import { useLoaderData, Link, Outlet } from "@remix-run/react";
 import { useState, useEffect } from "react";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import NavMenu from "./nav-menu";
 
 export default function Index() {
   const [darkMode, setDarkMode] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   useEffect(() => {
     // Check if dark mode is set in localStorage
@@ -43,8 +45,8 @@ export default function Index() {
         className={`dark:text-white md:w-1/2 h-screen${darkMode ? "dark" : ""}`}
       >
         {/* Header with logo */}
-        <header className="flex-col justify-between items-center md:p-4 border-b border-gray-200 dark:border-gray-700 mb-4">
-          <div className="flex items-center justify-center mb-4">
+        <header className="flex-col md:p-4 border-b border-gray-200 dark:border-gray-700 mb-4">
+          <div className="flex justify-center md:justify-start mb-4 ">
             <span className="mr-2">Light</span>
             <button
               onClick={toggleDarkMode}
@@ -60,35 +62,7 @@ export default function Index() {
             </button>
             <span className="ml-2">Dark</span>
           </div>
-          <nav className="mb-4">
-            <ul
-              className="flex text-2xl"
-              style={{
-                justifyContent: "space-between",
-                marginLeft: "12px",
-                marginRight: "12px",
-              }}
-            >
-              <li>
-                <Link to="/" className="dark:text-white hover:underline">
-                  Home
-                </Link>
-              </li>
-              <li>
-                <Link
-                  to="/individual"
-                  className="dark:text-white hover:underline"
-                >
-                  1v1
-                </Link>
-              </li>
-              <li>
-                <Link to="/team" className="dark:text-white hover:underline">
-                  2v2
-                </Link>
-              </li>
-            </ul>
-          </nav>
+          <NavMenu />
           <div className="flex justify-center">
             <img
               src="img/krokelo-logo.png" // Update path to your logo image

@@ -5,7 +5,7 @@ import type {
   ActionFunction,
 } from "@remix-run/node";
 import { useLoaderData, Form, useFetcher } from "@remix-run/react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { createPlayer, getPlayers } from "../services/playerService";
 import {
   recordMatch,
@@ -14,7 +14,7 @@ import {
   calculateNewELOs,
   logIndividualELO,
 } from "../services/playerService";
-import { Player } from "./team";
+import { EnrichedPlayer } from "./team";
 import CreatableSelect from "react-select/creatable";
 import Select from "react-select";
 
@@ -29,7 +29,7 @@ export type Match = {
 };
 
 type RouteData = {
-  players: Player[];
+  players: EnrichedPlayer[];
 };
 
 export const meta: MetaFunction = () => {
@@ -180,8 +180,8 @@ export default function Index() {
           <img src="img/1v1krok.png" alt="1v1" className="w-1/3 rounded" />
         </div>
         <fetcher.Form method="post" onSubmit={handleSubmit} className="mb-8">
-          <div className="grid grid-cols-1 items-center md:grid-cols-2 gap-4 mb-4 ">
-            <div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4 ">
+            <div className="flex-col">
               <label
                 htmlFor="player1"
                 className="block dark:text-white text-sm font-medium text-gray-700"
@@ -193,8 +193,8 @@ export default function Index() {
                 isClearable
                 onChange={handlePlayer1Change}
                 options={playerOptions}
-                className="mt-1 w-3/4 dark:text-black"
-                placeholder="Select or create Player 1"
+                className="mt-1 w-3/4 m-auto dark:text-black"
+                placeholder="Add Player 1"
               />
             </div>
             <div>
@@ -209,8 +209,8 @@ export default function Index() {
                 isClearable
                 onChange={handlePlayer2Change}
                 options={playerOptions}
-                className="mt-1 w-3/4 dark:text-black"
-                placeholder="Select or create Player 2"
+                className="mt-1 w-3/4 m-auto dark:text-black"
+                placeholder="Add Player 2"
               />
             </div>
 
@@ -231,7 +231,7 @@ export default function Index() {
                 }
                 onChange={handleWinnerChange}
                 options={winnerOptions}
-                className="mb-4 dark:text-black w-2/3"
+                className="mb-4 m-auto dark:text-black w-2/3"
                 classNamePrefix="react-select"
               />
               <button
@@ -257,6 +257,7 @@ export default function Index() {
               <th className="px-4 py-2 dark:text-white">ELO</th>
             </tr>
           </thead>
+
           <tbody>
             {players
               .sort((a, b) => b.currentELO - a.currentELO)

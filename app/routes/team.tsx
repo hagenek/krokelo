@@ -6,7 +6,7 @@ import type {
 } from "@remix-run/node";
 import CreatableSelect from "react-select/creatable";
 import { useLoaderData, Form, useFetcher } from "@remix-run/react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { redirect } from "@remix-run/node";
 import {
   calculateNewIndividualELOs,
@@ -25,6 +25,7 @@ import {
   recordTeamMatch,
   calculateNewTeamELOs,
 } from "../services/playerService";
+import Select from "react-select";
 
 export type Match = {
   id: number;
@@ -43,7 +44,7 @@ type ELOLog = {
   date: string;
 };
 
-export type Player = {
+export type EnrichedPlayer = {
   id: number;
   name: string;
   currentELO: number;
@@ -57,8 +58,9 @@ export type Player = {
     losses: number;
   };
 };
-type RouteData = {
-  players: Player[];
+
+export type TeamRouteData = {
+  players: EnrichedPlayer[];
   teams: any[];
 };
 
@@ -232,7 +234,11 @@ export const action: ActionFunction = async ({ request }) => {
 };
 
 export default function Index() {
-  const { players, teams } = useLoaderData<RouteData>();
+  const { players, teams } = useLoaderData<TeamRouteData>();
+  const team1Player1Ref = useRef(null);
+  const team1Player2Ref = useRef(null);
+  const team2Player1Ref = useRef(null);
+  const team2Player2Ref = useRef(null);
 
   const fetcher = useFetcher();
 
@@ -292,6 +298,16 @@ export default function Index() {
     setTeam2Player2(newValue ? newValue.value : "");
   };
 
+  const winnerOptions = [
+    { value: "", label: "Velg vinner" },
+    { value: "team1", label: `${team1Player1} & ${team1Player2}` }, // Assuming player1 and player2 are names
+    { value: "team2", label: `${team2Player1} & ${team2Player2}` },
+  ];
+
+  const handleWinnerChange = (selectedOption: any) => {
+    setWinner(selectedOption ? selectedOption.value : "");
+  };
+
   return (
     <div className="flex flex-col justify-center items-center dark:bg-gray-800 dark:text-white mx-auto">
       <div className="flex-col justify-center">
@@ -316,10 +332,11 @@ export default function Index() {
                 <CreatableSelect
                   id="team1player1"
                   isClearable
+                  ref={team1Player1Ref}
                   onChange={handleTeam1Player1Change}
                   options={playerOptions}
-                  className="mt-1 w-3/4 dark:text-black"
-                  placeholder="Select or create Player 1 on Team 1"
+                  className="mt-1 w-3/4 m-auto dark:text-black"
+                  placeholder="Add Player 1 on Team 1"
                 />
                 <label
                   htmlFor="team1player2"
@@ -330,10 +347,11 @@ export default function Index() {
                 <CreatableSelect
                   id="team1player2"
                   isClearable
+                  ref={team1Player2Ref}
                   onChange={handleTeam1Player2Change}
                   options={playerOptions}
-                  className="mt-1 w-3/4 dark:text-black"
-                  placeholder="Select or create Player 2 on Team 1"
+                  className="mt-1 w-3/4 m-auto dark:text-black"
+                  placeholder="Add Player 2 on Team 1"
                 />
               </div>
 
@@ -351,10 +369,11 @@ export default function Index() {
                 <CreatableSelect
                   id="team2player1"
                   isClearable
+                  ref={team2Player1Ref}
                   onChange={handleTeam2Player1Change}
                   options={playerOptions}
-                  className="mt-1 w-3/4 dark:text-black"
-                  placeholder="Select or create Player 1 on Team 2"
+                  className="mt-1 w-3/4 m-auto dark:text-black"
+                  placeholder="Add Player 1 on Team 2"
                 />
                 <label
                   htmlFor="team2player2"
@@ -365,10 +384,11 @@ export default function Index() {
                 <CreatableSelect
                   id="team2player2"
                   isClearable
+                  ref={team2Player2Ref}
                   onChange={handleTeam2Player2Change}
                   options={playerOptions}
-                  className="mt-1 w-3/4 dark:text-black"
-                  placeholder="Select or create Player 2 on Team 2"
+                  className="mt-1 w-3/4 m-auto dark:text-black"
+                  placeholder="Add Player 2 on Team 2"
                 />
               </div>
             </div>
@@ -379,17 +399,18 @@ export default function Index() {
             >
               Hvem vant?
             </label>
-            <select
-              id="winningTeam"
-              name="winningTeam"
-              value={winner}
-              onChange={(e) => setWinner(e.target.value)}
-              className="border border-gray-300 rounded px-3 py-2 mb-4 md:w-auto focus:border-blue-500 focus:ring-1 focus:ring-blue-500 dark:bg-gray-800 dark:border-gray-600 dark:text-white"
-            >
-              <option value="">Velg vinner</option>
-              <option value="team1">Team 1</option>
-              <option value="team2">Team 2</option>
-            </select>
+
+            <Select
+              id="winner"
+              name="winner"
+              value={
+                winnerOptions.find((option) => option.value === winner) || null
+              }
+              onChange={handleWinnerChange}
+              options={winnerOptions}
+              className="mb-4 m-auto dark:text-black w-2/3"
+              classNamePrefix="react-select"
+            />
 
             <button
               type="submit"
@@ -398,101 +419,6 @@ export default function Index() {
               Lagre resultat
             </button>
           </fetcher.Form>
-        </div>
-
-        <div>
-          <h2 className="text-xl m-2 font-semibold mb-3 dark:text-white">
-            Lagranking
-          </h2>
-          <table className="min-w-full table-auto mb">
-            <thead>
-              <tr>
-                <th className="px-4 py-2 dark:text-white">Lagnavn</th>{" "}
-                {/* Team Name */}
-                <th className="px-4 py-2 dark:text-white">Seire</th>{" "}
-                {/* Wins */}
-                <th className="px-4 py-2 dark:text-white">Tap</th>{" "}
-                {/* Losses */}
-                {/*               <th className="px-4 py-2 xs:hidden dark:text-white">
-                Antall Kamper
-              </th> */}{" "}
-                {/* # Matches */}
-                <th className="px-4 py-2 dark:text-white">ELO</th>
-              </tr>
-            </thead>
-            <tbody>
-              {teams
-                .sort((a, b) => b.currentELO - a.currentELO)
-                .map((team: any) => (
-                  <tr
-                    key={team.id}
-                    className="border-t dark:border-gray-700 text-lg"
-                  >
-                    <td className="px-4 py-2 text-md font-semibold dark:text-white">
-                      {team.players
-                        .map((player: Player) => player.name)
-                        .join(" & ")}
-                    </td>
-                    <td className="px-4 py-2 align-middle text-center dark:text-white">
-                      {team.wins}
-                    </td>
-                    <td className="px-4 py-2 align-middle text-center dark:text-white">
-                      {team.losses}
-                    </td>
-                    {/*                   <td className="px-4 py-2 align-middle text-center dark:text-white">
-                    {team.totalMatches}
-                  </td> */}
-                    <td className="px-4 py-2 align-middle text-center dark:text-white">
-                      {team.currentELO}
-                    </td>
-                  </tr>
-                ))}
-            </tbody>
-          </table>
-        </div>
-
-        <div className="flex-col justify-center text-center mt-12">
-          <h2 className="text-xl m-2 font-semibold mb-3 dark:text-white">
-            Individuell ranking ved lagspill top 3
-          </h2>
-          <table className="min-w-full table-auto">
-            <thead>
-              <tr>
-                <th className="px-4 py-2 dark:text-white">Name</th>
-                <th className="px-4 py-2 dark:text-white">Wins</th>
-                <th className="px-4 py-2 dark:text-white">Losses</th>
-                <th className="px-4 py-2 dark:text-white"># Matches</th>
-                <th className="px-4 py-2 dark:text-white">ELO</th>
-              </tr>
-            </thead>
-            <tbody>
-              {players
-                .sort((a, b) => b.currentTeamELO - a.currentTeamELO)
-                .slice(0, 3)
-                .map((player) => (
-                  <tr
-                    key={player.id}
-                    className="border-t dark:border-gray-700 text-md md:text-xl"
-                  >
-                    <td className="px-4 py-2 font-semibold dark:text-white">
-                      {player.name}
-                    </td>
-                    <td className="px-4 py-2 align-middle text-center dark:text-white">
-                      {player.teamStats.wins}
-                    </td>
-                    <td className="px-4 py-2 align-middle text-center dark:text-white">
-                      {player.teamStats.losses}
-                    </td>
-                    <td className="px-4 py-2 align-middle text-center dark:text-white">
-                      {player.teamStats.totalMatches}
-                    </td>
-                    <td className="px-4 py-2 align-middle text-center dark:text-white">
-                      {player.currentTeamELO}
-                    </td>
-                  </tr>
-                ))}
-            </tbody>
-          </table>
         </div>
       </div>
     </div>
