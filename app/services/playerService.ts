@@ -246,5 +246,17 @@ export const calculateNewIndividualELOs = (
     };
 };
 
+export const getRecent1v1Matches = async (limit: number = 5) => {
+    return await prisma.match.findMany({
+      take: limit,
+      orderBy: {
+        date: 'desc', 
+      },
+      include: {
+        winner: true, 
+        loser: true, 
+      },
+    });
+  };
 
 

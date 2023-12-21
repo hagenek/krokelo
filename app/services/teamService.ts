@@ -1,4 +1,4 @@
-import { Team } from "@prisma/client";
+import { Player, Team } from "@prisma/client";
 import { prisma } from "../prismaClient"
 
 // Function to calculate the number of wins for a team
@@ -121,3 +121,70 @@ async function getPlayerTeamMatchStats(playerId: number): Promise<PlayerTeamStat
   
     return stats;
   }
+  
+  interface TeamMatchDetail {
+    date: Date;
+    winner: {
+      teamId: number;
+      teamName: string;
+      players: Player[];
+      elo: number | null;
+    };
+    loser: {
+      teamId: number;
+      teamName: string;
+      players: Player[];
+      elo: number | null;
+    };
+  }
+
+  export type TeamMatchDetails = TeamMatchDetail[];
+  
+  export const getRecentTeamMatches = async (limit: number = 5) => {
+    const recentMatches = await prisma.teamMatch.findMany({
+        take: limit,
+        orderBy: { date: 'desc' },
+        include: {
+            winnerTeam: { include: { players: true } },
+            loserTeam: { include: { players: true } }
+        }
+    });
+
+    const matchesWithELO = await Promise.all(recentMatches.map(async match => {
+        // Fetch ELO for the winner team
+        const winnerELOLog = await prisma.teamELOLog.findFirst({
+            where: {
+                teamId: match.winnerTeamId,
+                date: { lte: match.date }
+            },
+            orderBy: { date: 'desc' }
+        });
+
+        // Fetch ELO for the loser team
+        const loserELOLog = await prisma.teamELOLog.findFirst({
+            where: {
+                teamId: match.loserTeamId,
+                date: { lte: match.date }
+            },
+            orderBy: { date: 'desc' }
+        });
+
+        return {
+            date: match.date,
+            winner: {
+                teamId: match.winnerTeamId,
+                teamName: match.winnerTeam.players.map(player => player.name).join(' & '),
+                players: match.winnerTeam.players,
+                elo: winnerELOLog ? winnerELOLog.elo : null // Assuming null if no ELO log found
+            },
+            loser: {
+                teamId: match.loserTeamId,
+                teamName: match.loserTeam.players.map(player => player.name).join(' & '),
+                players: match.loserTeam.players,
+                elo: loserELOLog ? loserELOLog.elo : null // Assuming null if no ELO log found
+            }
+        };
+    }));
+
+    return matchesWithELO;
+};

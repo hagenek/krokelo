@@ -1,8 +1,9 @@
 // routes/index.tsx
-import type {
-  MetaFunction,
-  LoaderFunction,
-  ActionFunction,
+import {
+  type MetaFunction,
+  type LoaderFunction,
+  type ActionFunction,
+  redirect,
 } from "@remix-run/node";
 import { useLoaderData, Form, useFetcher } from "@remix-run/react";
 import { useState } from "react";
@@ -14,7 +15,7 @@ import {
   calculateNewELOs,
   logIndividualELO,
 } from "../services/playerService";
-import { EnrichedPlayer } from "./team";
+import { EnrichedPlayer, PageContainerStyling } from "./team";
 import CreatableSelect from "react-select/creatable";
 import Select from "react-select";
 
@@ -92,7 +93,7 @@ export const action: ActionFunction = async ({ request }) => {
     formData.set("winner", "");
   }
 
-  return null;
+  return redirect("/duel-stats");
 };
 
 export default function Index() {
@@ -147,10 +148,8 @@ export default function Index() {
   const isFormValid = player1.trim() && player2.trim() && winner.trim();
 
   return (
-    <div
-      className={`container dark:bg-gray-800 dark:text-white mx-auto p-4 max-w-2xl`}
-    >
-      <h1 className="text-4xl font-arial font-bold text-center mb-6 dark:text-white">
+    <div className={PageContainerStyling}>
+      <h1 className="text-4xl p-4 font-arial font-bold text-center dark:text-white">
         1v1
       </h1>
       <div className="flex-col justify-center">

@@ -8,9 +8,10 @@ const NavMenu = () => {
 
   const menuItems = [
     { name: "Home", path: "/" },
-    { name: "1v1", path: "/individual" },
+    { name: "1v1", path: "/duel" },
     { name: "2v2", path: "/team" },
-    { name: "Stats for lagspill", path: "/team-stats" },
+    { name: "Stats 2v2", path: "/team-stats" },
+    { name: "Stats 1v1", path: "/duel-stats" },
   ];
 
   const menuVariants = {

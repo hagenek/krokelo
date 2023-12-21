@@ -37,6 +37,9 @@ export type Match = {
   playerId: number | null;
 };
 
+export const PageContainerStyling =
+  "flex-col rounded-3xl justify-center items-center dark:bg-gray-800 dark:text-white mx-auto";
+
 type ELOLog = {
   id: number;
   playerId: number;
@@ -59,7 +62,7 @@ export type EnrichedPlayer = {
   };
 };
 
-export type TeamRouteData = {
+type TeamRouteData = {
   players: EnrichedPlayer[];
   teams: any[];
 };
@@ -309,11 +312,11 @@ export default function Index() {
   };
 
   return (
-    <div className="flex flex-col justify-center items-center dark:bg-gray-800 dark:text-white mx-auto">
-      <div className="flex-col justify-center">
+    <div className={PageContainerStyling}>
+      <div className="flex-col justify-center p-4">
         <div className="flex-col items-center text-center justify-center">
           <div className="flex md:flex-col justify-center">
-            <div className="text-4xl self-center md:text-3xl mb-2 md:mb-6 p-8 md:p-0">
+            <div className="text-4xl self-center md:text-3xl mb-2 md:mb-6 p-8 md:p-8">
               2 mot 2
             </div>
             <div className="flex self-center justify-center items-center w-1/3">
@@ -342,7 +345,7 @@ export default function Index() {
                   onChange={handleTeam1Player1Change}
                   options={playerOptions}
                   className="mt-1 w-3/4 m-auto dark:text-black"
-                  placeholder="Add Player 1 on Team 1"
+                  placeholder="Add P1 on Team 1"
                 />
                 <label
                   htmlFor="team1player2"
@@ -357,7 +360,7 @@ export default function Index() {
                   onChange={handleTeam1Player2Change}
                   options={playerOptions}
                   className="mt-1 w-3/4 m-auto dark:text-black"
-                  placeholder="Add Player 2 on Team 1"
+                  placeholder="Add P2 on Team 1"
                 />
               </div>
 
@@ -379,7 +382,7 @@ export default function Index() {
                   onChange={handleTeam2Player1Change}
                   options={playerOptions}
                   className="mt-1 w-3/4 m-auto dark:text-black"
-                  placeholder="Add Player 1 on Team 2"
+                  placeholder="Add P1 on Team 2"
                 />
                 <label
                   htmlFor="team2player2"
@@ -394,7 +397,7 @@ export default function Index() {
                   onChange={handleTeam2Player2Change}
                   options={playerOptions}
                   className="mt-1 w-3/4 m-auto dark:text-black"
-                  placeholder="Add Player 2 on Team 2"
+                  placeholder="Add P2 on Team 2"
                 />
               </div>
             </div>
