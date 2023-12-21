@@ -1,4 +1,3 @@
-// services/playerService.ts
 import EloRank from 'elo-rank';
 import { prisma } from "../prismaClient";
 
@@ -34,28 +33,52 @@ export const findPlayerByName = async (name: string) => {
     });
 };
 
-export const updateELO = async (playerId: number, elo: number) => {
-    return await prisma.player.update({
-        where: {
-            id: playerId,
-        },
+
+export const logIndividualELO = async (playerId: number, elo: number, matchId: number) => {
+    await prisma.eLOLog.create({
         data: {
-            currentELO: elo,
-        },
+            playerId,
+            elo,
+            matchId
+        }
     });
 };
 
-export const updatePlayerTeamELO = async (playerId: number, elo: number) => {
-    return await prisma.player.update({
-        where: {
-            id: playerId,
-        },
+const logTeamPlayerELO = async (teamId: number, elo: number, matchId: number) => {
+    await prisma.teamPlayerELOLog.create({
         data: {
-            currentTeamELO: elo,
-        },
+            teamId,
+            elo,
+            matchId
+        }
     });
 };
 
+const logTeamELO = async (teamId: number, elo: number, matchId: number) => {
+    await prisma.teamELOLog.create({
+        data: {
+            teamId,
+            elo,
+            matchId
+        }
+    }); 
+}
+
+export const calculateNewELOs = (currentELOPlayer1: number, currentELOPlayer2: number, player1IsWinner: boolean) => {
+    const player1Score = player1IsWinner ? 1 : 0;
+    const player2Score = player1IsWinner ? 0 : 1;
+    
+    const expectedScorePlayer1 = elo.getExpected(currentELOPlayer1, currentELOPlayer2);
+    const expectedScorePlayer2 = elo.getExpected(currentELOPlayer2, currentELOPlayer1);
+    
+    const newELOPlayer1 = elo.updateRating(expectedScorePlayer1, player1Score, currentELOPlayer1);
+    const newELOPlayer2 = elo.updateRating(expectedScorePlayer2, player2Score, currentELOPlayer2);
+    
+    return {
+        newELOPlayer1,
+        newELOPlayer2
+    };
+};
 export const recordMatch = async (winnerId: number, loserId: number, winnerELO: number, loserELO: number) => {
     return await prisma.match.create({
         data: {
@@ -66,89 +89,6 @@ export const recordMatch = async (winnerId: number, loserId: number, winnerELO: 
         }
     });
 };
-
-// Log Individual Player ELO
-export const logIndividualELO = async (playerId: number, elo: number) => {
-    return await prisma.eLOLog.create({
-        data: {
-            playerId,
-            elo,
-        }
-    });
-};
-
-// Log Team Player ELO
-export const logTeamPlayerELO = async (playerId: number, elo: number) => {
-    return await prisma.teamPlayerELOLog.create({
-        data: {
-            playerId,
-            elo
-        }
-    })
-}
-
-// Log Team ELO
-export const logTeamELO = async (teamId: number, elo: number) => {
-    return await prisma.teamELOLog.create({
-        data: {
-            teamId,
-            elo
-        }
-    });
-};
-
-export const calculateNewELOs = (currentELOPlayer1: number, currentELOPlayer2: number, player1IsWinner: boolean) => {
-    const player1Score = player1IsWinner ? 1 : 0;
-    const player2Score = player1IsWinner ? 0 : 1;
-
-    const expectedScorePlayer1 = elo.getExpected(currentELOPlayer1, currentELOPlayer2);
-    const expectedScorePlayer2 = elo.getExpected(currentELOPlayer2, currentELOPlayer1);
-
-    const newELOPlayer1 = elo.updateRating(expectedScorePlayer1, player1Score, currentELOPlayer1);
-    const newELOPlayer2 = elo.updateRating(expectedScorePlayer2, player2Score, currentELOPlayer2);
-
-    return {
-        newELOPlayer1,
-        newELOPlayer2
-    };
-};
-
-
-
-export async function updateAndLogELOs(
-    team1Id: number, newELOTeam1: number,
-    team2Id: number, newELOTeam2: number,
-    player1Id: number, newELOPlayer1: number,
-    player2Id: number, newELOPlayer2: number,
-    player3Id: number, newELOPlayer3: number,
-    player4Id: number, newELOPlayer4: number
-) {
-    // Update and log team ELOs
-    await prisma.team.update({
-        where: { id: team1Id },
-        data: { currentELO: newELOTeam1 },
-    });
-    await logTeamELO(team1Id, newELOTeam1);
-
-    await prisma.team.update({
-        where: { id: team2Id },
-        data: { currentELO: newELOTeam2 },
-    });
-    await logTeamELO(team2Id, newELOTeam2);
-
-    // Update and log individual Team ELOs for each player
-    await updatePlayerTeamELO(player1Id, newELOPlayer1);
-    await logTeamPlayerELO(player1Id, newELOPlayer1);
-
-    await updatePlayerTeamELO(player2Id, newELOPlayer2);
-    await logTeamPlayerELO(player2Id, newELOPlayer2);
-
-    await updatePlayerTeamELO(player3Id, newELOPlayer3);
-    await logTeamPlayerELO(player3Id, newELOPlayer3);
-
-    await updatePlayerTeamELO(player4Id, newELOPlayer4);
-    await logTeamPlayerELO(player4Id, newELOPlayer4);
-}
 
 export const createTeam = async (player1Id: number, player2Id: number) => {
     // First, try to find a team that includes both players
@@ -185,6 +125,63 @@ export const createTeam = async (player1Id: number, player2Id: number) => {
         }
     });
 };
+
+const updateTeamELO = async (teamId: number, newElo: number) => {
+    const team  = await prisma.team.findUnique({
+        where: { id: teamId },
+    })
+
+    await prisma.team.update({
+        where: { id: teamId },
+        data: { 
+            previousELO: team.currentELO,
+            currentELO: newElo 
+        },
+    });
+}
+
+type UpdateELOsTeamPlayInput = {
+    teamData: {
+        team1Id: number;
+        team2Id: number;
+        newELOTeam1: number;
+        newELOTeam2: number;
+    };
+    playerData: {
+        player1Id: number;
+        player2Id: number;
+        player3Id: number;
+        player4Id: number;
+        newELOPlayer1: number;
+        newELOPlayer2: number;
+        newELOPlayer3: number;
+        newELOPlayer4: number;
+    };
+    matchId: number;
+};
+
+export async function updateAndLogELOsTeamPlay({
+    teamData: { team1Id, team2Id, newELOTeam1, newELOTeam2 },
+    playerData: { player1Id, player2Id, player3Id, player4Id, newELOPlayer1, newELOPlayer2, newELOPlayer3, newELOPlayer4 },
+    matchId 
+}: UpdateELOsTeamPlayInput){
+
+    await updateTeamELO(team1Id, newELOTeam1);
+    await updateTeamELO(team2Id, newELOTeam2);
+
+    await logTeamELO(team1Id, newELOTeam1, matchId);
+    await logTeamELO(team2Id, newELOTeam2, matchId);
+
+    await updatePlayerTeamELO(player1Id, newELOPlayer1);
+    await updatePlayerTeamELO(player2Id, newELOPlayer2);    
+    await updatePlayerTeamELO(player3Id, newELOPlayer3);
+    await updatePlayerTeamELO(player4Id, newELOPlayer4);
+
+    await logTeamPlayerELO(player1Id, newELOPlayer1, matchId);
+    await logTeamPlayerELO(player2Id, newELOPlayer2, matchId);
+    await logTeamPlayerELO(player3Id, newELOPlayer3, matchId);
+    await logTeamPlayerELO(player4Id, newELOPlayer4, matchId);
+}
 
 
 // Record a team match and update ELO for both teams
@@ -260,3 +257,34 @@ export const getRecent1v1Matches = async (limit: number = 5) => {
   };
 
 
+  export const updateELO = async (playerId: number, newELO: number) => {
+    const player = await prisma.player.findUnique({
+        where: { id: playerId },
+    });
+
+    if (player) {
+        await prisma.player.update({
+            where: { id: playerId },
+            data: {
+                previousELO: player.currentELO,
+                currentELO: newELO,
+            },
+        });
+    }
+};
+
+export const updatePlayerTeamELO = async (playerId: number, newELO: number) => {
+    const player = await prisma.player.findUnique({
+        where: { id: playerId },
+    });
+
+    if (player) {
+        await prisma.player.update({
+            where: { id: playerId },
+            data: {
+                previousTeamELO: player.currentTeamELO,
+                currentTeamELO: newELO,
+            },
+        });
+    }
+};

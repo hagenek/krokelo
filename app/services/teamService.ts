@@ -188,3 +188,4 @@ async function getPlayerTeamMatchStats(playerId: number): Promise<PlayerTeamStat
 
     return matchesWithELO;
 };
+

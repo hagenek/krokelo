@@ -13,7 +13,7 @@ import {
   createPlayer,
   createTeam,
   getPlayers,
-  updateAndLogELOs,
+  updateAndLogELOsTeamPlay,
 } from "../services/playerService";
 import {
   TeamMatchStats,
@@ -201,33 +201,38 @@ export const action: ActionFunction = async ({ request }) => {
         newELOPlayer1Team2,
         newELOPlayer2Team2
       );
-
-      await updateAndLogELOs(
-        team1.id,
-        newELOTeam1,
-        team2.id,
-        newELOTeam2,
-        team1Player1.id,
-        newELOPlayer1Team1,
-        team1Player2.id,
-        newELOPlayer2Team1,
-        team2Player1.id,
-        newELOPlayer1Team2,
-        team2Player2.id,
-        newELOPlayer2Team2
-      );
       // Determine winner and loser team IDs
       const winnerTeamId = team1IsWinner ? team1.id : team2.id;
       const loserTeamId = team1IsWinner ? team2.id : team1.id;
       console.log("Winner and loser team IDs:", winnerTeamId, loserTeamId);
 
       // Record team match
-      await recordTeamMatch(
+      const match = await recordTeamMatch(
         winnerTeamId,
         loserTeamId,
         newELOTeam1,
         newELOTeam2
       );
+
+      await updateAndLogELOsTeamPlay({
+        teamData: {
+          team1Id: team1.id,
+          team2Id: team2.id,
+          newELOTeam1: newELOTeam1,
+          newELOTeam2: newELOTeam2,
+        },
+        playerData: {
+          player1Id: team1Player1.id,
+          player2Id: team1Player2.id,
+          player3Id: team2Player1.id,
+          player4Id: team2Player2.id,
+          newELOPlayer1: newELOPlayer1Team1,
+          newELOPlayer2: newELOPlayer2Team1,
+          newELOPlayer3: newELOPlayer1Team2,
+          newELOPlayer4: newELOPlayer2Team2,
+        },
+        matchId: match.id,
+      });
     }
   } catch (error) {
     console.error("Error in action function:", error);

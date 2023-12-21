@@ -59,54 +59,6 @@ export const meta: MetaFunction = () => {
   ];
 };
 
-export const loader: LoaderFunction = async () => {
-  const players = await getPlayers();
-  return { players };
-};
-
-export const action: ActionFunction = async ({ request }) => {
-  const formData = await request.formData();
-  const player1Name = formData.get("player1");
-  const player2Name = formData.get("player2");
-  const winner = formData.get("winner"); // Assuming you have a field to indicate the winner
-
-  if (
-    typeof player1Name === "string" &&
-    typeof player2Name === "string" &&
-    typeof winner === "string"
-  ) {
-    const player1 =
-      (await findPlayerByName(player1Name)) ||
-      (await createPlayer(player1Name));
-
-    const player2 =
-      (await findPlayerByName(player2Name)) ||
-      (await createPlayer(player2Name));
-
-    const player1IsWinner =
-      player1Name.trim().toLowerCase() === winner.trim().toLowerCase();
-    const { newELOPlayer1, newELOPlayer2 } = calculateNewELOs(
-      player1.currentELO,
-      player2.currentELO,
-      player1IsWinner
-    );
-
-    const winnerId = player1IsWinner ? player1.id : player2.id;
-    const loserId = player1IsWinner ? player2.id : player1.id;
-
-    await recordMatch(winnerId, loserId, newELOPlayer1, newELOPlayer2);
-    await updateELO(player1.id, newELOPlayer1);
-    await logIndividualELO(player1.id, newELOPlayer1); // Log the new ELO for player 1
-    await updateELO(player2.id, newELOPlayer2);
-    await logIndividualELO(player2.id, newELOPlayer2); // Log the new ELO for player 2
-    formData.set("player1", "");
-    formData.set("player2", "");
-    formData.set("winner", "");
-  }
-
-  return null;
-};
-
 export default function Index() {
   return (
     <div className={PageContainerStyling}>
