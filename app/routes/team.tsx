@@ -230,7 +230,7 @@ export const action: ActionFunction = async ({ request }) => {
     console.error("Error in action function:", error);
   }
 
-  return redirect("/team");
+  return redirect("/team-stats");
 };
 
 export default function Index() {

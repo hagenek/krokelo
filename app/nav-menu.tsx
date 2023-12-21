@@ -10,7 +10,7 @@ const NavMenu = () => {
     { name: "Home", path: "/" },
     { name: "1v1", path: "/individual" },
     { name: "2v2", path: "/team" },
-    { name: "Lagspill stats", path: "/team-stats" },
+    { name: "Stats for lagspill", path: "/team-stats" },
   ];
 
   const menuVariants = {
@@ -57,8 +57,8 @@ const NavMenu = () => {
           <>
             <button
               onClick={() => setIsMenuOpen(false)}
-              style={{ zIndex: "999" }}
-              className="absolute text-white top-0 right-0 m-8"
+              style={{ zIndex: "41" }}
+              className="absolute dark:text-white text-black top-0 right-0 m-8"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
