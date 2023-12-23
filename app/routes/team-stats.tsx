@@ -1,16 +1,18 @@
-import { LoaderFunction } from "@remix-run/node";
-import { useLoaderData } from "@remix-run/react";
+import { ActionFunction, LoaderFunction } from "@remix-run/node";
+import { Form, useLoaderData } from "@remix-run/react";
 import { getPlayers } from "~/services/playerService";
 import {
   getTeams,
   getMultiplePlayerTeamMatchStats,
   getRecentTeamMatches,
   TeamMatchDetails,
+  revertLatestTeamMatch,
 } from "~/services/teamService";
 
 import { EnrichedPlayer, PageContainerStyling } from "./team";
 import { BlueBadge, GreenBadge, YellowBadge } from "~/ui/badges";
 import { Team } from "@prisma/client";
+import { useState } from "react";
 
 const getBadgeForTeam = (teamId: number, teams: Team[]) => {
   const topThreeTeamIds = teams.slice(0, 3).map((team) => team.id);
@@ -26,6 +28,7 @@ type TeamRouteData = {
   players: EnrichedPlayer[];
   teams: any[];
   recentMatches: TeamMatchDetails;
+  showRevertCard: boolean;
 };
 
 export const loader: LoaderFunction = async () => {
@@ -52,16 +55,105 @@ export const loader: LoaderFunction = async () => {
 
   const recentMatches = await getRecentTeamMatches(5);
 
-  return { players: playersWithStats, teams, recentMatches };
+  const lastMatchTime = new Date(recentMatches[0]?.date);
+  const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
+  const showRevertCard = lastMatchTime > fiveMinutesAgo;
+
+  return { players: playersWithStats, teams, recentMatches, showRevertCard };
+};
+
+export const action: ActionFunction = async ({ request }) => {
+  revertLatestTeamMatch();
+  return null;
 };
 
 export default function TeamStats() {
-  const { players, teams, recentMatches } = useLoaderData<TeamRouteData>();
+  const { players, teams, recentMatches, showRevertCard } =
+    useLoaderData<TeamRouteData>();
+  const [matchConfirmed, setMatchConfirmed] = useState(false);
+
+  const matchDate = new Date(recentMatches[0].date);
+  const formattedDate = matchDate.toLocaleString("en-GB", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
 
   return (
     <div className={PageContainerStyling}>
-      <h1 className="text-3xl p-4">Statistikk for lagspill</h1>
+      {showRevertCard && recentMatches[0] && !matchConfirmed && (
+        <div className="bg-blue-100 p-4 rounded relative my-4 dark:bg-gray-800">
+          <div className="flex-col md:flex-row justify-between items-center">
+            <div className="flex-col">
+              <h3 className="font-bold text-lg mb-2 dark:text-white text-center md:text-left">
+                Nylig Spilt Kamp
+              </h3>
+              <p className="text-sm dark:text-gray-400 text-center md:text-left">
+                Dato: {formattedDate}
+              </p>
+            </div>
 
+            <div className="flex justify-center">
+              <div className="w-48 h-48 mt-4 md:mt-0 md:w-64 md:h-64 bg-gray-300 rounded-full dark:bg-gray-500">
+                <img
+                  src="img/2v2win.png"
+                  alt="2v2win"
+                  className="rounded-full"
+                />
+              </div>
+            </div>
+            <div className="flex-1 flex justify-between mt-4">
+              <div className="text-center md:text-left">
+                <p className="text-base text-bold dark:text-gray-200">
+                  {recentMatches[0].winner.teamName}{" "}
+                  <span className="text-sm">(Seier)</span>
+                </p>
+                <div>
+                  {getBadgeForTeam(recentMatches[0].winner.teamId, teams)}
+                </div>
+                <p className="text-sm dark:text-gray-400">
+                  ELO: {recentMatches[0].winner.elo}
+                </p>
+              </div>
+
+              <div className="text-center md:text-right">
+                <p className="text-base text-bold text-uppercase dark:text-gray-200">
+                  {recentMatches[0].loser.teamName}{" "}
+                  <span className="text-sm">(Tap)</span>
+                </p>
+                <div>
+                  {getBadgeForTeam(recentMatches[0].loser.teamId, teams)}
+                </div>
+                <p className="text-sm dark:text-gray-400">
+                  ELO: {recentMatches[0].loser.elo}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <Form method="post" className="mt-4">
+            <div className="grid gap-4 grid-cols-2">
+              <button
+                type="submit"
+                className="bg-purple-500 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded dark:bg-purple-600 dark:hover:bg-purple-800"
+              >
+                Angre
+              </button>
+
+              <button
+                onClick={() => setMatchConfirmed(true)}
+                className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded shadow-md focus:outline-none focus:shadow-outline transform transition hover:scale-105 duration-300 ease-in-out dark:bg-blue-700 dark:hover:bg-blue-800"
+              >
+                Bekreft
+              </button>
+            </div>
+          </Form>
+        </div>
+      )}
+
+      <h1 className="text-3xl p-4">Statistikk for lagspill</h1>
       <section className="my-4 md:p-4">
         <h2 className="text-2xl font-bold mb-3 dark:text-white">
           Nylige kamper

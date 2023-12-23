@@ -44,36 +44,16 @@ export const logIndividualELO = async (playerId: number, elo: number, matchId: n
     });
 };
 
-const logTeamPlayerELO = async (teamId: number, elo: number, matchId: number) => {
-    await prisma.teamPlayerELOLog.create({
-        data: {
-            teamId,
-            elo,
-            matchId
-        }
-    });
-};
-
-const logTeamELO = async (teamId: number, elo: number, matchId: number) => {
-    await prisma.teamELOLog.create({
-        data: {
-            teamId,
-            elo,
-            matchId
-        }
-    }); 
-}
-
 export const calculateNewELOs = (currentELOPlayer1: number, currentELOPlayer2: number, player1IsWinner: boolean) => {
     const player1Score = player1IsWinner ? 1 : 0;
     const player2Score = player1IsWinner ? 0 : 1;
-    
+
     const expectedScorePlayer1 = elo.getExpected(currentELOPlayer1, currentELOPlayer2);
     const expectedScorePlayer2 = elo.getExpected(currentELOPlayer2, currentELOPlayer1);
-    
+
     const newELOPlayer1 = elo.updateRating(expectedScorePlayer1, player1Score, currentELOPlayer1);
     const newELOPlayer2 = elo.updateRating(expectedScorePlayer2, player2Score, currentELOPlayer2);
-    
+
     return {
         newELOPlayer1,
         newELOPlayer2
@@ -127,74 +107,21 @@ export const createTeam = async (player1Id: number, player2Id: number) => {
 };
 
 const updateTeamELO = async (teamId: number, newElo: number) => {
-    const team  = await prisma.team.findUnique({
+    const team = await prisma.team.findUnique({
         where: { id: teamId },
     })
 
-    await prisma.team.update({
-        where: { id: teamId },
-        data: { 
-            previousELO: team.currentELO,
-            currentELO: newElo 
-        },
-    });
+    if (team) {
+        await prisma.team.update({
+            where: { id: teamId },
+            data: {
+                previousELO: team.currentELO,
+                currentELO: newElo
+            },
+        });
+    }
 }
 
-type UpdateELOsTeamPlayInput = {
-    teamData: {
-        team1Id: number;
-        team2Id: number;
-        newELOTeam1: number;
-        newELOTeam2: number;
-    };
-    playerData: {
-        player1Id: number;
-        player2Id: number;
-        player3Id: number;
-        player4Id: number;
-        newELOPlayer1: number;
-        newELOPlayer2: number;
-        newELOPlayer3: number;
-        newELOPlayer4: number;
-    };
-    matchId: number;
-};
-
-export async function updateAndLogELOsTeamPlay({
-    teamData: { team1Id, team2Id, newELOTeam1, newELOTeam2 },
-    playerData: { player1Id, player2Id, player3Id, player4Id, newELOPlayer1, newELOPlayer2, newELOPlayer3, newELOPlayer4 },
-    matchId 
-}: UpdateELOsTeamPlayInput){
-
-    await updateTeamELO(team1Id, newELOTeam1);
-    await updateTeamELO(team2Id, newELOTeam2);
-
-    await logTeamELO(team1Id, newELOTeam1, matchId);
-    await logTeamELO(team2Id, newELOTeam2, matchId);
-
-    await updatePlayerTeamELO(player1Id, newELOPlayer1);
-    await updatePlayerTeamELO(player2Id, newELOPlayer2);    
-    await updatePlayerTeamELO(player3Id, newELOPlayer3);
-    await updatePlayerTeamELO(player4Id, newELOPlayer4);
-
-    await logTeamPlayerELO(player1Id, newELOPlayer1, matchId);
-    await logTeamPlayerELO(player2Id, newELOPlayer2, matchId);
-    await logTeamPlayerELO(player3Id, newELOPlayer3, matchId);
-    await logTeamPlayerELO(player4Id, newELOPlayer4, matchId);
-}
-
-
-// Record a team match and update ELO for both teams
-export const recordTeamMatch = async (winnerTeamId: number, loserTeamId: number, winnerELO: number, loserELO: number) => {
-    return await prisma.teamMatch.create({
-        data: {
-            winnerTeamId,
-            loserTeamId,
-            winnerELO,
-            loserELO
-        }
-    });
-};
 
 // Calculate new ELOs for team matches
 export const calculateNewTeamELOs = (currentELOTeam1: number, currentELOTeam2: number, team1IsWinner: boolean) => {
@@ -245,19 +172,19 @@ export const calculateNewIndividualELOs = (
 
 export const getRecent1v1Matches = async (limit: number = 5) => {
     return await prisma.match.findMany({
-      take: limit,
-      orderBy: {
-        date: 'desc', 
-      },
-      include: {
-        winner: true, 
-        loser: true, 
-      },
+        take: limit,
+        orderBy: {
+            date: 'desc',
+        },
+        include: {
+            winner: true,
+            loser: true,
+        },
     });
-  };
+};
 
 
-  export const updateELO = async (playerId: number, newELO: number) => {
+export const updateELO = async (playerId: number, newELO: number) => {
     const player = await prisma.player.findUnique({
         where: { id: playerId },
     });

@@ -13,16 +13,16 @@ import {
   createPlayer,
   createTeam,
   getPlayers,
-  updateAndLogELOsTeamPlay,
 } from "../services/playerService";
 import {
   TeamMatchStats,
   getMultiplePlayerTeamMatchStats,
   getTeams,
+  recordTeamMatch,
+  updateAndLogELOsTeamPlay,
 } from "../services/teamService";
 import {
   findPlayerByName,
-  recordTeamMatch,
   calculateNewTeamELOs,
 } from "../services/playerService";
 import Select from "react-select";
@@ -109,8 +109,6 @@ export const action: ActionFunction = async ({ request }) => {
 
   try {
     const formData = await request.formData();
-    console.log("FOrmdata", formData);
-    console.log("Form data received:", Object.fromEntries(formData));
 
     const {
       team1Player1: team1Player1Name,
@@ -321,12 +319,12 @@ export default function Index() {
       <div className="flex-col justify-center p-4">
         <div className="flex-col items-center text-center justify-center">
           <div className="flex md:flex-col justify-center">
-            <div className="text-4xl self-center md:text-3xl mb-2 md:mb-6 p-8 md:p-8">
+            <div className="text-4xl self-center md:text-3xl mb-2 md:mb-6 p-8 md:p-2">
               2 mot 2
             </div>
             <div className="flex self-center justify-center items-center w-1/3">
               <div className="md:items-center mb-6 ">
-                <img src="img/1v1krok.png" alt="1v1" className="rounded" />
+                <img src="img/2v2krok.png" alt="2v2" className="rounded" />
               </div>
             </div>
           </div>
