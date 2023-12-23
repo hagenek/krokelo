@@ -196,7 +196,6 @@ export default function TeamStats() {
           </table>
         </div>
       </section>
-
       <div>
         <h2 className="text-xl m-2 font-semibold mb-3 dark:text-white">
           Lagranking
@@ -204,25 +203,32 @@ export default function TeamStats() {
         <table className="min-w-full table-auto mb">
           <thead>
             <tr>
+              <th className="px-4 py-2 dark:text-white text-center">Rank</th>{" "}
+              {/* Rank */}
               <th className="px-4 py-2 dark:text-white">Lagnavn</th>{" "}
               {/* Team Name */}
               <th className="px-4 py-2 dark:text-white">Seire</th> {/* Wins */}
               <th className="px-4 py-2 dark:text-white">Tap</th> {/* Losses */}
-              {/* # Matches */}
               <th className="px-4 py-2 dark:text-white">ELO</th>
             </tr>
           </thead>
+
           <tbody>
             {teams
               .sort(
                 (a: EnrichedPlayer, b: EnrichedPlayer) =>
                   b.currentELO - a.currentELO
               )
-              .map((team: any) => (
+              .map((team: any, index) => (
                 <tr
                   key={team.id}
                   className="border-t dark:border-gray-700 text-lg"
                 >
+                  <td className="px-4 py-2 text-center dark:text-white">
+                    <span className="bg-indigo-500 text-white rounded-full px-2 py-1">
+                      #{index + 1}
+                    </span>
+                  </td>
                   <td className="px-4 py-2 text-md font-semibold dark:text-white">
                     {team.players
                       .map((player: EnrichedPlayer) => player.name)
@@ -234,9 +240,6 @@ export default function TeamStats() {
                   <td className="px-4 py-2 align-middle text-center dark:text-white">
                     {team.losses}
                   </td>
-                  {/*                   <td className="px-4 py-2 align-middle text-center dark:text-white">
-          {team.totalMatches}
-        </td> */}
                   <td className="px-4 py-2 align-middle text-center dark:text-white">
                     {team.currentELO}
                   </td>
@@ -253,7 +256,7 @@ export default function TeamStats() {
         <table className="min-w-full table-auto">
           <thead>
             <tr>
-              <th className="px-4 py-2 dark:text-white">Name</th>
+              <th className="px-4 py-2 dark:text-white">Name and Rank</th>
               <th className="px-4 py-2 dark:text-white">Wins</th>
               <th className="px-4 py-2 dark:text-white">Losses</th>
               <th className="px-4 py-2 dark:text-white"># Matches</th>
@@ -267,13 +270,13 @@ export default function TeamStats() {
                   b.currentTeamELO - a.currentTeamELO
               )
               .slice(0, 3)
-              .map((player) => (
+              .map((player, index) => (
                 <tr
                   key={player.id}
                   className="border-t dark:border-gray-700 text-md md:text-xl"
                 >
                   <td className="px-4 py-2 font-semibold dark:text-white">
-                    {player.name}
+                    #{index + 1} {player.name}
                   </td>
                   <td className="px-4 py-2 align-middle text-center dark:text-white">
                     {player.teamStats.wins}
