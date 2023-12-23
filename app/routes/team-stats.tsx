@@ -204,9 +204,7 @@ export default function TeamStats() {
           <thead>
             <tr>
               <th className="px-4 py-2 dark:text-white text-center">Rank</th>{" "}
-              {/* Rank */}
               <th className="px-4 py-2 dark:text-white">Lagnavn</th>{" "}
-              {/* Team Name */}
               <th className="px-4 py-2 dark:text-white">Seire</th> {/* Wins */}
               <th className="px-4 py-2 dark:text-white">Tap</th> {/* Losses */}
               <th className="px-4 py-2 dark:text-white">ELO</th>
