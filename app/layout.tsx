@@ -65,7 +65,7 @@ export default function Index() {
           <NavMenu />
           <div className="flex justify-center">
             <img
-              src="img/krokelo-logo.png" // Update path to your logo image
+              src="/img/krokelo-logo.png" // Update path to your logo image
               alt="Krokinole logo"
               className="h-16 mr-6 rounded w-auto"
             />

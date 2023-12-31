@@ -1,5 +1,5 @@
 import EloRank from 'elo-rank';
-import { prisma } from "../prismaClient";
+import { prisma } from "../prisma-client";
 
 const elo = new EloRank(50);
 
@@ -214,4 +214,64 @@ export const updatePlayerTeamELO = async (playerId: number, newELO: number) => {
             },
         });
     }
+};
+
+
+export async function getPlayerELOHistory(playerId: number) {
+    return prisma.eLOLog.findMany({
+      where: { playerId },
+      orderBy: { date: 'asc' },
+    });
+  }
+
+  export async function getPlayerTeamELOHistory(playerId: number) {
+    return prisma.teamPlayerELOLog.findMany({
+      where: { playerId },
+      orderBy: { date: 'asc' },
+    });
+  }
+
+  export const getPlayerDetails = async (playerId: number) => {
+    const player = await prisma.player.findUnique({
+        where: {
+            id: playerId,
+        },
+        include: {
+            matchesAsWinner: {
+                select: {
+                    id: true,
+                    date: true,
+                    winnerELO: true,
+                    loser: {
+                        select: {
+                            name: true,
+                        }
+                    }
+                },
+            },
+            matchesAsLoser: {
+                select: {
+                    id: true,
+                    date: true,
+                    loserELO: true,
+                    winner: {
+                        select: {
+                            name: true,
+                        }
+                    }
+                },
+            },
+            eloLogs: {
+                orderBy: {
+                    date: 'asc',
+                },
+            },
+        },
+    });
+
+    if (!player) {
+        throw new Error(`Player with ID ${playerId} not found`);
+    }
+
+    return player;
 };

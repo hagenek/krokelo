@@ -1,19 +1,6 @@
 // routes/index.tsx
-import type {
-  MetaFunction,
-  LoaderFunction,
-  ActionFunction,
-} from "@remix-run/node";
-import { useLoaderData, Form, Link } from "@remix-run/react";
-import { useEffect, useState } from "react";
-import { createPlayer, getPlayers } from "../services/playerService";
-import {
-  recordMatch,
-  updateELO,
-  findPlayerByName,
-  calculateNewELOs,
-  logIndividualELO,
-} from "../services/playerService";
+import type { MetaFunction } from "@remix-run/node";
+import { Link } from "@remix-run/react";
 import { PageContainerStyling } from "./team";
 
 export type Match = {
@@ -62,9 +49,9 @@ export const meta: MetaFunction = () => {
 export default function Index() {
   return (
     <div className={PageContainerStyling}>
-      <div className="grid md:grid-cols-2 gap-4">
+      <div className="grid md:grid-cols-2 gap-4 md:gap-6">
         <Link
-          to="/individual"
+          to="/duel"
           className=" hover:bg-blue-700 dark:hover:bg-gray-700 text-white font-bold py-2 px-4 rounded flex flex-col items-center"
         >
           <span className="text-2xl md:mb-2 md:text-4xl dark:text-white text-gray-900 mt-2">

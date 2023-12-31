@@ -1,5 +1,5 @@
 import { Player, Team } from "@prisma/client";
-import { prisma } from "../prismaClient"
+import { prisma } from "../prisma-client"
 import { updatePlayerTeamELO } from "./playerService";
 
 // Function to calculate the number of wins for a team
@@ -397,3 +397,54 @@ export const revertLatestTeamMatch = async () => {
   }
 };
 
+export const getTeamDetails = async (teamId: number) => {
+  const team = await prisma.team.findUnique({
+    where: {
+      id: teamId,
+    },
+    include: {
+      teamMatchesAsWinner: {
+        select: {
+          id: true,
+          date: true,
+          winnerELO: true,
+          loserTeam: {
+            select: {
+              id: true,
+            }
+          }
+        },
+      },
+      teamMatchesAsLoser: {
+        select: {
+          id: true,
+          date: true,
+          loserELO: true,
+          winnerTeam: {
+            select: {
+              id: true,
+            }
+          }
+        },
+      },
+      TeamELOLog: {
+        orderBy: {
+          date: 'asc',
+        },
+      },
+    },
+  });
+
+  if (!team) {
+    throw new Error(`Team with ID ${teamId} not found`);
+  }
+
+  return team;
+};
+
+export async function getTeamELOHistory(teamId: number) {
+  return prisma.teamELOLog.findMany({
+    where: { teamId },
+    orderBy: { date: 'asc' },
+  });
+}

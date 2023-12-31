@@ -7,11 +7,13 @@ const NavMenu = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const menuItems = [
-    { name: "Home", path: "/" },
+    { name: "forside", path: "/" },
     { name: "1v1", path: "/duel" },
     { name: "2v2", path: "/team" },
-    { name: "Stats 2v2", path: "/team-stats" },
-    { name: "Stats 1v1", path: "/duel-stats" },
+    { name: "stats 2v2", path: "/team-stats" },
+    { name: "stats 1v1", path: "/duel-stats" },
+    { name: "profilside", path: "/profile/0" },
+    { name: "lagside", path: "/team-profile/0" },
   ];
 
   const menuVariants = {
@@ -28,7 +30,7 @@ const NavMenu = () => {
             to={item.path}
             className="dark:text-white hover:underline text-2xl"
           >
-            {item.name}
+            {item.name.toLocaleUpperCase()}
           </Link>
         ))}
       </div>
