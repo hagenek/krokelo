@@ -70,9 +70,16 @@ export const action: ActionFunction = async ({ request }) => {
 export default function TeamStats() {
   const { players, teams, recentMatches, showRevertCard } =
     useLoaderData<TeamRouteData>();
+  if (teams.length === 0)
+    return (
+      <div className="dark:text-white p-8 bg-blue-800 dark:bg-gray-500">
+        Ingen kamper spilt enda
+      </div>
+    );
+
   const [matchConfirmed, setMatchConfirmed] = useState(false);
 
-  const matchDate = new Date(recentMatches[0].date);
+  const matchDate = new Date(recentMatches[0]?.date);
   const formattedDate = matchDate.toLocaleString("en-GB", {
     day: "2-digit",
     month: "2-digit",
