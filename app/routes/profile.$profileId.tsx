@@ -152,7 +152,7 @@ export default function Profile() {
         {isValidPlayerSelected && playerDetails && (
           <div>
             <ul
-              className="text-lg mb-2 space-y-2 bg-blue-100 dark:bg-gray-700 text-black dark:text-white p-4
+              className="container flex-col text-lg text-center items-center mb-2 space-y-2 bg-blue-100 dark:bg-gray-700 text-black dark:text-white p-4
          rounded-lg shadow-lg"
             >
               <li>
@@ -167,8 +167,8 @@ export default function Profile() {
                   {playerDetails.currentELO}
                 </span>
               </li>
-              <>
-                <li className="flex items-center space-x-2">
+              <div className="grid md:grid-cols-2 gap-2">
+                <li className="flex items-center justify-center text-center space-x-2">
                   <span className="flex text-lg">
                     {playersRankedByELO.findIndex(
                       (player) => player.id === selectedPlayer?.id
@@ -188,20 +188,20 @@ export default function Profile() {
                       </div>
                     )}
                     Rangering duellspill:{" "}
-                    {playersRankedByELO.findIndex(
-                      (player) => player.id === selectedPlayer?.id
-                    ) + 1}{" "}
-                    / {playersRankedByELO?.length}
+                    <span className="dark:text-blue-200 ml-2 font-bold">
+                      {playersRankedByELO.findIndex(
+                        (player) => player.id === selectedPlayer?.id
+                      ) + 1}{" "}
+                      / {playersRankedByELO?.length}
+                    </span>
                   </span>
                 </li>
-              </>{" "}
-              <>
-                <li className="flex items-center space-x-2">
+                <li className="flex items-center justify-center space-x-2">
                   <span className="flex p-2 text-lg">
                     {playersRankedByTeamELO.findIndex(
                       (player) => player.id === selectedPlayer?.id
                     ) < 5 && (
-                      <div className="relative group">
+                      <div className="relative text-center group">
                         <img
                           src="/img/medal.png"
                           alt="Medalje for topp 5 plassering"
@@ -213,48 +213,45 @@ export default function Profile() {
                       </div>
                     )}
                     Rangering lagspill:{" "}
-                    {playersRankedByTeamELO.findIndex(
-                      (player) => player.id === selectedPlayer?.id
-                    ) + 1}{" "}
-                    / {playersRankedByTeamELO?.length}
+                    <span className="dark:text-blue-200 ml-2 font-bold">
+                      {playersRankedByTeamELO.findIndex(
+                        (player) => player.id === selectedPlayer?.id
+                      ) + 1}{" "}
+                      / {playersRankedByTeamELO?.length}
+                    </span>
                   </span>
                 </li>
-              </>
+              </div>
             </ul>
-            <table
-              className="table-auto text-lg mb-2 bg-blue-100
+            <div className="container flex justify-center flex-col">
+              <h2>Duellspill</h2>
+              <table
+                className="table-auto text-lg mb-2 bg-blue-100
              dark:bg-gray-700 text-black dark:text-white p-4 rounded-lg shadow-lg"
-            >
-              <thead>
-                <tr className="text-md">
-                  <th className="px-4 py-2">Kamper</th>
-                  <th className="px-4 py-2">Vinn</th>
-                  <th className="px-4 py-2">Tap</th>
-                  <th className="px-4 py-2">Lag</th>
-                  <th className="px-4 py-2">Duell</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr className="text-sm">
-                  <td className="border px-4 py-2">
-                    {playerDetails.matchesAsWinner?.length +
-                      playerDetails.matchesAsLoser?.length}
-                  </td>
-                  <td className="border px-4 py-2">
-                    {playerDetails.matchesAsWinner?.length}
-                  </td>
-                  <td className="border px-4 py-2">
-                    {playerDetails.matchesAsLoser?.length}
-                  </td>
-                  <td className="border px-4 py-2">
-                    {playerDetails.currentTeamELO}
-                  </td>
-                  <td className="border px-4 py-2">
-                    {playerDetails.currentELO}
-                  </td>
-                </tr>
-              </tbody>
-            </table>
+              >
+                <thead>
+                  <tr className="text-md">
+                    <th className="px-4 py-2"># kamper</th>
+                    <th className="px-4 py-2"># seiere</th>
+                    <th className="px-4 py-2"># tap</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr className="text-md">
+                    <td className="border px-4 py-2">
+                      {playerDetails.matchesAsWinner?.length +
+                        playerDetails.matchesAsLoser?.length}
+                    </td>
+                    <td className="border px-4 py-2">
+                      {playerDetails.matchesAsWinner?.length}
+                    </td>
+                    <td className="border px-4 py-2">
+                      {playerDetails.matchesAsLoser?.length}
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
             <h1 className="text-xl font-bold mb-4">
               Spillerens ELO i lagspill
             </h1>
