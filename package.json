@@ -31,7 +31,8 @@
     "react-icons": "^4.12.0",
     "react-select": "^5.8.0",
     "react-toastify": "^9.1.3",
-    "recharts": "^2.10.3"
+    "recharts": "^2.10.3",
+    "remix-utils": "^7.5.0"
   },
   "devDependencies": {
     "@remix-run/dev": "^2.4.0",
