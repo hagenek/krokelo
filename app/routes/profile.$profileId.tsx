@@ -112,7 +112,7 @@ export default function Profile() {
     return <div>Loading...</div>;
   }
 
-  console.log({ players });
+  console.log({ players, playerDetails });
 
   let playersRankedByELO = [...players];
   playersRankedByELO.sort((p1, p2) => p2.currentELO - p1.currentELO);
@@ -155,8 +155,17 @@ export default function Profile() {
               className="text-lg mb-2 space-y-2 bg-blue-100 dark:bg-gray-700 text-black dark:text-white p-4
          rounded-lg shadow-lg"
             >
-              <li className="font-bold animate-pulse">
-                ELO: {playerDetails.currentELO}
+              <li>
+                Rating lagspill:{" "}
+                <span className="dark:text-green-200 font-bold">
+                  {playerDetails.currentTeamELO}
+                </span>
+              </li>
+              <li>
+                Rating duellspill:{" "}
+                <span className="dark:text-green-200 font-bold">
+                  {playerDetails.currentELO}
+                </span>
               </li>
               <>
                 <li className="flex items-center space-x-2">
@@ -212,6 +221,40 @@ export default function Profile() {
                 </li>
               </>
             </ul>
+            <table
+              className="table-auto text-lg mb-2 bg-blue-100
+             dark:bg-gray-700 text-black dark:text-white p-4 rounded-lg shadow-lg"
+            >
+              <thead>
+                <tr className="text-md">
+                  <th className="px-4 py-2">Kamper</th>
+                  <th className="px-4 py-2">Vinn</th>
+                  <th className="px-4 py-2">Tap</th>
+                  <th className="px-4 py-2">Lag</th>
+                  <th className="px-4 py-2">Duell</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr className="text-sm">
+                  <td className="border px-4 py-2">
+                    {playerDetails.matchesAsWinner?.length +
+                      playerDetails.matchesAsLoser?.length}
+                  </td>
+                  <td className="border px-4 py-2">
+                    {playerDetails.matchesAsWinner?.length}
+                  </td>
+                  <td className="border px-4 py-2">
+                    {playerDetails.matchesAsLoser?.length}
+                  </td>
+                  <td className="border px-4 py-2">
+                    {playerDetails.currentTeamELO}
+                  </td>
+                  <td className="border px-4 py-2">
+                    {playerDetails.currentELO}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
             <h1 className="text-xl font-bold mb-4">
               Spillerens ELO i lagspill
             </h1>
