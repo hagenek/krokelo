@@ -1,9 +1,8 @@
-import { ELOLog } from "@prisma/client";
-import { LoaderFunction, MetaFunction, redirect } from "@remix-run/node";
-import { useFetcher, useLoaderData } from "@remix-run/react";
-import { useState, useEffect, ChangeEvent } from "react";
+import { ELOLog, Player } from "@prisma/client";
+import { LoaderFunction, MetaFunction } from "@remix-run/node";
+import { useLoaderData } from "@remix-run/react";
+import { useState, ChangeEvent } from "react";
 import { useNavigate } from "@remix-run/react";
-import * as Select from "@radix-ui/react-select";
 
 import EloHistoryChart from "~/components/elo-history-charts";
 import {
@@ -83,7 +82,7 @@ interface LoaderData {
   eloHistory: ELOLog[];
   playerDetails: PlayerDetails;
   teamEloHistory: ELOLog[];
-  players: PlayerSummary[]; // Array of all players for selection
+  players: Player[];
 }
 
 export default function Profile() {
@@ -96,10 +95,18 @@ export default function Profile() {
   const navigate = useNavigate();
 
   if (!Array.isArray(eloHistory)) {
-    return <div>Loading...</div>; // or handle the error case
+    return <div>Loading...</div>;
   }
 
   console.log({ players });
+
+  let playersRankedByELO = [...players];
+  playersRankedByELO.sort((p1, p2) => p2.currentELO - p1.currentELO);
+
+  let playersRankedByTeamELO = [...players];
+  playersRankedByTeamELO.sort(
+    (p1, p2) => p2.currentTeamELO - p1.currentTeamELO
+  );
 
   const handlePlayerChange = (event: ChangeEvent<HTMLSelectElement>) => {
     console.log("Handling player change", event.target.value);
@@ -109,64 +116,127 @@ export default function Profile() {
   };
 
   return (
-    <div className="flex flex-col w-full items-center justify-center p-4">
-      <select
-        onChange={handlePlayerChange}
-        className="block mb-4 text-xl w-1/2 py-2 px-3 border 
+    <div className="container h-screen p-2 ">
+      <div className="flex-col items-center text-center justify-center">
+        <select
+          onChange={handlePlayerChange}
+          className="self-center mb-4 text-xl w-1/2 py-2 px-3 border 
         border-gray-300 bg-white rounded-md shadow-sm focus:outline-none 
         focus:ring-primary-500 focus:border-primary-500 
         dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
-        defaultValue=""
-      >
-        <option
-          className="flex text-center"
-          value={playerDetails.id ?? null}
-          disabled
+          defaultValue={
+            selectedPlayer && selectedPlayer?.id > 0 ? selectedPlayer.id : ""
+          }
         >
-          Velg spiller
-        </option>
-        {players?.map((player) => (
-          <option
-            className="flex text-center"
-            key={player.id}
-            value={player.id}
-          >
-            {player.name}
+          <option className="flex text-center" value="" disabled>
+            Velg spiller
           </option>
-        ))}
-      </select>
+          {players?.map((player) => (
+            <option
+              className="flex text-center"
+              key={player.id}
+              value={player.id}
+            >
+              {player.name}
+            </option>
+          ))}
+        </select>
 
-      {selectedPlayer && selectedPlayer.id > 0 && (
-        <div>
-          <h1 className="text-xl font-bold mb-4">Spillerens ELO i lagspill</h1>
-          <EloHistoryChart data={teamEloHistory} />
-          <h1 className="text-xl font-bold mb-4">
-            {playerDetails.name}'s ELO History
-          </h1>
-          <EloHistoryChart data={eloHistory} />
-          <div className="grid md:grid-cols-2 gap-2">
-            <p className="">
-              Kamper spilt:{" "}
-              {playerDetails.matchesAsWinner.length +
-                playerDetails.matchesAsLoser.length}
-            </p>{" "}
-            <p className="">
-              Antall kamper vunnet: {playerDetails.matchesAsWinner.length}
-            </p>{" "}
-            <p className="">Tap: {playerDetails.matchesAsLoser.length}</p>
-            <p className="">
-              Seiersprosent:{" "}
-              {(
-                playerDetails.matchesAsWinner.length /
-                (playerDetails.matchesAsLoser.length +
-                  playerDetails.matchesAsWinner.length)
-              )
-                .toString()
-                .slice(2) + "%"}
-            </p>
+        {selectedPlayer && selectedPlayer.id > 0 && (
+          <div>
+            <ul
+              className="text-lg mb-2 space-y-2 bg-blue-100 dark:bg-gray-700 text-black dark:text-white p-4
+         rounded-lg shadow-lg"
+            >
+              <li className="font-bold animate-pulse">
+                ELO: {playerDetails.currentELO}
+              </li>
+              <>
+                <li className="flex items-center space-x-2">
+                  <span className="flex text-lg">
+                    {playersRankedByELO.findIndex(
+                      (player) => player.id === selectedPlayer?.id
+                    ) < 5 && (
+                      <div className="relative group">
+                        <img
+                          src="/img/medal.png"
+                          alt="Medalje for topp 5 plassering"
+                          className="w-8 h-8 mr-2"
+                        />
+                        <span
+                          className="absolute bottom-full left-1/2 transform -translate-x-1/2 translate-y-1 pb-1 opacity-0 
+                    group-hover:opacity-100 bg-black text-white text-md rounded px-2 py-1 transition-opacity duration-300 hidden group-hover:block"
+                        >
+                          Medalje for topp 5 plassering
+                        </span>
+                      </div>
+                    )}
+                    Rangering duellspill:{" "}
+                    {playersRankedByELO.findIndex(
+                      (player) => player.id === selectedPlayer?.id
+                    ) + 1}{" "}
+                    / {playersRankedByELO.length}
+                  </span>
+                </li>
+              </>{" "}
+              <>
+                <li className="flex items-center space-x-2">
+                  <span className="flex p-2 text-lg">
+                    {playersRankedByTeamELO.findIndex(
+                      (player) => player.id === selectedPlayer?.id
+                    ) < 5 && (
+                      <div className="relative group">
+                        <img
+                          src="/img/medal.png"
+                          alt="Medalje for topp 5 plassering"
+                          className="w-8 h-8 mr-2"
+                        />
+                        <span className="absolute bottom-full left-1/2 transform -translate-x-1/2 translate-y-1 pb-1 opacity-0 group-hover:opacity-100 bg-black text-white text-md rounded px-2 py-1 transition-opacity duration-300 hidden group-hover:block">
+                          Medalje for topp 5 plassering
+                        </span>
+                      </div>
+                    )}
+                    Rangering lagspill:{" "}
+                    {playersRankedByTeamELO.findIndex(
+                      (player) => player.id === selectedPlayer?.id
+                    ) + 1}{" "}
+                    / {playersRankedByTeamELO.length}
+                  </span>
+                </li>
+              </>
+            </ul>
+            <h1 className="text-xl font-bold mb-4">
+              Spillerens ELO i lagspill
+            </h1>
+            <EloHistoryChart data={teamEloHistory} />
+            <h1 className="text-xl font-bold mb-4">
+              {playerDetails.name}'s ELO History
+            </h1>
+            <EloHistoryChart data={eloHistory} />
+            <div className="grid md:grid-cols-2 gap-2">
+              <p className="">
+                Kamper spilt:{" "}
+                {playerDetails.matchesAsWinner.length +
+                  playerDetails.matchesAsLoser.length}
+              </p>{" "}
+              <p className="">
+                Antall kamper vunnet: {playerDetails.matchesAsWinner.length}
+              </p>{" "}
+              <p className="">Tap: {playerDetails.matchesAsLoser.length}</p>
+              <p className="">
+                Seiersprosent:{" "}
+                {(
+                  playerDetails.matchesAsWinner.length /
+                  (playerDetails.matchesAsLoser.length +
+                    playerDetails.matchesAsWinner.length)
+                )
+                  .toString()
+                  .slice(2) + "%"}
+              </p>
+            </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 }

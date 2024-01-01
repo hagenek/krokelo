@@ -29,7 +29,7 @@ export function ErrorBoundary() {
         <Meta />
         <Links />
       </head>
-      <body className="bg-gray-800  flex items-center justify-center h-screen">
+      <body className="bg-gray-800 w-full md:w-auto flex items-center justify-center h-screen">
         <div className="p-6 rounded-lg shadow-lg text-center text-white">
           <h1 className="text-2xl font-bold mb-4">Noe gikk galt</h1>
           <p className="mb-4">

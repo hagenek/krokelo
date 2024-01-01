@@ -90,6 +90,10 @@ export default function TeamProfile() {
 
   const navigate = useNavigate();
 
+  if (!Array.isArray(teams)) {
+    return <div>Laster...</div>;
+  }
+
   const handleTeamChange = (event: ChangeEvent<HTMLSelectElement>) => {
     const selectedTeamId = parseInt(event.target.value, 10);
     setSelectedTeam(teams.find((t) => t.id === selectedTeamId) || null);
@@ -97,17 +101,17 @@ export default function TeamProfile() {
   };
 
   return (
-    <div className="flex flex-col w-full items-center justify-center p-4">
+    <div className="container w-full items-center justify-center p-4">
       <select
-        className="block mb-4 text-xl w-1/2 py-2 px-3 border 
+        className="mb-4 text-xl w-1/2 py-2 px-3 border 
         border-gray-300 bg-white rounded-md shadow-sm focus:outline-none 
         focus:ring-primary-500 focus:border-primary-500 
         dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
         onChange={handleTeamChange}
         defaultValue=""
       >
-        <option className="flex text-center" value="" disabled>
-          Select Team
+        <option className="flex text-center" value="">
+          Velg lag
         </option>
         {teams.map((team) => (
           <option className="flex text-center" key={team.id} value={team.id}>

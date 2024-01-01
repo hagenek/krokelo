@@ -40,9 +40,11 @@ export default function Index() {
   };
 
   return (
-    <div className="flex justify-center items-center text-center">
+    <div className="flex justify-center w-full md:w-auto  items-center text-center">
       <div
-        className={`dark:text-white md:w-1/2 h-screen${darkMode ? "dark" : ""}`}
+        className={`dark:text-white w-full md:w-2/3 xl:w-1/2 h-screen${
+          darkMode ? "dark" : ""
+        }`}
       >
         {/* Header with logo */}
         <header className="flex-col mb-4 md:mt-8 md:p-4">

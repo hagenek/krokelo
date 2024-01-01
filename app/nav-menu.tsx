@@ -23,7 +23,7 @@ const NavMenu = () => {
 
   return (
     <nav className="mb-4 flex justify-end mr-4 relative">
-      <div className="hidden md:flex w-full justify-between items-center">
+      <div className="hidden xl:flex w-full justify-between items-center">
         {menuItems.map((item) => (
           <Link
             key={item.name}
@@ -36,7 +36,7 @@ const NavMenu = () => {
       </div>
 
       <button
-        className="text-2xl flex justify-start dark:text-white md:hidden"
+        className="text-2xl flex justify-start dark:text-white xl:hidden"
         onClick={() => setIsMenuOpen(!isMenuOpen)}
       >
         <svg

@@ -49,7 +49,7 @@ export const meta: MetaFunction = () => {
 export default function Index() {
   return (
     <div className={PageContainerStyling}>
-      <div className="grid md:grid-cols-2 gap-4 md:gap-6">
+      <div className="grid xl:grid-cols-2 gap-4 md:gap-6">
         <Link
           to="/duel"
           className=" hover:bg-blue-700 dark:hover:bg-gray-700 text-white font-bold py-2 px-4 rounded flex flex-col items-center"
