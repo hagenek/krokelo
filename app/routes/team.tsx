@@ -269,6 +269,16 @@ export default function Index() {
       return;
     }
 
+    const allPlayers = [team1Player1, team1Player2, team2Player1, team2Player2];
+    const uniquePlayers = new Set(allPlayers);
+
+    if (uniquePlayers.size !== allPlayers.length) {
+      alert(
+        "A player cannot be on both teams or duplicated within the same team."
+      );
+      return;
+    }
+
     // Use the fetcher form to submit
     fetcher.submit(
       { team1Player1, team1Player2, team2Player1, team2Player2, winner },

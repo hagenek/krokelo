@@ -1,7 +1,7 @@
 import EloRank from 'elo-rank';
 import { prisma } from "../prisma-client";
 
-const elo = new EloRank(50);
+const elo = new EloRank(100);
 
 export const getPlayers = async () => {
     const players = await prisma.player.findMany({

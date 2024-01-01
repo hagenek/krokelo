@@ -11,6 +11,7 @@ import {
   getPlayerTeamELOHistory,
   getPlayers,
 } from "~/services/playerService";
+import { getTeamELOHistory } from "~/services/teamService";
 
 interface Opponent {
   name: string;
@@ -91,8 +92,21 @@ export default function Profile() {
   const [selectedPlayer, setSelectedPlayer] = useState<PlayerSummary | null>(
     playerDetails ?? null
   );
-
   const navigate = useNavigate();
+
+  if (!playerDetails || !players) {
+    return <div>Loading...</div>;
+  }
+
+  // Conditionally render the player details based on whether a valid player is selected
+  const isValidPlayerSelected = selectedPlayer && selectedPlayer.id > 0;
+
+  const handlePlayerChange = (event: ChangeEvent<HTMLSelectElement>) => {
+    const selectedPlayerId = parseInt(event.target.value, 10);
+    const player = players.find((p) => p.id === selectedPlayerId);
+    setSelectedPlayer(player || null);
+    navigate(`/profile/${selectedPlayerId}`);
+  };
 
   if (!Array.isArray(eloHistory)) {
     return <div>Loading...</div>;
@@ -107,13 +121,6 @@ export default function Profile() {
   playersRankedByTeamELO.sort(
     (p1, p2) => p2.currentTeamELO - p1.currentTeamELO
   );
-
-  const handlePlayerChange = (event: ChangeEvent<HTMLSelectElement>) => {
-    console.log("Handling player change", event.target.value);
-    const selectedPlayerId = parseInt(event.target.value, 10);
-    setSelectedPlayer(players.find((p) => p.id === selectedPlayerId) || null);
-    navigate(`/profile/${selectedPlayerId}`);
-  };
 
   return (
     <div className="container h-screen p-2 ">
@@ -142,7 +149,7 @@ export default function Profile() {
           ))}
         </select>
 
-        {selectedPlayer && selectedPlayer.id > 0 && (
+        {isValidPlayerSelected && playerDetails && (
           <div>
             <ul
               className="text-lg mb-2 space-y-2 bg-blue-100 dark:bg-gray-700 text-black dark:text-white p-4
@@ -175,7 +182,7 @@ export default function Profile() {
                     {playersRankedByELO.findIndex(
                       (player) => player.id === selectedPlayer?.id
                     ) + 1}{" "}
-                    / {playersRankedByELO.length}
+                    / {playersRankedByELO?.length}
                   </span>
                 </li>
               </>{" "}
@@ -200,7 +207,7 @@ export default function Profile() {
                     {playersRankedByTeamELO.findIndex(
                       (player) => player.id === selectedPlayer?.id
                     ) + 1}{" "}
-                    / {playersRankedByTeamELO.length}
+                    / {playersRankedByTeamELO?.length}
                   </span>
                 </li>
               </>
@@ -208,7 +215,9 @@ export default function Profile() {
             <h1 className="text-xl font-bold mb-4">
               Spillerens ELO i lagspill
             </h1>
-            <EloHistoryChart data={teamEloHistory} />
+            {teamEloHistory?.length > 0 && (
+              <EloHistoryChart data={teamEloHistory} />
+            )}
             <h1 className="text-xl font-bold mb-4">
               {playerDetails.name}'s ELO History
             </h1>
@@ -216,19 +225,19 @@ export default function Profile() {
             <div className="grid md:grid-cols-2 gap-2">
               <p className="">
                 Kamper spilt:{" "}
-                {playerDetails.matchesAsWinner.length +
-                  playerDetails.matchesAsLoser.length}
+                {playerDetails.matchesAsWinner?.length +
+                  playerDetails.matchesAsLoser?.length}
               </p>{" "}
               <p className="">
-                Antall kamper vunnet: {playerDetails.matchesAsWinner.length}
+                Antall kamper vunnet: {playerDetails.matchesAsWinner?.length}
               </p>{" "}
-              <p className="">Tap: {playerDetails.matchesAsLoser.length}</p>
+              <p className="">Tap: {playerDetails.matchesAsLoser?.length}</p>
               <p className="">
                 Seiersprosent:{" "}
                 {(
-                  playerDetails.matchesAsWinner.length /
-                  (playerDetails.matchesAsLoser.length +
-                    playerDetails.matchesAsWinner.length)
+                  playerDetails.matchesAsWinner?.length /
+                  (playerDetails.matchesAsLoser?.length +
+                    playerDetails.matchesAsWinner?.length)
                 )
                   .toString()
                   .slice(2) + "%"}

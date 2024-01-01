@@ -1,13 +1,11 @@
 // routes/index.tsx
-import { useLoaderData, Link, Outlet } from "@remix-run/react";
+import { Outlet } from "@remix-run/react";
 import { useState, useEffect } from "react";
-import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import NavMenu from "./nav-menu";
 
 export default function Index() {
   const [darkMode, setDarkMode] = useState(false);
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   useEffect(() => {
     // Check if dark mode is set in localStorage

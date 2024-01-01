@@ -110,7 +110,7 @@ export default function TeamProfile() {
         onChange={handleTeamChange}
         defaultValue=""
       >
-        <option className="flex text-center" value="">
+        <option className="flex text-center" value="0">
           Velg lag
         </option>
         {teams.map((team) => (
