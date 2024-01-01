@@ -224,7 +224,9 @@ export default function Profile() {
               </div>
             </ul>
             <div className="container flex justify-center flex-col">
-              <h2>Duellspill</h2>
+              <h2 className="text-xl mb-2 dark:text-green-200 font-bold">
+                Duellspill
+              </h2>
               <table
                 className="table-auto text-lg mb-2 bg-blue-100
              dark:bg-gray-700 text-black dark:text-white p-4 rounded-lg shadow-lg"
