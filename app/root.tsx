@@ -16,8 +16,34 @@ import Layout from "./layout";
  * @returns {HtmlLinkDescriptor []}
  */
 export const links: LinksFunction = (): HtmlLinkDescriptor[] => {
-  return [{ rel: "stylesheet", href: stylesheet }];
+  return [
+    { rel: "stylesheet", href: stylesheet },
+    {
+      rel: "icon",
+      type: "image/x-icon",
+      href: "/img/favicon.ico",
+    },
+  ];
 };
+
+export default function App() {
+  return (
+    <html lang="en">
+      <head>
+        <meta charSet="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <Meta />
+        <Links />
+      </head>
+      <body className="dark:bg-gray-900">
+        <Layout />
+        <ScrollRestoration />
+        <Scripts />
+        <LiveReload />
+      </body>
+    </html>
+  );
+}
 
 export function ErrorBoundary() {
   const error = useRouteError();
@@ -48,25 +74,6 @@ export function ErrorBoundary() {
           />
         </div>
         <Scripts />
-      </body>
-    </html>
-  );
-}
-
-export default function App() {
-  return (
-    <html lang="en">
-      <head>
-        <meta charSet="utf-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <Meta />
-        <Links />
-      </head>
-      <body className="dark:bg-gray-900">
-        <Layout />
-        <ScrollRestoration />
-        <Scripts />
-        <LiveReload />
       </body>
     </html>
   );
