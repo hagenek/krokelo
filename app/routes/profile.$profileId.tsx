@@ -112,11 +112,9 @@ export default function Profile() {
     return <div>Loading...</div>;
   }
 
-  let playersRankedByELO = [...players];
-  playersRankedByELO.sort((p1, p2) => p2.currentELO - p1.currentELO);
+  const playersRankedByELO = [...players].sort((p1, p2) => p2.currentELO - p1.currentELO);
 
-  let playersRankedByTeamELO = [...players];
-  playersRankedByTeamELO.sort(
+  const playersRankedByTeamELO = [...players].sort(
     (p1, p2) => p2.currentTeamELO - p1.currentTeamELO
   );
 
