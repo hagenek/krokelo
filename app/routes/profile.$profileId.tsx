@@ -112,8 +112,6 @@ export default function Profile() {
     return <div>Loading...</div>;
   }
 
-  console.log({ players, playerDetails });
-
   let playersRankedByELO = [...players];
   playersRankedByELO.sort((p1, p2) => p2.currentELO - p1.currentELO);
 
@@ -122,6 +120,8 @@ export default function Profile() {
     (p1, p2) => p2.currentTeamELO - p1.currentTeamELO
   );
 
+  const numberOfWins = playerDetails.matchesAsWinner?.length ?? 0
+  const numberOfLosses = playerDetails.matchesAsLoser?.length ?? 0
 
   return (
     <div className="container h-screen p-2 ">
@@ -160,7 +160,7 @@ export default function Profile() {
                           className="w-8 h-8 mr-2"
                         />
                         <span
-                          className="absolute bottom-full left-1/2 transform -translate-x-1/2 translate-y-1 pb-1 opacity-0 
+                          className="absolute bottom-full left-1/2 transform -translate-x-1/2 translate-y-1 pb-1 opacity-0
                     group-hover:opacity-100 bg-black text-white text-md rounded px-2 py-1 transition-opacity duration-300 hidden group-hover:block"
                         >
                           Medalje for topp 5 plassering
@@ -221,14 +221,14 @@ export default function Profile() {
                 <tbody>
                   <tr className="text-md">
                     <td className="border px-4 py-2">
-                      {playerDetails.matchesAsWinner?.length +
-                        playerDetails.matchesAsLoser?.length}
+                      {numberOfWins +
+                        numberOfLosses}
                     </td>
                     <td className="border px-4 py-2">
-                      {playerDetails.matchesAsWinner?.length}
+                      {numberOfWins}
                     </td>
                     <td className="border px-4 py-2">
-                      {playerDetails.matchesAsLoser?.length}
+                      {numberOfLosses}
                     </td>
                   </tr>
                 </tbody>
@@ -247,22 +247,20 @@ export default function Profile() {
             <div className="grid md:grid-cols-2 gap-2">
               <p className="">
                 Kamper spilt:{" "}
-                {playerDetails.matchesAsWinner?.length +
-                  playerDetails.matchesAsLoser?.length}
+                {numberOfWins +
+                  numberOfLosses}
               </p>{" "}
               <p className="">
-                Antall kamper vunnet: {playerDetails.matchesAsWinner?.length}
+                Antall kamper vunnet: {numberOfWins}
               </p>{" "}
-              <p className="">Tap: {playerDetails.matchesAsLoser?.length}</p>
+              <p className="">Tap: {numberOfLosses}</p>
               <p className="">
                 Seiersprosent:{" "}
-                {(
-                  playerDetails.matchesAsWinner?.length /
-                  (playerDetails.matchesAsLoser?.length +
-                    playerDetails.matchesAsWinner?.length)
-                )
-                  .toString()
-                  .slice(2) + "%"}
+                {
+                  numberOfWins + numberOfLosses === 0
+                      ? "0%"
+                      : `${((numberOfWins / (numberOfWins + numberOfLosses)) * 100)}%`
+                }
               </p>
             </div>
           </div>
