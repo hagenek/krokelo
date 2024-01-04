@@ -132,8 +132,7 @@ export default function Profile() {
         {isValidPlayerSelected && playerDetails && (
           <div>
             <ul
-              className="container flex-col text-lg text-center items-center mb-2 space-y-2 bg-blue-100 dark:bg-gray-700 text-black dark:text-white p-4
-         rounded-lg shadow-lg"
+              className="container mt-4 flex-col text-lg text-center items-center mb-2 space-y-2 bg-blue-100 dark:bg-gray-700 text-black dark:text-white p-4 rounded-lg shadow-lg"
             >
               <li>
                 Rating lagspill:{" "}
@@ -153,7 +152,7 @@ export default function Profile() {
                     {playersRankedByELO.findIndex(
                       (player) => player.id === selectedPlayer?.id
                     ) < 5 && (
-                      <div className="relative group">
+                      <div className="group">
                         <img
                           src="/img/medal.png"
                           alt="Medalje for topp 5 plassering"
@@ -181,7 +180,7 @@ export default function Profile() {
                     {playersRankedByTeamELO.findIndex(
                       (player) => player.id === selectedPlayer?.id
                     ) < 5 && (
-                      <div className="relative text-center group">
+                      <div className="text-center group">
                         <img
                           src="/img/medal.png"
                           alt="Medalje for topp 5 plassering"
