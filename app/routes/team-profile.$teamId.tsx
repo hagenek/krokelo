@@ -5,11 +5,13 @@ import { useState, useEffect, ChangeEvent } from "react";
 import { useNavigate } from "@remix-run/react";
 
 import EloHistoryChart from "~/components/elo-history-charts";
+
 import {
   getTeamDetails,
   getTeamELOHistory,
-  getTeams,
-} from "~/services/teamService";
+  getTeams, GetTeamsResponse,
+} from "~/services/team-service";
+import GenericSearchableDropdown from "~/ui/searchable-dropdown";
 
 interface Opponent {
   name: string;
@@ -69,56 +71,33 @@ export const meta: MetaFunction = () => {
   ];
 };
 
-interface TeamSummary {
-  id: number;
-  name: string;
-  players: {
-    id: number;
-    name: string;
-  }[];
-}
-
 interface LoaderData {
   eloHistory: TeamELOLog[];
   teamDetails: TeamDetails;
-  teams: TeamSummary[];
+  teams: GetTeamsResponse;
 }
 
 export default function TeamProfile() {
   const { eloHistory, teamDetails, teams } = useLoaderData<LoaderData>();
-  const [selectedTeam, setSelectedTeam] = useState<TeamSummary | null>();
+  const [selectedTeam, setSelectedTeam] = useState<GetTeamsResponse | null>();
 
   const navigate = useNavigate();
+
+  console.log("teams *** ", teams)
 
   if (!Array.isArray(teams)) {
     return <div>Laster...</div>;
   }
 
-  const handleTeamChange = (event: ChangeEvent<HTMLSelectElement>) => {
-    const selectedTeamId = parseInt(event.target.value, 10);
-    setSelectedTeam(teams.find((t) => t.id === selectedTeamId) || null);
-    navigate(`/team-profile/${selectedTeamId}`);
+  const handleTeamChange = (teamId: number) => {
+    setSelectedTeam(teams.find((t) => t?.id === teamId) || null);
+    navigate(`/team-profile/${teamId}`);
   };
 
   return (
     <div className="container w-full items-center justify-center p-4">
-      <select
-        className="mb-4 text-xl w-1/2 py-2 px-3 border 
-        border-gray-300 bg-white rounded-md shadow-sm focus:outline-none 
-        focus:ring-primary-500 focus:border-primary-500 
-        dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
-        onChange={handleTeamChange}
-        defaultValue=""
-      >
-        <option className="flex text-center" value="0">
-          Velg lag
-        </option>
-        {teams.map((team) => (
-          <option className="flex text-center" key={team.id} value={team.id}>
-            {team.players.map((p: any) => p.name).join(" & ")}
-          </option>
-        ))}
-      </select>
+
+      <GenericSearchableDropdown items={teams.map(t => ({id: t.id, name: t.name}))} onItemSelect={handleTeamChange} placeholder={"Velg lag"} />
 
       {selectedTeam && selectedTeam.id > 0 && teamDetails && (
         <div>
@@ -143,3 +122,5 @@ export default function TeamProfile() {
     </div>
   );
 }
+
+

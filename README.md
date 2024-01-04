@@ -2,6 +2,10 @@
 
 - [Remix Docs](https://remix.run/docs)
 
+## Possible Todos
+
+- [ ] Make it possible for players to be anonymous at stats and profile page.
+
 ## Development
 
 From your terminal:

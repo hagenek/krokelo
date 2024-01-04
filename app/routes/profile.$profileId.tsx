@@ -10,8 +10,9 @@ import {
   getPlayerELOHistory,
   getPlayerTeamELOHistory,
   getPlayers,
-} from "~/services/playerService";
-import { getTeamELOHistory } from "~/services/teamService";
+} from "~/services/player-service";
+import { getTeamELOHistory } from "~/services/team-service";
+import GenericSearchableDropdown from "~/ui/searchable-dropdown";
 
 interface Opponent {
   name: string;
@@ -101,11 +102,10 @@ export default function Profile() {
   // Conditionally render the player details based on whether a valid player is selected
   const isValidPlayerSelected = selectedPlayer && selectedPlayer.id > 0;
 
-  const handlePlayerChange = (event: ChangeEvent<HTMLSelectElement>) => {
-    const selectedPlayerId = parseInt(event.target.value, 10);
-    const player = players.find((p) => p.id === selectedPlayerId);
+  const handlePlayerChange = (playerId: number) => {
+    const player = players.find((p) => p.id === playerId);
     setSelectedPlayer(player || null);
-    navigate(`/profile/${selectedPlayerId}`);
+    navigate(`/profile/${playerId}`);
   };
 
   if (!Array.isArray(eloHistory)) {
@@ -122,32 +122,12 @@ export default function Profile() {
     (p1, p2) => p2.currentTeamELO - p1.currentTeamELO
   );
 
+
   return (
     <div className="container h-screen p-2 ">
       <div className="flex-col items-center text-center justify-center">
-        <select
-          onChange={handlePlayerChange}
-          className="self-center mb-4 text-xl w-1/2 py-2 px-3 border 
-        border-gray-300 bg-white rounded-md shadow-sm focus:outline-none 
-        focus:ring-primary-500 focus:border-primary-500 
-        dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
-          defaultValue={
-            selectedPlayer && selectedPlayer?.id > 0 ? selectedPlayer.id : ""
-          }
-        >
-          <option className="flex text-center" value="" disabled>
-            Velg spiller
-          </option>
-          {players?.map((player) => (
-            <option
-              className="flex text-center"
-              key={player.id}
-              value={player.id}
-            >
-              {player.name}
-            </option>
-          ))}
-        </select>
+
+        <GenericSearchableDropdown items={players} onItemSelect={handlePlayerChange} placeholder={"Velg spiller"} />
 
         {isValidPlayerSelected && playerDetails && (
           <div>

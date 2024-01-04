@@ -99,11 +99,3 @@ model TeamMatch {
 
   @@index([winnerTeamId, loserTeamId])
 }
-
-model TeamMembers {
-  A Int @id
-  B Int
-
-  @@unique([A, B])
-  @@index([B])
-}

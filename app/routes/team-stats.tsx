@@ -1,13 +1,13 @@
 import { ActionFunction, LoaderFunction } from "@remix-run/node";
 import { Form, useLoaderData } from "@remix-run/react";
-import { getPlayers } from "~/services/playerService";
+import { getPlayers } from "~/services/player-service";
 import {
   getTeams,
   getMultiplePlayerTeamMatchStats,
   getRecentTeamMatches,
   TeamMatchDetails,
   revertLatestTeamMatch,
-} from "~/services/teamService";
+} from "~/services/team-service";
 
 import { EnrichedPlayer, PageContainerStyling } from "./team";
 import { BlueBadge, GreenBadge, YellowBadge } from "~/ui/badges";
@@ -26,7 +26,7 @@ const getBadgeForTeam = (teamId: number, teams: Team[]) => {
 
 type TeamRouteData = {
   players: EnrichedPlayer[];
-  teams: any[];
+  teams: GetTeamsResponse[];
   recentMatches: TeamMatchDetails;
   showRevertCard: boolean;
 };

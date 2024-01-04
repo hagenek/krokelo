@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { getPlayers, getRecent1v1Matches } from "../services/playerService";
+import { getPlayers, getRecent1v1Matches } from "../services/player-service";
 import { Match, Player } from "@prisma/client";
 import { LoaderFunction } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
