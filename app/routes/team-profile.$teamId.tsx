@@ -5,11 +5,13 @@ import { useState, useEffect, ChangeEvent } from "react";
 import { useNavigate } from "@remix-run/react";
 
 import EloHistoryChart from "~/components/elo-history-charts";
+
 import {
   getTeamDetails,
   getTeamELOHistory,
-  getTeams,
-} from "~/services/teamService";
+  getTeams, GetTeamsResponse,
+} from "~/services/team-service";
+import GenericSearchableDropdown from "~/ui/searchable-dropdown";
 
 interface Opponent {
   name: string;
@@ -69,77 +71,118 @@ export const meta: MetaFunction = () => {
   ];
 };
 
-interface TeamSummary {
-  id: number;
-  name: string;
-  players: {
-    id: number;
-    name: string;
-  }[];
-}
-
 interface LoaderData {
   eloHistory: TeamELOLog[];
   teamDetails: TeamDetails;
-  teams: TeamSummary[];
+  teams: GetTeamsResponse;
 }
 
 export default function TeamProfile() {
   const { eloHistory, teamDetails, teams } = useLoaderData<LoaderData>();
-  const [selectedTeam, setSelectedTeam] = useState<TeamSummary | null>();
+  const [selectedTeam, setSelectedTeam] = useState<GetTeamsResponse | null>();
 
   const navigate = useNavigate();
+
+  console.log("teams *** ", teams)
 
   if (!Array.isArray(teams)) {
     return <div>Laster...</div>;
   }
 
-  const handleTeamChange = (event: ChangeEvent<HTMLSelectElement>) => {
-    const selectedTeamId = parseInt(event.target.value, 10);
-    setSelectedTeam(teams.find((t) => t.id === selectedTeamId) || null);
-    navigate(`/team-profile/${selectedTeamId}`);
+  const teamsRankedByELO = [...teams]?.sort((t1, t2) => t1.currentELO - t2.currentELO)
+
+  const handleTeamChange = (teamId: number) => {
+    setSelectedTeam(teams.find((t) => t?.id === teamId) || null);
+    navigate(`/team-profile/${teamId}`);
   };
 
   return (
     <div className="container w-full items-center justify-center p-4">
-      <select
-        className="mb-4 text-xl w-1/2 py-2 px-3 border 
-        border-gray-300 bg-white rounded-md shadow-sm focus:outline-none 
-        focus:ring-primary-500 focus:border-primary-500 
-        dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
-        onChange={handleTeamChange}
-        defaultValue=""
-      >
-        <option className="flex text-center" value="0">
-          Velg lag
-        </option>
-        {teams.map((team) => (
-          <option className="flex text-center" key={team.id} value={team.id}>
-            {team.players.map((p: any) => p.name).join(" & ")}
-          </option>
-        ))}
-      </select>
+
+      <GenericSearchableDropdown items={teams.map(t => ({id: t.id, name: t.name}))} onItemSelect={handleTeamChange} placeholder={"Velg lag"} />
 
       {selectedTeam && selectedTeam.id > 0 && teamDetails && (
-        <div>
-          <EloHistoryChart data={eloHistory} />
-          <p>
-            Matches played:{" "}
-            {teamDetails.teamMatchesAsWinner.length +
-              teamDetails.teamMatchesAsLoser.length}
-          </p>
-          <p>Matches won: {teamDetails.teamMatchesAsWinner.length}</p>
-          <p>Loss: {teamDetails.teamMatchesAsLoser.length}</p>
-          <p>
-            Win percentage:{" "}
-            {(teamDetails.teamMatchesAsWinner.length /
-              (teamDetails.teamMatchesAsLoser.length +
-                teamDetails.teamMatchesAsWinner.length)) *
-              100}
-            %
-          </p>
-        </div>
+          <div>
+            <ul
+                className="container mt-4 text-center justify-center flex text-lg text-center items-center mb-2 space-y-2 bg-blue-100 dark:bg-gray-700 text-black dark:text-white p-4 rounded-lg shadow-lg"
+            >
+              <div>
+              {teamsRankedByELO.findIndex(
+                  (team) => team.id === selectedTeam?.id
+              ) < 5 && (
+                  <span className="group">
+                    <img
+                        src="/img/medal.png"
+                        alt="Medalje for topp 5 plassering"
+                        className="w-8 h-8 mr-2"
+                    />
+                    <span
+                        className="absolute bottom-full left-1/2 transform -translate-x-1/2 translate-y-1 pb-1 opacity-0
+                    group-hover:opacity-100 bg-black text-white text-md rounded px-2 py-1 transition-opacity duration-300 hidden group-hover:block"
+                    >
+                          Medalje for topp 5 plassering
+                        </span>
+                  </span>
+              )}
+              </div>
+              <li>
+                Rating lagspill:{" "}
+                <span className="dark:text-green-200 font-bold">
+                  {teamDetails.currentELO}
+                </span>
+              </li>
+            </ul>
+            <div className="container flex justify-center flex-col">
+              <h2 className="text-xl mb-2 dark:text-green-200 font-bold">
+                Duellspill
+              </h2>
+              <table
+                  className="table-auto text-lg mb-2 bg-blue-100
+             dark:bg-gray-700 text-black dark:text-white p-4 rounded-lg shadow-lg"
+              >
+                <thead>
+                <tr className="text-md">
+                  <th className="px-4 py-2"># kamper</th>
+                  <th className="px-4 py-2"># seiere</th>
+                  <th className="px-4 py-2"># tap</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr className="text-md">
+                  <td className="border px-4 py-2">
+                    {teamDetails.teamMatchesAsWinner?.length ?? 0 +
+                        teamDetails.teamMatchesAsLoser?.length ?? 0}
+                  </td>
+                  <td className="border px-4 py-2">
+                    {teamDetails.teamMatchesAsWinner?.length ?? 0}
+                  </td>
+                  <td className="border px-4 py-2">
+                    {teamDetails.teamMatchesAsLoser?.length ?? 0}
+                  </td>
+                </tr>
+                </tbody>
+              </table>
+            </div>
+            <EloHistoryChart data={eloHistory}/>
+            <p>
+              Matches played:{" "}
+              {teamDetails.teamMatchesAsWinner?.length ?? 0 +
+                  teamDetails.teamMatchesAsLoser?.length ?? 0}
+            </p>
+            <p>Matches won: {teamDetails.teamMatchesAsWinner?.length ?? 0}</p>
+            <p>Loss: {teamDetails.teamMatchesAsLoser?.length ?? 0}</p>
+            <p>
+              Win percentage:{" "}
+              {(teamDetails.teamMatchesAsWinner?.length ?? 0 /
+                      (teamDetails.teamMatchesAsLoser?.length ?? 0 +
+                          teamDetails.teamMatchesAsWinner?.length ?? 0)) *
+                  100}
+              %
+            </p>
+          </div>
       )}
     </div>
   );
 }
+
+

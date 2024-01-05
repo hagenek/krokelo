@@ -10,8 +10,9 @@ import {
   getPlayerELOHistory,
   getPlayerTeamELOHistory,
   getPlayers,
-} from "~/services/playerService";
-import { getTeamELOHistory } from "~/services/teamService";
+} from "~/services/player-service";
+import { getTeamELOHistory } from "~/services/team-service";
+import GenericSearchableDropdown from "~/ui/searchable-dropdown";
 
 interface Opponent {
   name: string;
@@ -101,59 +102,35 @@ export default function Profile() {
   // Conditionally render the player details based on whether a valid player is selected
   const isValidPlayerSelected = selectedPlayer && selectedPlayer.id > 0;
 
-  const handlePlayerChange = (event: ChangeEvent<HTMLSelectElement>) => {
-    const selectedPlayerId = parseInt(event.target.value, 10);
-    const player = players.find((p) => p.id === selectedPlayerId);
+  const handlePlayerChange = (playerId: number) => {
+    const player = players.find((p) => p.id === playerId);
     setSelectedPlayer(player || null);
-    navigate(`/profile/${selectedPlayerId}`);
+    navigate(`/profile/${playerId}`);
   };
 
   if (!Array.isArray(eloHistory)) {
     return <div>Loading...</div>;
   }
 
-  console.log({ players, playerDetails });
+  const playersRankedByELO = [...players].sort((p1, p2) => p2.currentELO - p1.currentELO);
 
-  let playersRankedByELO = [...players];
-  playersRankedByELO.sort((p1, p2) => p2.currentELO - p1.currentELO);
-
-  let playersRankedByTeamELO = [...players];
-  playersRankedByTeamELO.sort(
+  const playersRankedByTeamELO = [...players].sort(
     (p1, p2) => p2.currentTeamELO - p1.currentTeamELO
   );
+
+  const numberOfWins = playerDetails.matchesAsWinner?.length ?? 0
+  const numberOfLosses = playerDetails.matchesAsLoser?.length ?? 0
 
   return (
     <div className="container h-screen p-2 ">
       <div className="flex-col items-center text-center justify-center">
-        <select
-          onChange={handlePlayerChange}
-          className="self-center mb-4 text-xl w-1/2 py-2 px-3 border 
-        border-gray-300 bg-white rounded-md shadow-sm focus:outline-none 
-        focus:ring-primary-500 focus:border-primary-500 
-        dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
-          defaultValue={
-            selectedPlayer && selectedPlayer?.id > 0 ? selectedPlayer.id : ""
-          }
-        >
-          <option className="flex text-center" value="" disabled>
-            Velg spiller
-          </option>
-          {players?.map((player) => (
-            <option
-              className="flex text-center"
-              key={player.id}
-              value={player.id}
-            >
-              {player.name}
-            </option>
-          ))}
-        </select>
+
+        <GenericSearchableDropdown items={players} onItemSelect={handlePlayerChange} placeholder={"Velg spiller"} />
 
         {isValidPlayerSelected && playerDetails && (
           <div>
             <ul
-              className="container flex-col text-lg text-center items-center mb-2 space-y-2 bg-blue-100 dark:bg-gray-700 text-black dark:text-white p-4
-         rounded-lg shadow-lg"
+              className="container mt-4 flex-col text-lg text-center items-center mb-2 space-y-2 bg-blue-100 dark:bg-gray-700 text-black dark:text-white p-4 rounded-lg shadow-lg"
             >
               <li>
                 Rating lagspill:{" "}
@@ -173,14 +150,14 @@ export default function Profile() {
                     {playersRankedByELO.findIndex(
                       (player) => player.id === selectedPlayer?.id
                     ) < 5 && (
-                      <div className="relative group">
+                      <div className="group">
                         <img
                           src="/img/medal.png"
                           alt="Medalje for topp 5 plassering"
                           className="w-8 h-8 mr-2"
                         />
                         <span
-                          className="absolute bottom-full left-1/2 transform -translate-x-1/2 translate-y-1 pb-1 opacity-0 
+                          className="absolute bottom-full left-1/2 transform -translate-x-1/2 translate-y-1 pb-1 opacity-0
                     group-hover:opacity-100 bg-black text-white text-md rounded px-2 py-1 transition-opacity duration-300 hidden group-hover:block"
                         >
                           Medalje for topp 5 plassering
@@ -201,7 +178,7 @@ export default function Profile() {
                     {playersRankedByTeamELO.findIndex(
                       (player) => player.id === selectedPlayer?.id
                     ) < 5 && (
-                      <div className="relative text-center group">
+                      <div className="text-center group">
                         <img
                           src="/img/medal.png"
                           alt="Medalje for topp 5 plassering"
@@ -241,14 +218,14 @@ export default function Profile() {
                 <tbody>
                   <tr className="text-md">
                     <td className="border px-4 py-2">
-                      {playerDetails.matchesAsWinner?.length +
-                        playerDetails.matchesAsLoser?.length}
+                      {numberOfWins +
+                        numberOfLosses}
                     </td>
                     <td className="border px-4 py-2">
-                      {playerDetails.matchesAsWinner?.length}
+                      {numberOfWins}
                     </td>
                     <td className="border px-4 py-2">
-                      {playerDetails.matchesAsLoser?.length}
+                      {numberOfLosses}
                     </td>
                   </tr>
                 </tbody>
@@ -267,22 +244,20 @@ export default function Profile() {
             <div className="grid md:grid-cols-2 gap-2">
               <p className="">
                 Kamper spilt:{" "}
-                {playerDetails.matchesAsWinner?.length +
-                  playerDetails.matchesAsLoser?.length}
+                {numberOfWins +
+                  numberOfLosses}
               </p>{" "}
               <p className="">
-                Antall kamper vunnet: {playerDetails.matchesAsWinner?.length}
+                Antall kamper vunnet: {numberOfWins}
               </p>{" "}
-              <p className="">Tap: {playerDetails.matchesAsLoser?.length}</p>
+              <p className="">Tap: {numberOfLosses}</p>
               <p className="">
                 Seiersprosent:{" "}
-                {(
-                  playerDetails.matchesAsWinner?.length /
-                  (playerDetails.matchesAsLoser?.length +
-                    playerDetails.matchesAsWinner?.length)
-                )
-                  .toString()
-                  .slice(2) + "%"}
+                {
+                  numberOfWins + numberOfLosses === 0
+                      ? "0%"
+                      : `${((numberOfWins / (numberOfWins + numberOfLosses)) * 100)}%`
+                }
               </p>
             </div>
           </div>

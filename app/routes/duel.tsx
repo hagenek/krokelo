@@ -7,14 +7,14 @@ import {
 } from "@remix-run/node";
 import { useLoaderData, Form, useFetcher } from "@remix-run/react";
 import { useState } from "react";
-import { createPlayer, getPlayers } from "../services/playerService";
+import { createPlayer, getPlayers } from "../services/player-service";
 import {
   recordMatch,
   updateELO,
   findPlayerByName,
   calculateNewELOs,
   logIndividualELO,
-} from "../services/playerService";
+} from "../services/player-service";
 import { EnrichedPlayer, PageContainerStyling } from "./team";
 import CreatableSelect from "react-select/creatable";
 import Select from "react-select";

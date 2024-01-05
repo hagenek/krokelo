@@ -13,18 +13,18 @@ import {
   createPlayer,
   createTeam,
   getPlayers,
-} from "../services/playerService";
+} from "../services/player-service";
 import {
   TeamMatchStats,
   getMultiplePlayerTeamMatchStats,
   getTeams,
   recordTeamMatch,
   updateAndLogELOsTeamPlay,
-} from "../services/teamService";
+} from "../services/team-service";
 import {
   findPlayerByName,
   calculateNewTeamELOs,
-} from "../services/playerService";
+} from "../services/player-service";
 import Select from "react-select";
 
 export type Match = {

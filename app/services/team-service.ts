@@ -1,6 +1,6 @@
 import { Player, Team } from "@prisma/client";
 import { prisma } from "../prisma-client"
-import { updatePlayerTeamELO } from "./playerService";
+import { updatePlayerTeamELO } from "./player-service";
 
 // Function to calculate the number of wins for a team
 export const calculateTeamWins = async (teamId: number) => {
@@ -12,22 +12,61 @@ export const calculateTeamWins = async (teamId: number) => {
   return wins;
 };
 
+interface Player {
+  id: number;
+  name: string;
+  currentELO: number;
+  currentTeamELO: number;
+  previousELO: number | null;
+  previousTeamELO: number;
+}
+
+interface TeamMatch {
+  id: number;
+  date: string; // or Date if you prefer to work with Date objects
+  winnerTeamId: number;
+  loserTeamId: number;
+  winnerELO: number;
+  loserELO: number;
+}
+
+interface TeamELOLog {
+  id: number;
+  elo: number;
+  date: string; // or Date if you prefer to work with Date objects
+  teamId: number;
+  teamMatchId: number;
+}
+
+interface Team {
+  id: number;
+  currentELO: number;
+  previousELO: number;
+  players: Player[];
+  teamMatchesAsWinner: TeamMatch[];
+  teamMatchesAsLoser: TeamMatch[];
+  TeamELOLog: TeamELOLog[];
+  wins: number;
+  losses: number;
+  totalMatches: number;
+  name: string;
+}
+
 export const getTeams = async () => {
   const teams = await prisma.team.findMany({
     include: {
-      players: true, // Include players in each team
-      teamMatchesAsWinner: true, // Include matches where the team is the winner
-      teamMatchesAsLoser: true, // Include matches where the team is the loser
-      TeamELOLog: true, // Include ELO logs for the team
+      players: true,
+      teamMatchesAsWinner: true,
+      teamMatchesAsLoser: true,
+      TeamELOLog: true,
     }
   });
 
-  // Optional: If you want to enhance the team object with calculated fields
   const enhancedTeams = teams.map(team => {
     const wins = team.teamMatchesAsWinner.length;
     const losses = team.teamMatchesAsLoser.length;
     const totalMatches = wins + losses;
-
+    const name = team.players[0].name + " & " + team.players[1].name
     // Assuming the team's current ELO is the last entry in the ELO log
     const currentELO = team.TeamELOLog.length > 0 ? team.TeamELOLog[team.TeamELOLog.length - 1].elo : team.currentELO;
 
@@ -36,7 +75,8 @@ export const getTeams = async () => {
       wins,
       losses,
       totalMatches,
-      currentELO
+      currentELO,
+      name
     };
   });
 
@@ -44,7 +84,6 @@ export const getTeams = async () => {
 };
 
 
-// Function to calculate the number of losses for a team
 export const calculateTeamLosses = async (teamId: number) => {
   const losses = await prisma.teamMatch.count({
     where: {
@@ -54,7 +93,6 @@ export const calculateTeamLosses = async (teamId: number) => {
   return losses;
 };
 
-// Function to calculate the total number of matches for a team
 export const calculateTotalMatches = async (teamId: number) => {
   const wins = await calculateTeamWins(teamId);
   const losses = await calculateTeamLosses(teamId);
