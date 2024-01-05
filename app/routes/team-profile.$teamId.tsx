@@ -36,6 +36,11 @@ interface TeamDetails {
   eloLogs: TeamELOLog[];
 }
 
+export function calculateWinPercentage(wins: number, totalMatches: number): string {
+  if (totalMatches === 0) return "0"; // Handling division by zero
+  return ((wins / totalMatches) * 100).toFixed(2);
+}
+
 export const loader: LoaderFunction = async ({ params }) => {
   const teamId = parseInt(params.teamId || "0", 10);
 
@@ -166,17 +171,16 @@ export default function TeamProfile() {
             <EloHistoryChart data={eloHistory}/>
             <p>
               Matches played:{" "}
-              {teamDetails.teamMatchesAsWinner?.length ?? 0 +
-                  teamDetails.teamMatchesAsLoser?.length ?? 0}
+              {(teamDetails.teamMatchesAsWinner?.length ?? 0) +
+                  (teamDetails.teamMatchesAsLoser?.length ?? 0)}
             </p>
             <p>Matches won: {teamDetails.teamMatchesAsWinner?.length ?? 0}</p>
             <p>Loss: {teamDetails.teamMatchesAsLoser?.length ?? 0}</p>
             <p>
               Win percentage:{" "}
-              {(teamDetails.teamMatchesAsWinner?.length ?? 0 /
-                      (teamDetails.teamMatchesAsLoser?.length ?? 0 +
-                          teamDetails.teamMatchesAsWinner?.length ?? 0)) *
-                  100}
+              {calculateWinPercentage(
+                  teamDetails.teamMatchesAsWinner?.length ?? 0,
+                  teamDetails.teamMatchesAsWinner?.length + teamDetails.teamMatchesAsLoser?.length ?? 0)}
               %
             </p>
           </div>

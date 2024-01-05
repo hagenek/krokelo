@@ -13,6 +13,7 @@ import {
 } from "~/services/player-service";
 import { getTeamELOHistory } from "~/services/team-service";
 import GenericSearchableDropdown from "~/ui/searchable-dropdown";
+import { calculateWinPercentage } from "~/routes/team-profile.$teamId";
 
 interface Opponent {
   name: string;
@@ -253,11 +254,7 @@ export default function Profile() {
               <p className="">Tap: {numberOfLosses}</p>
               <p className="">
                 Seiersprosent:{" "}
-                {
-                  numberOfWins + numberOfLosses === 0
-                      ? "0%"
-                      : `${((numberOfWins / (numberOfWins + numberOfLosses)) * 100)}%`
-                }
+                {calculateWinPercentage(numberOfWins, numberOfWins + numberOfLosses)}%
               </p>
             </div>
           </div>
