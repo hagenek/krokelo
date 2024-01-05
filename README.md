@@ -18,7 +18,7 @@ This starts your app in development mode, rebuilding assets on file changes.
 
 ## Local db setup
 
-docker run --name postgres15 -e POSTGRES_DB=krokelo -e POSTGRES_USER=wox -e POSTGRES_PASSWORD=666 -p 5432:5432 -d postgres:15
+`docker run --name postgres15 -e POSTGRES_DB=krokelo -e POSTGRES_USER=wox -e POSTGRES_PASSWORD=666 -p 5432:5432 -d postgres:15`
 
 
 ## Deployment
