@@ -5,6 +5,8 @@
 ## Possible Todos
 
 - [ ] Make it possible for players to be anonymous at stats and profile page.
+- [ ] Match history for players
+
 
 ## Development
 
