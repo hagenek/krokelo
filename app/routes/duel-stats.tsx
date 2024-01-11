@@ -31,13 +31,30 @@ const calculateEloChangeFromMatch = (player: Player, match: Jsonify<ExtendedMatc
 
     const matchEloIndex = enrichedPlayer.eloLogs.findIndex((log) => match.id === log.matchId);
     // First match, no prior matches so must handle from base elo of 1500
-    if (!matchEloIndex && player.previousELO) {
-      return Math.abs(enrichedPlayer.currentELO - player.previousELO);
+    if (!matchEloIndex) {
+      return Math.abs(enrichedPlayer.eloLogs[0].elo - 1500);
     }
 
-    const previousElo = enrichedPlayer.eloLogs[matchEloIndex - 1].elo;
+    const currentMatchElo = enrichedPlayer.eloLogs[matchEloIndex].elo;
+    const formerMatchElo = enrichedPlayer.eloLogs[matchEloIndex - 1].elo;
 
-    return player.currentELO - previousElo;
+    return Math.abs(currentMatchElo - formerMatchElo);
+}
+
+const getEloForPlayerAfterMatch = (player: Player, match: Jsonify<ExtendedMatch>, players: EnrichedPlayer[]) => {
+    const enrichedPlayer = players.find((p) => p.id === player.id);
+    if (!enrichedPlayer) {
+        console.error(`Player ${player.name} not found in enriched player list`)
+        return 0
+    }
+
+    const matchEloIndex = enrichedPlayer.eloLogs.findIndex((log) => match.id === log.matchId);
+    // No match played
+    if (matchEloIndex === -1) {
+        return 1500;
+    }
+
+    return enrichedPlayer.eloLogs[matchEloIndex].elo;
 }
 
 const DuelStats = () => {
@@ -70,13 +87,13 @@ const DuelStats = () => {
                   <td className="px-4 py-2 dark:text-white">
                     <span className="font-semibold">{match.loser.name}</span>
                   </td>
-                  {/* Possible bug with winnerELO and loserELO as they seem switched up */}
+                  {/* winnerELO and loserELO may be unreliable and switch where one is valid and the other is not may be best to check elo history */}
                   <td className="px-4 py-2 dark:text-white sm:w-auto w-1/2">
                     <span
-                        className="text-[#70C7AA]">{match.winnerELO}</span> (+{calculateEloChangeFromMatch(match.winner, match, players)})
+                        className="text-[#70C7AA]">{getEloForPlayerAfterMatch(match.winner, match, players)}</span> (+{calculateEloChangeFromMatch(match.winner, match, players)})
                     -
                     <span
-                        className="text-[#EC7B7C]">{match.loserELO}</span> ({calculateEloChangeFromMatch(match.loser, match, players)})
+                        className="text-[#EC7B7C]">{getEloForPlayerAfterMatch(match.loser, match, players)}</span> (-{calculateEloChangeFromMatch(match.loser, match, players)})
                   </td>
                 </tr>
               ))}
