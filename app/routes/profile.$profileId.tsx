@@ -133,6 +133,7 @@ export default function Profile() {
             <ul
               className="container mt-4 flex-col text-lg text-center items-center mb-2 space-y-2 bg-blue-100 dark:bg-gray-700 text-black dark:text-white p-4 rounded-lg shadow-lg"
             >
+              <li className="text-4xl">{playerDetails.name}</li>
               <li>
                 Rating lagspill:{" "}
                 <span className="dark:text-green-200 font-bold">
@@ -232,16 +233,22 @@ export default function Profile() {
                 </tbody>
               </table>
             </div>
-            <h1 className="text-xl font-bold mb-4">
-              Spillerens ELO i lagspill
-            </h1>
             {teamEloHistory?.length > 0 && (
-              <EloHistoryChart data={teamEloHistory} />
+                <>
+                  <h1 className="text-xl font-bold mb-4">
+                    Spillerens ELO i lagspill
+                  </h1>
+                  <EloHistoryChart data={teamEloHistory} />
+                </>
+        )}
+            {eloHistory?.length > 0 && (
+                <>
+                  <h1 className="text-xl font-bold mb-4">
+                    {playerDetails.name}'s ELO History
+                  </h1>
+                  <EloHistoryChart data={eloHistory}/>
+                </>
             )}
-            <h1 className="text-xl font-bold mb-4">
-              {playerDetails.name}'s ELO History
-            </h1>
-            <EloHistoryChart data={eloHistory} />
             <div className="grid md:grid-cols-2 gap-2">
               <p className="">
                 Kamper spilt:{" "}
