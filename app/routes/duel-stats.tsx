@@ -73,10 +73,10 @@ const DuelStats = () => {
                   {/* Possible bug with winnerELO and loserELO as they seem switched up */}
                   <td className="px-4 py-2 dark:text-white sm:w-auto w-1/2">
                     <span
-                        className="text-[#70C7AA]">{match.winner.currentELO}</span> (+{calculateEloChangeFromMatch(match.winner, match, players)})
+                        className="text-[#70C7AA]">{match.winnerELO}</span> (+{calculateEloChangeFromMatch(match.winner, match, players)})
                     -
                     <span
-                        className="text-[#EC7B7C]">{match.loser.currentELO}</span> ({calculateEloChangeFromMatch(match.loser, match, players)})
+                        className="text-[#EC7B7C]">{match.loserELO}</span> ({calculateEloChangeFromMatch(match.loser, match, players)})
                   </td>
                 </tr>
               ))}
