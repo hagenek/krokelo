@@ -133,6 +133,7 @@ export default function Profile() {
             <ul
               className="container mt-4 flex-col text-lg text-center items-center mb-2 space-y-2 bg-blue-100 dark:bg-gray-700 text-black dark:text-white p-4 rounded-lg shadow-lg"
             >
+              <li className="text-4xl">{playerDetails.name}</li>
               <li>
                 Rating lagspill:{" "}
                 <span className="dark:text-green-200 font-bold">
