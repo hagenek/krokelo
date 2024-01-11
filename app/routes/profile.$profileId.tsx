@@ -233,16 +233,22 @@ export default function Profile() {
                 </tbody>
               </table>
             </div>
-            <h1 className="text-xl font-bold mb-4">
-              Spillerens ELO i lagspill
-            </h1>
             {teamEloHistory?.length > 0 && (
-              <EloHistoryChart data={teamEloHistory} />
+                <>
+                  <h1 className="text-xl font-bold mb-4">
+                    Spillerens ELO i lagspill
+                  </h1>
+                  <EloHistoryChart data={teamEloHistory} />
+                </>
+        )}
+            {eloHistory?.length > 0 && (
+                <>
+                  <h1 className="text-xl font-bold mb-4">
+                    {playerDetails.name}'s ELO History
+                  </h1>
+                  <EloHistoryChart data={eloHistory}/>
+                </>
             )}
-            <h1 className="text-xl font-bold mb-4">
-              {playerDetails.name}'s ELO History
-            </h1>
-            <EloHistoryChart data={eloHistory} />
             <div className="grid md:grid-cols-2 gap-2">
               <p className="">
                 Kamper spilt:{" "}
