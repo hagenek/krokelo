@@ -145,6 +145,11 @@ export default function Index() {
       return;
     }
 
+    if (player1 === player2) {
+      alert("Player 1 and Player 2 cannot be the same!");
+      return
+    }
+
     // Use the fetcher form to submit
     fetcher.submit({ player1, player2, winner }, { method: "post" });
 
