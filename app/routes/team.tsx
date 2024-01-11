@@ -45,6 +45,7 @@ type ELOLog = {
   playerId: number;
   elo: number;
   date: string;
+  matchId: number;
 };
 
 export type EnrichedPlayer = {
