@@ -218,39 +218,74 @@ const DuelStats = () => {
         </h2>
         <table className="min-w-full table-auto">
           <thead>
-            <tr>
-              <th className="px-4 py-2 dark:text-white">Name</th>
-              <th className="px-4 py-2 dark:text-white">Wins</th>
-              <th className="px-4 py-2 dark:text-white">Losses</th>
-              <th className="px-4 py-2 dark:text-white">ELO</th>
-            </tr>
+          <tr>
+            <th className="px-4 py-2 dark:text-white">Name</th>
+            <th className="px-4 py-2 dark:text-white">Wins</th>
+            <th className="px-4 py-2 dark:text-white">Losses</th>
+            <th className="px-4 py-2 dark:text-white">ELO</th>
+          </tr>
           </thead>
 
           <tbody>
-            {players
+          {players
               .sort((a, b) => b.currentELO - a.currentELO)
+              .filter(a => a.matchesAsWinner.length + a.matchesAsLoser.length > 3)
               .filter((a) => a.currentELO !== 1500)
               .map((player) => (
-                <tr
-                  key={player.id}
-                  className="border-t dark:border-gray-700 text-lg"
-                >
-                  <td className="px-4 py-2 font-semibold dark:text-white">
-                    {player.name}
-                  </td>
-                  <td className="px-4 py-2 align-middle text-center dark:text-white">
-                    {player.matchesAsWinner.length}
-                  </td>
-                  <td className="px-4 py-2 align-middle text-center dark:text-white">
-                    {player.matchesAsLoser.length}
-                  </td>
-                  <td className="px-4 py-2 align-middle text-center dark:text-white">
-                    {player.currentELO}
-                  </td>
-                </tr>
+                  <tr
+                      key={player.id}
+                      className="border-t dark:border-gray-700 text-lg"
+                  >
+                    <td className="px-4 py-2 font-semibold dark:text-white">
+                      {player.name}
+                    </td>
+                    <td className="px-4 py-2 align-middle text-center dark:text-white">
+                      {player.matchesAsWinner.length}
+                    </td>
+                    <td className="px-4 py-2 align-middle text-center dark:text-white">
+                      {player.matchesAsLoser.length}
+                    </td>
+                    <td className="px-4 py-2 align-middle text-center dark:text-white">
+                      {player.currentELO}
+                    </td>
+                  </tr>
               ))}
           </tbody>
         </table>
+
+        <table className="min-w-full table-auto">
+          <thead>
+          <tr>
+            <th className="px-4 py-2 dark:text-white">Name</th>
+            <th className="px-4 py-2 dark:text-white">Wins</th>
+            <th className="px-4 py-2 dark:text-white">Losses</th>
+          </tr>
+          </thead>
+
+          <tbody>
+          {players
+              .sort((a, b) => b.currentELO - a.currentELO)
+              .filter(a => a.matchesAsWinner.length + a.matchesAsLoser.length >= 3)
+              .filter((a) => a.currentELO !== 1500)
+              .map((player) => (
+                  <tr
+                      key={player.id}
+                      className="border-t dark:border-gray-700 text-lg"
+                  >
+                    <td className="px-4 py-2 font-semibold dark:text-white">
+                      {player.name}
+                    </td>
+                    <td className="px-4 py-2 align-middle text-center dark:text-white">
+                      {player.matchesAsWinner.length}
+                    </td>
+                    <td className="px-4 py-2 align-middle text-center dark:text-white">
+                      {player.matchesAsLoser.length}
+                    </td>
+                  </tr>
+              ))}
+          </tbody>
+        </table>
+
       </section>
     </div>
   );
