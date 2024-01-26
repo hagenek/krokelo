@@ -1,5 +1,4 @@
-import { Player, Team } from "@prisma/client";
-import { prisma } from "../prisma-client"
+import { prisma } from "../prisma-client";
 import { updatePlayerTeamELO } from "./player-service";
 
 // Function to calculate the number of wins for a team
@@ -59,16 +58,19 @@ export const getTeams = async () => {
       teamMatchesAsWinner: true,
       teamMatchesAsLoser: true,
       TeamELOLog: true,
-    }
+    },
   });
 
-  const enhancedTeams = teams.map(team => {
+  const enhancedTeams = teams.map((team) => {
     const wins = team.teamMatchesAsWinner.length;
     const losses = team.teamMatchesAsLoser.length;
     const totalMatches = wins + losses;
-    const name = team.players[0].name + " & " + team.players[1].name
+    const name = team.players[0].name + " & " + team.players[1].name;
     // Assuming the team's current ELO is the last entry in the ELO log
-    const currentELO = team.TeamELOLog.length > 0 ? team.TeamELOLog[team.TeamELOLog.length - 1].elo : team.currentELO;
+    const currentELO =
+      team.TeamELOLog.length > 0
+        ? team.TeamELOLog[team.TeamELOLog.length - 1].elo
+        : team.currentELO;
 
     return {
       ...team,
@@ -76,13 +78,12 @@ export const getTeams = async () => {
       losses,
       totalMatches,
       currentELO,
-      name
+      name,
     };
   });
 
   return enhancedTeams;
 };
-
 
 export const calculateTeamLosses = async (teamId: number) => {
   const losses = await prisma.teamMatch.count({
@@ -105,11 +106,13 @@ type PlayerTeamStats = {
   losses: number;
 };
 
-async function getPlayerTeamMatchStats(playerId: number): Promise<PlayerTeamStats> {
+async function getPlayerTeamMatchStats(
+  playerId: number
+): Promise<PlayerTeamStats> {
   // Find the teams that the player is a part of
   const playerTeams = await prisma.player.findUnique({
     where: { id: playerId },
-    include: { teams: true }
+    include: { teams: true },
   });
 
   if (!playerTeams || !playerTeams.teams) {
@@ -124,17 +127,14 @@ async function getPlayerTeamMatchStats(playerId: number): Promise<PlayerTeamStat
   for (const team of playerTeams.teams) {
     const teamMatches = await prisma.teamMatch.findMany({
       where: {
-        OR: [
-          { winnerTeamId: team.id },
-          { loserTeamId: team.id }
-        ]
-      }
+        OR: [{ winnerTeamId: team.id }, { loserTeamId: team.id }],
+      },
     });
 
     totalMatches += teamMatches.length;
 
     // Count wins and losses
-    teamMatches.forEach(match => {
+    teamMatches.forEach((match) => {
       if (match.winnerTeamId === team.id) {
         totalWins++;
       } else {
@@ -144,18 +144,20 @@ async function getPlayerTeamMatchStats(playerId: number): Promise<PlayerTeamStat
   }
 
   // Return the statistics
-  return { totalMatches, wins: totalWins, losses: totalLosses }
+  return { totalMatches, wins: totalWins, losses: totalLosses };
 }
 
 export type TeamMatchStats = {
-  [key: number]: PlayerTeamStats
-}
+  [key: number]: PlayerTeamStats;
+};
 
-export async function getMultiplePlayerTeamMatchStats(playerIds: number[]): Promise<TeamMatchStats> {
+export async function getMultiplePlayerTeamMatchStats(
+  playerIds: number[]
+): Promise<TeamMatchStats> {
   const stats: TeamMatchStats = {};
 
   for (const playerId of playerIds) {
-    stats[playerId] = await getPlayerTeamMatchStats(playerId)
+    stats[playerId] = await getPlayerTeamMatchStats(playerId);
   }
 
   return stats;
@@ -182,57 +184,67 @@ export type TeamMatchDetails = TeamMatchDetail[];
 export const getRecentTeamMatches = async (limit: number = 5) => {
   const recentMatches = await prisma.teamMatch.findMany({
     take: limit,
-    orderBy: { date: 'desc' },
+    orderBy: { date: "desc" },
     include: {
       winnerTeam: { include: { players: true } },
-      loserTeam: { include: { players: true } }
-    }
+      loserTeam: { include: { players: true } },
+    },
   });
 
-  const matchesWithELO = await Promise.all(recentMatches.map(async match => {
-    // Fetch ELO for the winner team
-    const winnerELOLog = await prisma.teamELOLog.findFirst({
-      where: {
-        teamMatchId: match.id,
-        teamId: match.winnerTeamId,
-      },
-    });
+  const matchesWithELO = await Promise.all(
+    recentMatches.map(async (match) => {
+      // Fetch ELO for the winner team
+      const winnerELOLog = await prisma.teamELOLog.findFirst({
+        where: {
+          teamMatchId: match.id,
+          teamId: match.winnerTeamId,
+        },
+      });
 
-    // Fetch ELO for the loser team
-    const loserELOLog = await prisma.teamELOLog.findFirst({
-      where: {
-        teamMatchId: match.id,
-        teamId: match.loserTeamId,
-      },
-    });
+      // Fetch ELO for the loser team
+      const loserELOLog = await prisma.teamELOLog.findFirst({
+        where: {
+          teamMatchId: match.id,
+          teamId: match.loserTeamId,
+        },
+      });
 
-    return {
-      date: match.date,
-      winner: {
-        teamId: match.winnerTeamId,
-        teamName: match.winnerTeam.players.map(player => player.name).join(' & '),
-        players: match.winnerTeam.players,
-        elo: winnerELOLog ? winnerELOLog.elo : null // Assuming null if no ELO log found
-      },
-      loser: {
-        teamId: match.loserTeamId,
-        teamName: match.loserTeam.players.map(player => player.name).join(' & '),
-        players: match.loserTeam.players,
-        elo: loserELOLog ? loserELOLog.elo : null // Assuming null if no ELO log found
-      }
-    };
-  }));
+      return {
+        date: match.date,
+        winner: {
+          teamId: match.winnerTeamId,
+          teamName: match.winnerTeam.players
+            .map((player) => player.name)
+            .join(" & "),
+          players: match.winnerTeam.players,
+          elo: winnerELOLog ? winnerELOLog.elo : null, // Assuming null if no ELO log found
+        },
+        loser: {
+          teamId: match.loserTeamId,
+          teamName: match.loserTeam.players
+            .map((player) => player.name)
+            .join(" & "),
+          players: match.loserTeam.players,
+          elo: loserELOLog ? loserELOLog.elo : null, // Assuming null if no ELO log found
+        },
+      };
+    })
+  );
 
   return matchesWithELO;
 };
 
-const logTeamPlayerELO = async (playerId: number, elo: number, matchId: number) => {
+const logTeamPlayerELO = async (
+  playerId: number,
+  elo: number,
+  matchId: number
+) => {
   await prisma.teamPlayerELOLog.create({
     data: {
       playerId,
       elo,
-      teamMatchId: matchId
-    }
+      teamMatchId: matchId,
+    },
   });
 };
 
@@ -241,27 +253,27 @@ const logTeamELO = async (teamId: number, elo: number, matchId: number) => {
     data: {
       teamId,
       elo,
-      teamMatchId: matchId
-    }
+      teamMatchId: matchId,
+    },
   });
 };
 
 const updateTeamELO = async (teamId: number, newElo: number) => {
   const team = await prisma.team.findUnique({
     where: { id: teamId },
-  })
+  });
 
-  if (team) [
-    await prisma.team.update({
-      where: { id: teamId },
-      data: {
-        previousELO: team.currentELO,
-        currentELO: newElo
-      },
-    })
-  ]
-}
-
+  if (team)
+    [
+      await prisma.team.update({
+        where: { id: teamId },
+        data: {
+          previousELO: team.currentELO,
+          currentELO: newElo,
+        },
+      }),
+    ];
+};
 
 type UpdateELOsTeamPlayInput = {
   teamData: {
@@ -285,10 +297,18 @@ type UpdateELOsTeamPlayInput = {
 
 export async function updateAndLogELOsTeamPlay({
   teamData: { team1Id, team2Id, newELOTeam1, newELOTeam2 },
-  playerData: { player1Id, player2Id, player3Id, player4Id, newELOPlayer1, newELOPlayer2, newELOPlayer3, newELOPlayer4 },
-  matchId
+  playerData: {
+    player1Id,
+    player2Id,
+    player3Id,
+    player4Id,
+    newELOPlayer1,
+    newELOPlayer2,
+    newELOPlayer3,
+    newELOPlayer4,
+  },
+  matchId,
 }: UpdateELOsTeamPlayInput) {
-
   await updateTeamELO(team1Id, newELOTeam1);
   await updateTeamELO(team2Id, newELOTeam2);
 
@@ -306,16 +326,20 @@ export async function updateAndLogELOsTeamPlay({
   await logTeamPlayerELO(player4Id, newELOPlayer4, matchId);
 }
 
-
 // Record a team match and update ELO for both teams
-export const recordTeamMatch = async (winnerTeamId: number, loserTeamId: number, winnerELO: number, loserELO: number) => {
+export const recordTeamMatch = async (
+  winnerTeamId: number,
+  loserTeamId: number,
+  winnerELO: number,
+  loserELO: number
+) => {
   return await prisma.teamMatch.create({
     data: {
       winnerTeamId,
       loserTeamId,
       winnerELO,
-      loserELO
-    }
+      loserELO,
+    },
   });
 };
 
@@ -324,7 +348,7 @@ export const revertLatestTeamMatch = async () => {
     // Step 1: Find the latest match
     const latestMatch = await prisma.teamMatch.findFirst({
       orderBy: {
-        date: 'desc',
+        date: "desc",
       },
     });
 
@@ -333,13 +357,11 @@ export const revertLatestTeamMatch = async () => {
       return;
     }
 
-    const teamELOLogs = await prisma.teamELOLog.findMany(
-      {
-        where: {
-          teamMatchId: latestMatch.id,
-        },
-      }
-    )
+    const teamELOLogs = await prisma.teamELOLog.findMany({
+      where: {
+        teamMatchId: latestMatch.id,
+      },
+    });
 
     // Step 2: Fetch the ELO logs immediately preceding the latest match for teams
     // Note: This assumes there's a previousELO field in the Team model.
@@ -348,12 +370,12 @@ export const revertLatestTeamMatch = async () => {
         where: {
           teamId: log.teamId,
           date: {
-            lt: log.date
-          }
+            lt: log.date,
+          },
         },
         orderBy: {
-          date: 'desc'
-        }
+          date: "desc",
+        },
       });
 
       if (previousLog) {
@@ -371,13 +393,11 @@ export const revertLatestTeamMatch = async () => {
       }
     }
 
-    const playerELOLogs = await prisma.teamPlayerELOLog.findMany(
-      {
-        where: {
-          teamMatchId: latestMatch.id,
-        },
-      }
-    )
+    const playerELOLogs = await prisma.teamPlayerELOLog.findMany({
+      where: {
+        teamMatchId: latestMatch.id,
+      },
+    });
 
     // Step 3: Fetch the ELO logs immediately preceding the latest match for players
     // Note: This assumes there's a previousTeamELO field in the Player model.
@@ -386,12 +406,12 @@ export const revertLatestTeamMatch = async () => {
         where: {
           playerId: log.playerId,
           date: {
-            lt: log.date
-          }
+            lt: log.date,
+          },
         },
         orderBy: {
-          date: 'desc'
-        }
+          date: "desc",
+        },
       });
 
       if (previousLog) {
@@ -428,8 +448,9 @@ export const revertLatestTeamMatch = async () => {
       },
     });
 
-    console.log("Latest match and associated ELO changes successfully reverted.");
-
+    console.log(
+      "Latest match and associated ELO changes successfully reverted."
+    );
   } catch (error) {
     console.error("Error in reverting the latest match:", error);
   }
@@ -449,8 +470,8 @@ export const getTeamDetails = async (teamId: number) => {
           loserTeam: {
             select: {
               id: true,
-            }
-          }
+            },
+          },
         },
       },
       teamMatchesAsLoser: {
@@ -461,13 +482,13 @@ export const getTeamDetails = async (teamId: number) => {
           winnerTeam: {
             select: {
               id: true,
-            }
-          }
+            },
+          },
         },
       },
       TeamELOLog: {
         orderBy: {
-          date: 'asc',
+          date: "asc",
         },
       },
     },
@@ -483,6 +504,6 @@ export const getTeamDetails = async (teamId: number) => {
 export async function getTeamELOHistory(teamId: number) {
   return prisma.teamELOLog.findMany({
     where: { teamId },
-    orderBy: { date: 'asc' },
+    orderBy: { date: "asc" },
   });
 }
