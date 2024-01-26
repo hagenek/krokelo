@@ -229,7 +229,7 @@ const DuelStats = () => {
           <tbody>
           {players
               .sort((a, b) => b.currentELO - a.currentELO)
-              .filter(a => a.matchesAsWinner.length + a.matchesAsLoser.length > 3)
+              .filter(a => (a.matchesAsWinner.length + a.matchesAsLoser.length) > 3)
               .filter((a) => a.currentELO !== 1500)
               .map((player) => (
                   <tr
@@ -262,10 +262,10 @@ const DuelStats = () => {
           </tr>
           </thead>
 
-          <tbody>
+        <tbody className="mb-4">
           {players
               .sort((a, b) => b.currentELO - a.currentELO)
-              .filter(a => a.matchesAsWinner.length + a.matchesAsLoser.length >= 3)
+              .filter(a => (a.matchesAsWinner.length + a.matchesAsLoser.length) >= 3)
               .filter((a) => a.currentELO !== 1500)
               .map((player) => (
                   <tr
