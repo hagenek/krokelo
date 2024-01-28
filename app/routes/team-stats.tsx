@@ -257,7 +257,7 @@ export default function TeamStats() {
 
       <div className="flex-col justify-center text-center mt-12">
         <h2 className="text-xl m-2 font-semibold mb-3 dark:text-white">
-          Individuell ranking ved lagspill top 3
+          Individuell ranking ved lagspill top 5
         </h2>
         <table className="min-w-full table-auto">
           <thead>
@@ -265,7 +265,7 @@ export default function TeamStats() {
               <th className="px-4 py-2 dark:text-white">Navn and Rank</th>
               <th className="px-4 py-2 dark:text-white">Seiere</th>
               <th className="px-4 py-2 dark:text-white">Tap</th>
-              <th className="px-4 py-2 dark:text-white"># Matches</th>
+              <th className="px-4 py-2 dark:text-white"># Kamper</th>
               <th className="px-4 py-2 dark:text-white">ELO</th>
             </tr>
           </thead>
@@ -275,7 +275,7 @@ export default function TeamStats() {
                 (a: EnrichedPlayer, b: EnrichedPlayer) =>
                   b.currentTeamELO - a.currentTeamELO
               )
-              .slice(0, 3)
+              .slice(0, 5)
               .map((player, index) => (
                 <tr
                   key={player.id}
