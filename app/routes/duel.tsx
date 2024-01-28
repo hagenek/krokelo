@@ -147,7 +147,7 @@ export default function Index() {
 
     if (player1 === player2) {
       alert("Player 1 and Player 2 cannot be the same!");
-      return
+      return;
     }
 
     // Use the fetcher form to submit
@@ -260,45 +260,6 @@ export default function Index() {
             </div>
           </div>
         </fetcher.Form>
-
-        <h2 className="text-2xl font-semibold mb-3 dark:text-white">
-          Spillere:
-        </h2>
-        <table className="min-w-full table-auto">
-          <thead>
-            <tr>
-              <th className="px-4 py-2 dark:text-white">Name</th>
-              <th className="px-4 py-2 dark:text-white">Wins</th>
-              <th className="px-4 py-2 dark:text-white">Losses</th>
-              <th className="px-4 py-2 dark:text-white">ELO</th>
-            </tr>
-          </thead>
-
-          <tbody>
-            {players
-              .sort((a, b) => b.currentELO - a.currentELO)
-              .filter((a) => a.currentELO !== 1500)
-              .map((player) => (
-                <tr
-                  key={player.id}
-                  className="border-t dark:border-gray-700 text-lg"
-                >
-                  <td className="px-4 py-2 font-semibold dark:text-white">
-                    {player.name}
-                  </td>
-                  <td className="px-4 py-2 align-middle text-center dark:text-white">
-                    {player.matchesAsWinner.length}
-                  </td>
-                  <td className="px-4 py-2 align-middle text-center dark:text-white">
-                    {player.matchesAsLoser.length}
-                  </td>
-                  <td className="px-4 py-2 align-middle text-center dark:text-white">
-                    {player.currentELO}
-                  </td>
-                </tr>
-              ))}
-          </tbody>
-        </table>
       </div>
     </div>
   );
