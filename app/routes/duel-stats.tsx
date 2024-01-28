@@ -105,10 +105,10 @@ const DuelStats = () => {
           <div className="flex-col md:flex-row justify-between items-center">
             <div className="flex-col">
               <h3 className="font-bold text-lg mb-2 dark:text-white text-center md:text-left">
-                Recently Played Match
+                Nylig spilt kamp
               </h3>
               <p className="text-sm dark:text-gray-400 text-center md:text-left">
-                Date: {formattedDate}
+                Dato: {formattedDate}
               </p>
             </div>
 
@@ -150,14 +150,14 @@ const DuelStats = () => {
                 type="submit"
                 className="bg-purple-500 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded dark:bg-purple-600 dark:hover:bg-purple-800"
               >
-                Revert
+                Angre
               </button>
 
               <button
                 onClick={() => setMatchConfirmed(true)}
                 className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded shadow-md focus:outline-none focus:shadow-outline transform transition hover:scale-105 duration-300 ease-in-out dark:bg-blue-700 dark:hover:bg-blue-800"
               >
-                Confirm
+                Bekreft
               </button>
             </div>
           </Form>
@@ -166,16 +166,16 @@ const DuelStats = () => {
 
       <section className="my-4 md:p-8">
         <h2 className="text-2xl font-bold mb-3 dark:text-white">
-          Recent Matches:
+          Nylige spilte kamper:
         </h2>
         <div className="overflow-x-auto">
           <table className="min-w-full">
             <thead>
               <tr className="border-b dark:border-gray-600">
-                <th className="px-4 py-2 text-center">Date</th>
-                <th className="px-4 py-2 text-center">Winner</th>
-                <th className="px-4 py-2 text-center">Loser</th>
-                <th className="px-4 py-2 text-center">ELO Details</th>
+                <th className="px-4 py-2 text-center">Dato</th>
+                <th className="px-4 py-2 text-center">Vinner</th>
+                <th className="px-4 py-2 text-center">Taper</th>
+                <th className="px-4 py-2 text-center">ELO Info</th>
               </tr>
             </thead>
             <tbody>
@@ -221,9 +221,9 @@ const DuelStats = () => {
         <table className="min-w-full table-auto">
           <thead>
             <tr>
-              <th className="px-4 py-2 dark:text-white">Name</th>
-              <th className="px-4 py-2 dark:text-white">Wins</th>
-              <th className="px-4 py-2 dark:text-white">Losses</th>
+              <th className="px-4 py-2 dark:text-white">Navn</th>
+              <th className="px-4 py-2 dark:text-white">Seiere</th>
+              <th className="px-4 py-2 dark:text-white">Tap</th>
               <th className="px-4 py-2 dark:text-white">ELO</th>
             </tr>
           </thead>
@@ -260,18 +260,18 @@ const DuelStats = () => {
         <section className="mt-4">
           <h1>
             <span className="text-2xl font-semibold mb-3 dark:text-white">
-              Inactive Players:
+              Spillere med få kamper:
             </span>
             <span className="text-sm dark:text-gray-400">
-              (Less than 3 matches played)
+              (Mindre enn 4 kamper spilt)
             </span>
           </h1>
           <table className="min-w-full table-auto">
             <thead>
               <tr>
-                <th className="px-4 py-2 dark:text-white">Name</th>
-                <th className="px-4 py-2 dark:text-white">Wins</th>
-                <th className="px-4 py-2 dark:text-white">Losses</th>
+                <th className="px-4 py-2 dark:text-white">Navn</th>
+                <th className="px-4 py-2 dark:text-white">Seiere</th>
+                <th className="px-4 py-2 dark:text-white">Tap</th>
               </tr>
             </thead>
 

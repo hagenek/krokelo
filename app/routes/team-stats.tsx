@@ -212,8 +212,9 @@ export default function TeamStats() {
             <tr>
               <th className="px-4 py-2 dark:text-white text-center">Rank</th>{" "}
               <th className="px-4 py-2 dark:text-white">Lagnavn</th>{" "}
-              <th className="px-4 py-2 dark:text-white">Seire</th> {/* Wins */}
-              <th className="px-4 py-2 dark:text-white">Tap</th> {/* Losses */}
+              <th className="px-4 py-2 dark:text-white">Seire</th>{" "}
+              {/* Seiere */}
+              <th className="px-4 py-2 dark:text-white">Tap</th> {/* Tap */}
               <th className="px-4 py-2 dark:text-white">ELO</th>
             </tr>
           </thead>
@@ -261,9 +262,9 @@ export default function TeamStats() {
         <table className="min-w-full table-auto">
           <thead>
             <tr>
-              <th className="px-4 py-2 dark:text-white">Name and Rank</th>
-              <th className="px-4 py-2 dark:text-white">Wins</th>
-              <th className="px-4 py-2 dark:text-white">Losses</th>
+              <th className="px-4 py-2 dark:text-white">Navn and Rank</th>
+              <th className="px-4 py-2 dark:text-white">Seiere</th>
+              <th className="px-4 py-2 dark:text-white">Tap</th>
               <th className="px-4 py-2 dark:text-white"># Matches</th>
               <th className="px-4 py-2 dark:text-white">ELO</th>
             </tr>
