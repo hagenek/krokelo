@@ -7,7 +7,7 @@ interface ActivityGraphProps {
 
 const getDayNameInLocale = (dateString: string): string => {
     const date = new Date(dateString);
-    return date.toLocaleDateString("en-US", { weekday: 'short' });
+    return date.toLocaleDateString("no-NO", { weekday: 'short' });
 }
 
 export const ActivityGraph: React.FC<ActivityGraphProps> = ({ matches }) => {
@@ -77,7 +77,7 @@ export const ActivityGraph: React.FC<ActivityGraphProps> = ({ matches }) => {
         <div className="overflow-x-auto lg:flex lg:justify-center">
             <div className="flex min-w-max lg:min-w-0">
                 <div className="flex-shrink-0 flex flex-col items-center justify-between">
-                    <div className="text-xs lg:text-sm">Hours</div>
+                    <div className="text-xs lg:text-sm">Time</div>
                     {data.map(([day], dayIndex) => (
                         <h3 className="mb-1 flex items-center justify-center text-xs lg:text-sm h-[32px]"
                             key={dayIndex}>

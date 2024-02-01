@@ -236,7 +236,7 @@ export default function Profile() {
             {teamEloHistory?.length > 0 && (
                 <>
                   <h1 className="text-xl font-bold mb-4">
-                    Spillerens ELO i lagspill
+                    {playerDetails.name} sin ELO-historikk i lagspill
                   </h1>
                   <EloHistoryChart data={teamEloHistory} />
                 </>
@@ -244,7 +244,7 @@ export default function Profile() {
             {eloHistory?.length > 0 && (
                 <>
                   <h1 className="text-xl font-bold mb-4">
-                    {playerDetails.name}'s ELO History
+                    {playerDetails.name} sin ELO-historikk i duellspill
                   </h1>
                   <EloHistoryChart data={eloHistory}/>
                 </>

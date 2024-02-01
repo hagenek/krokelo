@@ -47,7 +47,7 @@ export default function Index() {
         {/* Header with logo */}
         <header className="flex-col mb-4 md:mt-8 md:p-4">
           <div className="flex justify-center md:justify-start mb-4 ">
-            <span className="mr-2">Light</span>
+            <span className="mr-2">Lys</span>
             <button
               onClick={toggleDarkMode}
               className={`relative inline-flex items-center h-6 rounded-full w-11 focus:outline-none ${
@@ -60,7 +60,7 @@ export default function Index() {
                 } inline-block w-4 h-4 transform bg-white rounded-full`}
               />
             </button>
-            <span className="ml-2">Dark</span>
+            <span className="ml-2">Mørk</span>
           </div>
           <NavMenu />
           <div className="flex justify-center">
