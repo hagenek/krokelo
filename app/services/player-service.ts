@@ -1,13 +1,26 @@
 import EloRank from "elo-rank";
 import { prisma } from "../prisma-client";
+import { Prisma } from "@prisma/client";
 
 const elo = new EloRank(100);
 
-export const getPlayers = async () => {
+export type Player = Prisma.PlayerGetPayload<{
+  include: { matchesAsWinner: true; matchesAsLoser: true; eloLogs: true };
+}>;
+
+export const getPlayers = async (): Promise<Player[]> => {
   const players = await prisma.player.findMany({
     include: {
-      matchesAsWinner: true,
-      matchesAsLoser: true,
+      matchesAsWinner: {
+        orderBy: {
+          date: "desc",
+        },
+      },
+      matchesAsLoser: {
+        orderBy: {
+          date: "desc",
+        },
+      },
       eloLogs: true,
     },
   });
@@ -80,6 +93,14 @@ export const calculateNewELOs = (
     newELOPlayer2,
   };
 };
+
+export const calculatePlayerWinStreak = (player: Player): number => {
+  const lastLossDate = player.matchesAsLoser[0]?.date;
+  return lastLossDate
+    ? player.matchesAsWinner.filter((match) => match.date > lastLossDate).length
+    : player.matchesAsWinner.length;
+};
+
 export const recordMatch = async (
   winnerId: number,
   loserId: number,
@@ -230,7 +251,13 @@ export const calculateNewIndividualELOs = (
   };
 };
 
-export const getRecent1v1Matches = async (limit: number = 5) => {
+export type RecentMatch = Prisma.MatchGetPayload<{
+  include: { winner: true; loser: true };
+}>;
+
+export const getRecent1v1Matches = async (
+  limit: number = 5
+): Promise<RecentMatch[]> => {
   return await prisma.match.findMany({
     take: limit,
     orderBy: {
