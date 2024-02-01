@@ -8,7 +8,6 @@
 - [ ] Match history for players
 - [ ] Heat map for time of matches
 
-
 ## Development
 
 From your terminal:
@@ -20,15 +19,19 @@ npm run dev
 This starts your app in development mode, rebuilding assets on file changes.
 
 ## Local db setup
+
 To run the app locally first you need a database to connect to.
 
 ### Spin up the postgres database image
+
 `docker run --name postgres15 -e POSTGRES_DB=krokelo -e POSTGRES_USER=wox -e POSTGRES_PASSWORD=666 -p 5432:5432 -d postgres:15`
 
 ### Add a .env file locally to define the DATABASE_URL
+
 `DATABASE_URL="postgresql://wox:666@localhost:5432/krokelo"`
 
 ### Run prisma migration
+
 `npm run setup:db`
 
 ## Deployment

@@ -1,4 +1,4 @@
-import React from "react";
+import React from 'react';
 import {
   LineChart,
   Line,
@@ -8,7 +8,7 @@ import {
   Tooltip,
   Legend,
   ResponsiveContainer,
-} from "recharts";
+} from 'recharts';
 
 interface ELODataPoint {
   date: string;
@@ -34,12 +34,12 @@ const EloHistoryChart: React.FC<EloHistoryChartProps> = ({ data }) => {
             elo: dataPoint.elo,
           })),
         ].map((item) => ({
-          date: new Date(item.date).toLocaleString("no-NO", {
-            year: "numeric",
-            month: "2-digit",
-            day: "2-digit",
-            hour: "2-digit",
-            minute: "2-digit",
+          date: new Date(item.date).toLocaleString('no-NO', {
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit',
           }),
           elo: item.elo,
         }))

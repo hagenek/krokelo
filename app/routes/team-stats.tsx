@@ -1,18 +1,18 @@
-import { ActionFunction, LoaderFunction } from "@remix-run/node";
-import { Form, useLoaderData } from "@remix-run/react";
-import { getPlayers } from "~/services/player-service";
+import { ActionFunction, LoaderFunction } from '@remix-run/node';
+import { Form, useLoaderData } from '@remix-run/react';
+import { getPlayers } from '~/services/player-service';
 import {
   getTeams,
   getMultiplePlayerTeamMatchStats,
   getRecentTeamMatches,
   TeamMatchDetails,
   revertLatestTeamMatch,
-} from "~/services/team-service";
+} from '~/services/team-service';
 
-import { EnrichedPlayer, PageContainerStyling } from "./team";
-import { BlueBadge, GreenBadge, YellowBadge } from "~/ui/badges";
-import { Team } from "@prisma/client";
-import { useState } from "react";
+import { EnrichedPlayer, PageContainerStyling } from './team';
+import { BlueBadge, GreenBadge, YellowBadge } from '~/ui/badges';
+import { Team } from '@prisma/client';
+import { useState } from 'react';
 
 const getBadgeForTeam = (teamId: number, teams: Team[]) => {
   const topThreeTeamIds = teams.slice(0, 3).map((team) => team.id);
@@ -26,7 +26,7 @@ const getBadgeForTeam = (teamId: number, teams: Team[]) => {
 
 type TeamRouteData = {
   players: EnrichedPlayer[];
-  teams: GetTeamsResponse[];
+  teams: any[];
   recentMatches: TeamMatchDetails;
   showRevertCard: boolean;
 };
@@ -62,7 +62,7 @@ export const loader: LoaderFunction = async () => {
   return { players: playersWithStats, teams, recentMatches, showRevertCard };
 };
 
-export const action: ActionFunction = async ({ request }) => {
+export const action: ActionFunction = async () => {
   revertLatestTeamMatch();
   return null;
 };
@@ -70,40 +70,42 @@ export const action: ActionFunction = async ({ request }) => {
 export default function TeamStats() {
   const { players, teams, recentMatches, showRevertCard } =
     useLoaderData<TeamRouteData>();
-  if (teams.length === 0)
-    return (
-      <div className="dark:text-white p-8 bg-blue-800 dark:bg-gray-500">
-        Ingen kamper spilt enda
-      </div>
-    );
 
   const [matchConfirmed, setMatchConfirmed] = useState(false);
 
+  if (teams.length === 0) {
+    return (
+      <div className="bg-blue-800 p-8 dark:bg-gray-500 dark:text-white">
+        Ingen kamper spilt enda
+      </div>
+    );
+  }
+
   const matchDate = new Date(recentMatches[0]?.date);
-  const formattedDate = matchDate.toLocaleString("en-GB", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
+  const formattedDate = matchDate.toLocaleString('en-GB', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
   });
 
   return (
     <div className={PageContainerStyling}>
       {showRevertCard && recentMatches[0] && !matchConfirmed && (
-        <div className="bg-blue-100 p-4 rounded relative my-4 dark:bg-gray-800">
-          <div className="flex-col md:flex-row justify-between items-center">
+        <div className="relative my-4 rounded bg-blue-100 p-4 dark:bg-gray-800">
+          <div className="flex-col items-center justify-between md:flex-row">
             <div className="flex-col">
-              <h3 className="font-bold text-lg mb-2 dark:text-white text-center md:text-left">
+              <h3 className="mb-2 text-center text-lg font-bold md:text-left dark:text-white">
                 Nylig Spilt Kamp
               </h3>
-              <p className="text-sm dark:text-gray-400 text-center md:text-left">
+              <p className="text-center text-sm md:text-left dark:text-gray-400">
                 Dato: {formattedDate}
               </p>
             </div>
 
             <div className="flex justify-center">
-              <div className="w-48 h-48 mt-4 md:mt-0 md:w-64 md:h-64 bg-gray-300 rounded-full dark:bg-gray-500">
+              <div className="mt-4 h-48 w-48 rounded-full bg-gray-300 md:mt-0 md:h-64 md:w-64 dark:bg-gray-500">
                 <img
                   src="img/2v2win.png"
                   alt="2v2win"
@@ -111,10 +113,10 @@ export default function TeamStats() {
                 />
               </div>
             </div>
-            <div className="flex-1 flex justify-between mt-4">
+            <div className="mt-4 flex flex-1 justify-between">
               <div className="text-center md:text-left">
-                <p className="text-base text-bold dark:text-gray-200">
-                  {recentMatches[0].winner.teamName}{" "}
+                <p className="text-bold text-base dark:text-gray-200">
+                  {recentMatches[0].winner.teamName}{' '}
                   <span className="text-sm">(Seier)</span>
                 </p>
                 <div>
@@ -126,8 +128,8 @@ export default function TeamStats() {
               </div>
 
               <div className="text-center md:text-right">
-                <p className="text-base text-bold text-uppercase dark:text-gray-200">
-                  {recentMatches[0].loser.teamName}{" "}
+                <p className="text-bold text-uppercase text-base dark:text-gray-200">
+                  {recentMatches[0].loser.teamName}{' '}
                   <span className="text-sm">(Tap)</span>
                 </p>
                 <div>
@@ -141,17 +143,17 @@ export default function TeamStats() {
           </div>
 
           <Form method="post" className="mt-4">
-            <div className="grid gap-4 grid-cols-2">
+            <div className="grid grid-cols-2 gap-4">
               <button
                 type="submit"
-                className="bg-purple-500 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded dark:bg-purple-600 dark:hover:bg-purple-800"
+                className="rounded bg-purple-500 px-4 py-2 font-bold text-white hover:bg-purple-700 dark:bg-purple-600 dark:hover:bg-purple-800"
               >
                 Angre
               </button>
 
               <button
                 onClick={() => setMatchConfirmed(true)}
-                className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded shadow-md focus:outline-none focus:shadow-outline transform transition hover:scale-105 duration-300 ease-in-out dark:bg-blue-700 dark:hover:bg-blue-800"
+                className="focus:shadow-outline transform rounded bg-blue-600 px-4 py-2 font-bold text-white shadow-md transition duration-300 ease-in-out hover:scale-105 hover:bg-blue-700 focus:outline-none dark:bg-blue-700 dark:hover:bg-blue-800"
               >
                 Bekreft
               </button>
@@ -160,9 +162,9 @@ export default function TeamStats() {
         </div>
       )}
 
-      <h1 className="text-3xl p-4">Statistikk for lagspill</h1>
+      <h1 className="p-4 text-3xl">Statistikk for lagspill</h1>
       <section className="my-4 md:p-4">
-        <h2 className="text-2xl font-bold mb-3 dark:text-white">
+        <h2 className="mb-3 text-2xl font-bold dark:text-white">
           Nylige kamper
         </h2>
         <div className="overflow-x-auto">
@@ -185,7 +187,7 @@ export default function TeamStats() {
                   </td>
                   <td className="px-4 py-2 dark:text-white">
                     <div>{getBadgeForTeam(match.winner.teamId, teams)}</div>
-                    <span className="font-semibold mr-2">
+                    <span className="mr-2 font-semibold">
                       {match.winner.teamName}
                     </span>
                     <span className="text-sm">(ELO: {match.winner.elo})</span>
@@ -194,7 +196,7 @@ export default function TeamStats() {
                     <div>{getBadgeForTeam(match.loser.teamId, teams)}</div>
                     <span className="font-semibold">
                       {match.loser.teamName}
-                    </span>{" "}
+                    </span>{' '}
                     <span className="text-sm">(ELO: {match.loser.elo})</span>
                   </td>
                 </tr>
@@ -204,16 +206,16 @@ export default function TeamStats() {
         </div>
       </section>
       <div>
-        <h2 className="text-xl m-2 font-semibold mb-3 dark:text-white">
+        <h2 className="m-2 mb-3 text-xl font-semibold dark:text-white">
           Lagranking
         </h2>
-        <table className="min-w-full table-auto mb">
+        <table className="mb min-w-full table-auto">
           <thead>
             <tr>
-              <th className="px-4 py-2 dark:text-white text-center">Rank</th>{" "}
-              <th className="px-4 py-2 dark:text-white">Lagnavn</th>{" "}
-              <th className="px-4 py-2 dark:text-white">Seire</th>{" "} {/* Seiere */}
-              <th className="px-4 py-2 dark:text-white">Tap</th> {/* Tap */}
+              <th className="px-4 py-2 text-center dark:text-white">Rank</th>
+              <th className="px-4 py-2 dark:text-white">Lagnavn</th>
+              <th className="px-4 py-2 dark:text-white">Seire</th>
+              <th className="px-4 py-2 dark:text-white">Tap</th>
               <th className="px-4 py-2 dark:text-white">ELO</th>
             </tr>
           </thead>
@@ -227,25 +229,25 @@ export default function TeamStats() {
               .map((team: any, index) => (
                 <tr
                   key={team.id}
-                  className="border-t dark:border-gray-700 text-lg"
+                  className="border-t text-lg dark:border-gray-700"
                 >
                   <td className="px-4 py-2 text-center dark:text-white">
-                    <span className="bg-indigo-500 text-white rounded-full px-2 py-1">
+                    <span className="rounded-full bg-indigo-500 px-2 py-1 text-white">
                       #{index + 1}
                     </span>
                   </td>
-                  <td className="px-4 py-2 text-md font-semibold dark:text-white">
+                  <td className="text-md px-4 py-2 font-semibold dark:text-white">
                     {team.players
                       .map((player: EnrichedPlayer) => player.name)
-                      .join(" & ")}
+                      .join(' & ')}
                   </td>
-                  <td className="px-4 py-2 align-middle text-center dark:text-white">
+                  <td className="px-4 py-2 text-center align-middle dark:text-white">
                     {team.wins}
                   </td>
-                  <td className="px-4 py-2 align-middle text-center dark:text-white">
+                  <td className="px-4 py-2 text-center align-middle dark:text-white">
                     {team.losses}
                   </td>
-                  <td className="px-4 py-2 align-middle text-center dark:text-white">
+                  <td className="px-4 py-2 text-center align-middle dark:text-white">
                     {team.currentELO}
                   </td>
                 </tr>
@@ -254,8 +256,8 @@ export default function TeamStats() {
         </table>
       </div>
 
-      <div className="flex-col justify-center text-center mt-12">
-        <h2 className="text-xl m-2 font-semibold mb-3 dark:text-white">
+      <div className="mt-12 flex-col justify-center text-center">
+        <h2 className="m-2 mb-3 text-xl font-semibold dark:text-white">
           Individuell ranking ved lagspill top 5
         </h2>
         <table className="min-w-full table-auto">
@@ -278,21 +280,21 @@ export default function TeamStats() {
               .map((player, index) => (
                 <tr
                   key={player.id}
-                  className="border-t dark:border-gray-700 text-md md:text-xl"
+                  className="text-md border-t md:text-xl dark:border-gray-700"
                 >
                   <td className="px-4 py-2 font-semibold dark:text-white">
                     #{index + 1} {player.name}
                   </td>
-                  <td className="px-4 py-2 align-middle text-center dark:text-white">
+                  <td className="px-4 py-2 text-center align-middle dark:text-white">
                     {player.teamStats.wins}
                   </td>
-                  <td className="px-4 py-2 align-middle text-center dark:text-white">
+                  <td className="px-4 py-2 text-center align-middle dark:text-white">
                     {player.teamStats.losses}
                   </td>
-                  <td className="px-4 py-2 align-middle text-center dark:text-white">
+                  <td className="px-4 py-2 text-center align-middle dark:text-white">
                     {player.teamStats.totalMatches}
                   </td>
-                  <td className="px-4 py-2 align-middle text-center dark:text-white">
+                  <td className="px-4 py-2 text-center align-middle dark:text-white">
                     {player.currentTeamELO}
                   </td>
                 </tr>
