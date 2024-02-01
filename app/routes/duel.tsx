@@ -1,11 +1,10 @@
 // routes/index.tsx
 import {
   type MetaFunction,
-  type LoaderFunction,
   type ActionFunction,
   redirect,
 } from "@remix-run/node";
-import { useLoaderData, Form, useFetcher } from "@remix-run/react";
+import { useLoaderData, useFetcher } from "@remix-run/react";
 import { useState } from "react";
 import { createPlayer, getPlayers } from "../services/player-service";
 import {
@@ -15,23 +14,9 @@ import {
   calculateNewELOs,
   logIndividualELO,
 } from "../services/player-service";
-import { EnrichedPlayer, PageContainerStyling } from "./team";
+import { PageContainerStyling } from "./team";
 import CreatableSelect from "react-select/creatable";
 import Select from "react-select";
-
-export type Match = {
-  id: number;
-  date: string;
-  winnerId: number;
-  loserId: number;
-  winnerELO: number;
-  loserELO: number;
-  playerId: number | null;
-};
-
-type RouteData = {
-  players: EnrichedPlayer[];
-};
 
 export const meta: MetaFunction = () => {
   return [
@@ -47,7 +32,7 @@ export const meta: MetaFunction = () => {
   ];
 };
 
-export const loader: LoaderFunction = async () => {
+export const loader = async () => {
   const players = await getPlayers();
   return { players };
 };
@@ -88,7 +73,7 @@ export const action: ActionFunction = async ({ request }) => {
         winnerId,
         loserId,
         player1IsWinner ? newELOPlayer1 : newELOPlayer2,
-          player1IsWinner ? newELOPlayer2 : newELOPlayer1
+        player1IsWinner ? newELOPlayer2 : newELOPlayer1
       );
       await updateELO(player1.id, newELOPlayer1);
       await logIndividualELO(player1.id, newELOPlayer1, match.id); // Log the new ELO for player 1
@@ -106,7 +91,7 @@ export const action: ActionFunction = async ({ request }) => {
 };
 
 export default function Index() {
-  const { players } = useLoaderData<RouteData>();
+  const { players } = useLoaderData<typeof loader>();
   const [player1, setPlayer1] = useState("");
   const [player2, setPlayer2] = useState("");
   const [winner, setWinner] = useState("");

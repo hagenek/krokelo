@@ -1,35 +1,32 @@
-import { ActionFunction, LoaderFunction } from "@remix-run/node";
+import { ActionFunction } from "@remix-run/node";
 import { Form, useLoaderData } from "@remix-run/react";
 import {
   getPlayers,
   getRecent1v1Matches,
   revertLatestMatch,
+  Player,
+  RecentMatch,
+  calculatePlayerWinStreak,
 } from "~/services/player-service";
-import { EnrichedPlayer, Match, PageContainerStyling } from "./team";
+import { PageContainerStyling } from "./team";
+import { Player as PrismaPlayer } from "@prisma/client";
 import { useState } from "react";
 import { Jsonify } from "@remix-run/server-runtime/dist/jsonify";
-import { Player } from "@prisma/client";
 
-type ExtendedMatch = Match & {
-  winner: Player;
-  loser: Player;
-};
-
-type DuelStatsLoaderData = {
-  players: EnrichedPlayer[];
-  recent1v1Matches: ExtendedMatch[];
-  showRevertCard: boolean;
-};
-
-export const loader: LoaderFunction = async () => {
+export const loader = async () => {
   const players = await getPlayers();
   const recent1v1Matches = await getRecent1v1Matches(5);
+
+  const playersWithWinStreak = players.map((player) => ({
+    ...player,
+    winStreak: calculatePlayerWinStreak(player),
+  }));
 
   const lastMatchTime = new Date(recent1v1Matches[0]?.date);
   const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
   const showRevertCard = lastMatchTime > fiveMinutesAgo;
 
-  return { players, recent1v1Matches, showRevertCard };
+  return { players: playersWithWinStreak, recent1v1Matches, showRevertCard };
 };
 
 export const action: ActionFunction = async ({ request }) => {
@@ -38,9 +35,9 @@ export const action: ActionFunction = async ({ request }) => {
 };
 
 const calculateEloChangeFromMatch = (
-  player: Player,
-  match: Jsonify<ExtendedMatch>,
-  players: EnrichedPlayer[]
+  player: PrismaPlayer,
+  match: Jsonify<RecentMatch>,
+  players: Jsonify<Player[]>
 ) => {
   const enrichedPlayer = players.find((p) => p.id === player.id);
   if (!enrichedPlayer) {
@@ -63,9 +60,9 @@ const calculateEloChangeFromMatch = (
 };
 
 const getEloForPlayerAfterMatch = (
-  player: Player,
-  match: Jsonify<ExtendedMatch>,
-  players: EnrichedPlayer[]
+  player: PrismaPlayer,
+  match: Jsonify<RecentMatch>,
+  players: Jsonify<Player[]>
 ) => {
   const enrichedPlayer = players.find((p) => p.id === player.id);
   if (!enrichedPlayer) {
@@ -86,7 +83,7 @@ const getEloForPlayerAfterMatch = (
 
 const DuelStats = () => {
   const { players, recent1v1Matches, showRevertCard } =
-    useLoaderData<DuelStatsLoaderData>();
+    useLoaderData<typeof loader>();
   const [matchConfirmed, setMatchConfirmed] = useState(false);
 
   const matchDate = new Date(recent1v1Matches[0]?.date);
@@ -222,7 +219,7 @@ const DuelStats = () => {
           <thead>
             <tr>
               <th className="px-4 py-2 dark:text-white">Navn</th>
-              <th className="px-4 py-2 dark:text-white">Seiere</th>
+              <th className="px-4 py-2 dark:text-white">Seiere (&#128293;)</th>
               <th className="px-4 py-2 dark:text-white">Tap</th>
               <th className="px-4 py-2 dark:text-white">ELO</th>
             </tr>
@@ -244,7 +241,7 @@ const DuelStats = () => {
                     {player.name}
                   </td>
                   <td className="px-4 py-2 align-middle text-center dark:text-white">
-                    {player.matchesAsWinner.length}
+                    {`${player.matchesAsWinner.length}` + (player.winStreak > 0 ? ` (${player.winStreak})`: '')}
                   </td>
                   <td className="px-4 py-2 align-middle text-center dark:text-white">
                     {player.matchesAsLoser.length}
@@ -255,27 +252,17 @@ const DuelStats = () => {
                 </tr>
               ))}
           </tbody>
-        </table>
-
-        <section className="mt-4">
-          <h1>
-            <span className="text-2xl font-semibold mb-3 dark:text-white">
-              Spillere med få kamper:
-            </span>
-            <span className="text-sm dark:text-gray-400">
-              (Mindre enn 4 kamper spilt)
-            </span>
-          </h1>
-          <table className="min-w-full table-auto">
-            <thead>
-              <tr>
-                <th className="px-4 py-2 dark:text-white">Navn</th>
-                <th className="px-4 py-2 dark:text-white">Seiere</th>
-                <th className="px-4 py-2 dark:text-white">Tap</th>
-              </tr>
-            </thead>
-
-            <tbody>
+          <tbody>
+            <tr>
+              <th colSpan={4} scope="col" className="pb-4">
+                <span className="text-2xl font-semibold dark:text-white">
+                  Spillere med få kamper:
+                </span>
+                <span className="pl-2 text-sm dark:text-gray-400">
+                  (Mindre enn 4 kamper spilt)
+                </span>
+              </th>
+            </tr>
               {players
                 .sort((a, b) => b.currentELO - a.currentELO)
                 .filter(
@@ -291,16 +278,16 @@ const DuelStats = () => {
                       {player.name}
                     </td>
                     <td className="px-4 py-2 align-middle text-center dark:text-white">
-                      {player.matchesAsWinner.length}
+                      {`${player.matchesAsWinner.length}` + (player.winStreak > 0 ? ` (${player.winStreak})`: '')}
                     </td>
                     <td className="px-4 py-2 align-middle text-center dark:text-white">
                       {player.matchesAsLoser.length}
                     </td>
+                    <td></td>
                   </tr>
                 ))}
             </tbody>
-          </table>
-        </section>
+        </table>
       </section>
     </div>
   );

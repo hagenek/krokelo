@@ -5,35 +5,6 @@ import { PageContainerStyling } from "./team";
 import { ActivityGraph } from "~/ui/activity-graph";
 import { getMatchesLastSevenDays, MatchMinimal } from "~/services/match-service";
 
-export type Match = {
-  id: number;
-  date: string;
-  winnerId: number;
-  loserId: number;
-  winnerELO: number;
-  loserELO: number;
-  playerId: number | null;
-};
-
-type ELOLog = {
-  id: number;
-  playerId: number;
-  elo: number;
-  date: string;
-};
-
-type Player = {
-  id: number;
-  name: string;
-  currentELO: number;
-  matchesAsWinner: Match[];
-  matchesAsLoser: Match[];
-  eloLogs: ELOLog[];
-};
-type RouteData = {
-  players: Player[];
-};
-
 export const meta: MetaFunction = () => {
   return [
     { title: "SB1U Krok Champions" },
