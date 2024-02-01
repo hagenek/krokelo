@@ -87,8 +87,8 @@ export const action: ActionFunction = async ({ request }) => {
       const match = await recordMatch(
         winnerId,
         loserId,
-        newELOPlayer1,
-        newELOPlayer2
+        player1IsWinner ? newELOPlayer1 : newELOPlayer2,
+          player1IsWinner ? newELOPlayer2 : newELOPlayer1
       );
       await updateELO(player1.id, newELOPlayer1);
       await logIndividualELO(player1.id, newELOPlayer1, match.id); // Log the new ELO for player 1
