@@ -67,7 +67,7 @@ export const ActivityGraph: React.FC<ActivityGraphProps> = ({ matches }) => {
 
     const getColor = (count: number) => {
         if (count === 0) return 'bg-gray-200'; // Grey
-        if (count === 1) return 'bg-green-200'; // Light Green
+        if (count >= 1) return 'bg-green-200'; // Light Green
         if (count >= 3) return 'bg-green-400'; // Green
         if (count >= 7) return 'bg-green-800'; // Darker Green
         return 'invisible'; // Dark Green
