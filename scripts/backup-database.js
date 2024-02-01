@@ -1,4 +1,4 @@
-const { exec } = require("child_process");
+const { exec } = require('child_process');
 
 function backupDatabase() {
   const dbName = process.env.DB_NAME;
@@ -14,9 +14,9 @@ function backupDatabase() {
   exec(command, (err, stdout, stderr) => {
     if (err) {
       // handle error
-      console.error("Backup error:", err);
+      console.error('Backup error:', err);
       return;
     }
-    console.log("Backup completed successfully");
+    console.log('Backup completed successfully');
   });
 }

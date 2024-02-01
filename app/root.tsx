@@ -1,5 +1,5 @@
-import { HtmlLinkDescriptor, type LinksFunction } from "@remix-run/node";
-import stylesheet from "~/tailwind.css";
+import { HtmlLinkDescriptor, type LinksFunction } from '@remix-run/node';
+import stylesheet from '~/tailwind.css';
 import {
   Link,
   Links,
@@ -8,8 +8,8 @@ import {
   Scripts,
   ScrollRestoration,
   useRouteError,
-} from "@remix-run/react";
-import Layout from "./layout";
+} from '@remix-run/react';
+import Layout from './layout';
 
 /**
  * links
@@ -17,11 +17,11 @@ import Layout from "./layout";
  */
 export const links: LinksFunction = (): HtmlLinkDescriptor[] => {
   return [
-    { rel: "stylesheet", href: stylesheet },
+    { rel: 'stylesheet', href: stylesheet },
     {
-      rel: "icon",
-      type: "image/x-icon",
-      href: "/img/favicon.ico",
+      rel: 'icon',
+      type: 'image/x-icon',
+      href: '/img/favicon.ico',
     },
   ];
 };
@@ -35,7 +35,7 @@ export default function App() {
         <Meta />
         <Links />
       </head>
-      <body className="dark:bg-gray-900 bg-white">
+      <body className="bg-white dark:bg-gray-900">
         <Layout />
         <ScrollRestoration />
         <Scripts />
@@ -49,28 +49,28 @@ export function ErrorBoundary() {
   const error = useRouteError();
   console.error(error);
   return (
-    <html>
+    <html lang="nb">
       <head>
         <title>Oh no!</title>
         <Meta />
         <Links />
       </head>
-      <body className="bg-gray-800 w-full md:w-auto flex items-center justify-center h-screen">
-        <div className="p-6 rounded-lg shadow-lg text-center text-white">
-          <h1 className="text-2xl font-bold mb-4">Noe gikk galt</h1>
+      <body className="flex h-screen w-full items-center justify-center bg-gray-800 md:w-auto">
+        <div className="rounded-lg p-6 text-center text-white shadow-lg">
+          <h1 className="mb-4 text-2xl font-bold">Noe gikk galt</h1>
           <p className="mb-4">
             Beklager, det oppstod en feil. Vi jobber med å løse det.
           </p>
           <Link
             to="/"
-            className="text-blue-300 text-xl mb-4 font-bold hover:text-blue-500"
+            className="mb-4 text-xl font-bold text-blue-300 hover:text-blue-500"
           >
             Tilbake til hovedsiden
           </Link>
           <img
             src="/img/404.png"
             alt="Feilbilde"
-            className="mx-auto m-4 rounded w-1/2"
+            className="m-4 mx-auto w-1/2 rounded"
           />
         </div>
         <Scripts />

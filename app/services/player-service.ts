@@ -1,6 +1,6 @@
-import EloRank from "elo-rank";
-import { prisma } from "../prisma-client";
-import { Prisma } from "@prisma/client";
+import EloRank from 'elo-rank';
+import { prisma } from '../prisma-client';
+import { Prisma } from '@prisma/client';
 
 const elo = new EloRank(100);
 
@@ -13,12 +13,12 @@ export const getPlayers = async (): Promise<Player[]> => {
     include: {
       matchesAsWinner: {
         orderBy: {
-          date: "desc",
+          date: 'desc',
         },
       },
       matchesAsLoser: {
         orderBy: {
-          date: "desc",
+          date: 'desc',
         },
       },
       eloLogs: true,
@@ -150,22 +150,6 @@ export const createTeam = async (player1Id: number, player2Id: number) => {
   });
 };
 
-const updateTeamELO = async (teamId: number, newElo: number) => {
-  const team = await prisma.team.findUnique({
-    where: { id: teamId },
-  });
-
-  if (team) {
-    await prisma.team.update({
-      where: { id: teamId },
-      data: {
-        previousELO: team.currentELO,
-        currentELO: newElo,
-      },
-    });
-  }
-};
-
 // Calculate new ELOs for team matches
 export const calculateNewTeamELOs = (
   currentELOTeam1: number,
@@ -261,7 +245,7 @@ export const getRecent1v1Matches = async (
   return await prisma.match.findMany({
     take: limit,
     orderBy: {
-      date: "desc",
+      date: 'desc',
     },
     include: {
       winner: true,
@@ -305,14 +289,14 @@ export const updatePlayerTeamELO = async (playerId: number, newELO: number) => {
 export async function getPlayerELOHistory(playerId: number) {
   return prisma.eLOLog.findMany({
     where: { playerId },
-    orderBy: { date: "asc" },
+    orderBy: { date: 'asc' },
   });
 }
 
 export async function getPlayerTeamELOHistory(playerId: number) {
   return prisma.teamPlayerELOLog.findMany({
     where: { playerId },
-    orderBy: { date: "asc" },
+    orderBy: { date: 'asc' },
   });
 }
 
@@ -348,7 +332,7 @@ export const getPlayerDetails = async (playerId: number) => {
       },
       eloLogs: {
         orderBy: {
-          date: "asc",
+          date: 'asc',
         },
       },
     },
@@ -366,12 +350,12 @@ export const revertLatestMatch = async () => {
     // Step 1: Find the latest 1v1 player match
     const latestMatch = await prisma.match.findFirst({
       orderBy: {
-        date: "desc",
+        date: 'desc',
       },
     });
 
     if (!latestMatch) {
-      console.error("No 1v1 matches found to revert.");
+      console.error('No 1v1 matches found to revert.');
       return;
     }
 
@@ -385,7 +369,7 @@ export const revertLatestMatch = async () => {
           },
         },
         orderBy: {
-          date: "desc",
+          date: 'desc',
         },
       });
 
@@ -417,9 +401,9 @@ export const revertLatestMatch = async () => {
     });
 
     console.log(
-      "Latest 1v1 match and associated ELO changes successfully reverted."
+      'Latest 1v1 match and associated ELO changes successfully reverted.'
     );
   } catch (error) {
-    console.error("Error in reverting the latest 1v1 match:", error);
+    console.error('Error in reverting the latest 1v1 match:', error);
   }
 };
