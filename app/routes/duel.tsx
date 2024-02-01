@@ -153,23 +153,20 @@ export default function Index() {
       </h1>
       <div className="flex-col justify-center">
         <details className="mb-4">
-          <summary className="dark:text-white">How to Use</summary>
+          <summary className="dark:text-white">Hvordan bruke?</summary>
           <div className="dark:text-gray-400">
             <h2 className="text-xl font-semibold mb-3 dark:text-white">
-              How to use:
+              Hvordan bruke:
             </h2>
             <p className="mb-3">
-              Enter the names of the players and select the winner. The ELOs
-              will be updated automatically.
+              Skriv inn navnene på spillerne og velg vinneren. ELOene vil bli oppdatert automatisk.
             </p>
             <p className="mb-3">
-              If a player is not in the list, enter their name and submit the
-              form. They will be added to the list and their ELO will be set to
-              1000.
+              Hvis en spiller ikke er på listen, skriv inn navnet deres og send inn skjemaet.
+              De vil bli lagt til listen, og deres ELO vil bli satt til 1500.
             </p>
             <p className="mb-3">
-              If you want to see the ELO history for a player, click on their
-              name in the table below.
+              Hvis du ønsker å se ELO-historikken til en spiller, klikk på navnet deres i tabellen nedenfor.
             </p>
           </div>
         </details>
@@ -192,7 +189,7 @@ export default function Index() {
                 onChange={handlePlayer1Change}
                 options={playerOptions}
                 className="mt-1 w-3/4 m-auto dark:text-black"
-                placeholder="Add Player 1"
+                placeholder="Legg til Spiller 1"
               />
             </div>
             <div>
@@ -208,7 +205,7 @@ export default function Index() {
                 onChange={handlePlayer2Change}
                 options={playerOptions}
                 className="mt-1 w-3/4 m-auto dark:text-black"
-                placeholder="Add Player 2"
+                placeholder="Legg til Spiller 2"
               />
             </div>
           </div>
