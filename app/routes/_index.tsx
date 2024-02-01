@@ -1,7 +1,9 @@
 // routes/index.tsx
-import type { MetaFunction } from "@remix-run/node";
-import { Link } from "@remix-run/react";
+import type {LoaderFunction, MetaFunction} from "@remix-run/node";
+import { Link, useLoaderData } from "@remix-run/react";
 import { PageContainerStyling } from "./team";
+import { ActivityGraph } from "~/ui/activity-graph";
+import { getMatchesLastSevenDays, MatchMinimal } from "~/services/match-service";
 
 export type Match = {
   id: number;
@@ -46,7 +48,22 @@ export const meta: MetaFunction = () => {
   ];
 };
 
+export const loader: LoaderFunction = async () => {
+  const fetchedMatches = await getMatchesLastSevenDays();
+
+  return fetchedMatches.map(match => ({
+    ...match,
+    date: new Date(match.date),
+  }));
+};
+
 export default function Index() {
+  const matches = useLoaderData<MatchMinimal[]>();
+  const parsedMatches : MatchMinimal[] = matches.map(match => ({
+    ...match,
+    date: new Date(match.date),
+  }));
+
   return (
     <div className={PageContainerStyling}>
       <div className="grid xl:grid-cols-2 gap-4 md:gap-6">
@@ -76,6 +93,9 @@ export default function Index() {
             className="w-1/2 md:w-full rounded"
           />
         </Link>
+      </div>
+      <div className="p-4">
+        <ActivityGraph matches={parsedMatches} />
       </div>
     </div>
   );
