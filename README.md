@@ -30,6 +30,12 @@ To run the app locally first you need a database to connect to.
 
 `DATABASE_URL="postgresql://wox:666@localhost:5432/krokelo"`
 
+### Use prod data in local dev
+
+There is a backup of the production data included in this project in the db_backups folder.
+You can use this to restore your local db instance with data taken from prod, to get a more realistic dev env.
+I use pgadmin4 for this.
+
 ### Run prisma migration
 
 `npm run setup:db`
