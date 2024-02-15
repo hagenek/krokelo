@@ -10,8 +10,8 @@ const NavMenu = () => {
     { name: 'forside', path: '/' },
     { name: '1v1', path: '/duel' },
     { name: '2v2', path: '/team' },
-    { name: 'stats 2v2', path: '/team-stats' },
     { name: 'stats 1v1', path: '/duel-stats' },
+    { name: 'stats 2v2', path: '/team-stats' },
     { name: 'profilside', path: '/profile/0' },
     { name: 'lagside', path: '/team-profile/0' },
   ];
