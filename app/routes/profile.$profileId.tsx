@@ -11,7 +11,6 @@ import {
   getPlayerTeamELOHistory,
   getPlayers,
 } from "~/services/player-service";
-import { getTeamELOHistory } from "~/services/team-service";
 import GenericSearchableDropdown from "~/ui/searchable-dropdown";
 import { calculateWinPercentage } from "~/routes/team-profile.$teamId";
 
@@ -113,26 +112,29 @@ export default function Profile() {
     return <div>Loading...</div>;
   }
 
-  const playersRankedByELO = [...players].sort((p1, p2) => p2.currentELO - p1.currentELO);
+  const playersRankedByELO = [...players].sort(
+    (p1, p2) => p2.currentELO - p1.currentELO
+  );
 
   const playersRankedByTeamELO = [...players].sort(
     (p1, p2) => p2.currentTeamELO - p1.currentTeamELO
   );
 
-  const numberOfWins = playerDetails.matchesAsWinner?.length ?? 0
-  const numberOfLosses = playerDetails.matchesAsLoser?.length ?? 0
+  const numberOfWins = playerDetails.matchesAsWinner?.length ?? 0;
+  const numberOfLosses = playerDetails.matchesAsLoser?.length ?? 0;
 
   return (
     <div className="container h-screen p-2 ">
       <div className="flex-col items-center text-center justify-center">
-
-        <GenericSearchableDropdown items={players} onItemSelect={handlePlayerChange} placeholder={"Velg spiller"} />
+        <GenericSearchableDropdown
+          items={players}
+          onItemSelect={handlePlayerChange}
+          placeholder={"Velg spiller"}
+        />
 
         {isValidPlayerSelected && playerDetails && (
           <div>
-            <ul
-              className="container mt-4 flex-col text-lg text-center items-center mb-2 space-y-2 bg-blue-100 dark:bg-gray-700 text-black dark:text-white p-4 rounded-lg shadow-lg"
-            >
+            <ul className="container mt-4 flex-col text-lg text-center items-center mb-2 space-y-2 bg-blue-100 dark:bg-gray-700 text-black dark:text-white p-4 rounded-lg shadow-lg">
               <li className="text-4xl">{playerDetails.name}</li>
               <li>
                 Rating lagspill:{" "}
@@ -220,48 +222,41 @@ export default function Profile() {
                 <tbody>
                   <tr className="text-md">
                     <td className="border px-4 py-2">
-                      {numberOfWins +
-                        numberOfLosses}
+                      {numberOfWins + numberOfLosses}
                     </td>
-                    <td className="border px-4 py-2">
-                      {numberOfWins}
-                    </td>
-                    <td className="border px-4 py-2">
-                      {numberOfLosses}
-                    </td>
+                    <td className="border px-4 py-2">{numberOfWins}</td>
+                    <td className="border px-4 py-2">{numberOfLosses}</td>
                   </tr>
                 </tbody>
               </table>
             </div>
             {teamEloHistory?.length > 0 && (
-                <>
-                  <h1 className="text-xl font-bold mb-4">
-                    Spillerens ELO i lagspill
-                  </h1>
-                  <EloHistoryChart data={teamEloHistory} />
-                </>
-        )}
+              <>
+                <h1 className="text-xl font-bold mb-4">
+                  Spillerens ELO i lagspill
+                </h1>
+                <EloHistoryChart data={teamEloHistory} />
+              </>
+            )}
             {eloHistory?.length > 0 && (
-                <>
-                  <h1 className="text-xl font-bold mb-4">
-                    {playerDetails.name}'s ELO History
-                  </h1>
-                  <EloHistoryChart data={eloHistory}/>
-                </>
+              <>
+                <h1 className="text-xl font-bold mb-4">
+                  {playerDetails.name}'s ELO History
+                </h1>
+                <EloHistoryChart data={eloHistory} />
+              </>
             )}
             <div className="grid md:grid-cols-2 gap-2">
-              <p className="">
-                Kamper spilt:{" "}
-                {numberOfWins +
-                  numberOfLosses}
-              </p>{" "}
-              <p className="">
-                Antall kamper vunnet: {numberOfWins}
-              </p>{" "}
+              <p className="">Kamper spilt: {numberOfWins + numberOfLosses}</p>{" "}
+              <p className="">Antall kamper vunnet: {numberOfWins}</p>{" "}
               <p className="">Tap: {numberOfLosses}</p>
               <p className="">
                 Seiersprosent:{" "}
-                {calculateWinPercentage(numberOfWins, numberOfWins + numberOfLosses)}%
+                {calculateWinPercentage(
+                  numberOfWins,
+                  numberOfWins + numberOfLosses
+                )}
+                %
               </p>
             </div>
           </div>

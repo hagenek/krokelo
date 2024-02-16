@@ -203,6 +203,53 @@ export default function TeamStats() {
           </table>
         </div>
       </section>
+
+      <div className="flex-col justify-center text-center mt-12">
+        <h2 className="text-xl m-2 font-semibold mb-3 dark:text-white">
+          Individuell ranking ved lagspill top 5
+        </h2>
+        <table className="min-w-full table-auto">
+          <thead>
+            <tr>
+              <th className="px-4 py-2 dark:text-white">Navn and Rank</th>
+              <th className="px-4 py-2 dark:text-white">Seiere</th>
+              <th className="px-4 py-2 dark:text-white">Tap</th>
+              <th className="px-4 py-2 dark:text-white"># Kamper</th>
+              <th className="px-4 py-2 dark:text-white">ELO</th>
+            </tr>
+          </thead>
+          <tbody>
+            {players
+              .sort(
+                (a: EnrichedPlayer, b: EnrichedPlayer) =>
+                  b.currentTeamELO - a.currentTeamELO
+              )
+              .slice(0, 5)
+              .map((player, index) => (
+                <tr
+                  key={player.id}
+                  className="border-t dark:border-gray-700 text-md md:text-xl"
+                >
+                  <td className="px-4 py-2 font-semibold dark:text-white">
+                    #{index + 1} {player.name}
+                  </td>
+                  <td className="px-4 py-2 align-middle text-center dark:text-white">
+                    {player.teamStats.wins}
+                  </td>
+                  <td className="px-4 py-2 align-middle text-center dark:text-white">
+                    {player.teamStats.losses}
+                  </td>
+                  <td className="px-4 py-2 align-middle text-center dark:text-white">
+                    {player.teamStats.totalMatches}
+                  </td>
+                  <td className="px-4 py-2 align-middle text-center dark:text-white">
+                    {player.currentTeamELO}
+                  </td>
+                </tr>
+              ))}
+          </tbody>
+        </table>
+      </div>
       <div>
         <h2 className="text-xl m-2 font-semibold mb-3 dark:text-white">
           Lagranking
@@ -248,53 +295,6 @@ export default function TeamStats() {
                   </td>
                   <td className="px-4 py-2 align-middle text-center dark:text-white">
                     {team.currentELO}
-                  </td>
-                </tr>
-              ))}
-          </tbody>
-        </table>
-      </div>
-
-      <div className="flex-col justify-center text-center mt-12">
-        <h2 className="text-xl m-2 font-semibold mb-3 dark:text-white">
-          Individuell ranking ved lagspill top 5
-        </h2>
-        <table className="min-w-full table-auto">
-          <thead>
-            <tr>
-              <th className="px-4 py-2 dark:text-white">Navn and Rank</th>
-              <th className="px-4 py-2 dark:text-white">Seiere</th>
-              <th className="px-4 py-2 dark:text-white">Tap</th>
-              <th className="px-4 py-2 dark:text-white"># Kamper</th>
-              <th className="px-4 py-2 dark:text-white">ELO</th>
-            </tr>
-          </thead>
-          <tbody>
-            {players
-              .sort(
-                (a: EnrichedPlayer, b: EnrichedPlayer) =>
-                  b.currentTeamELO - a.currentTeamELO
-              )
-              .slice(0, 5)
-              .map((player, index) => (
-                <tr
-                  key={player.id}
-                  className="border-t dark:border-gray-700 text-md md:text-xl"
-                >
-                  <td className="px-4 py-2 font-semibold dark:text-white">
-                    #{index + 1} {player.name}
-                  </td>
-                  <td className="px-4 py-2 align-middle text-center dark:text-white">
-                    {player.teamStats.wins}
-                  </td>
-                  <td className="px-4 py-2 align-middle text-center dark:text-white">
-                    {player.teamStats.losses}
-                  </td>
-                  <td className="px-4 py-2 align-middle text-center dark:text-white">
-                    {player.teamStats.totalMatches}
-                  </td>
-                  <td className="px-4 py-2 align-middle text-center dark:text-white">
-                    {player.currentTeamELO}
                   </td>
                 </tr>
               ))}
