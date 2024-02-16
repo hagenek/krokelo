@@ -3,29 +3,27 @@ import type {
   MetaFunction,
   LoaderFunction,
   ActionFunction,
-} from "@remix-run/node";
-import CreatableSelect from "react-select/creatable";
-import { useLoaderData, Form, useFetcher } from "@remix-run/react";
-import { useEffect, useRef, useState } from "react";
-import { redirect } from "@remix-run/node";
+} from '@remix-run/node';
+import CreatableSelect from 'react-select/creatable';
+import { useLoaderData, useFetcher } from '@remix-run/react';
+import { useRef, useState } from 'react';
+import { redirect } from '@remix-run/node';
 import {
   calculateNewIndividualELOs,
   createPlayer,
   createTeam,
   getPlayers,
-} from "../services/player-service";
+} from '../services/player-service';
 import {
-  TeamMatchStats,
   getMultiplePlayerTeamMatchStats,
-  getTeams,
   recordTeamMatch,
   updateAndLogELOsTeamPlay,
-} from "../services/team-service";
+} from '../services/team-service';
 import {
   findPlayerByName,
   calculateNewTeamELOs,
-} from "../services/player-service";
-import Select from "react-select";
+} from '../services/player-service';
+import Select from 'react-select';
 
 export type Match = {
   id: number;
@@ -38,7 +36,7 @@ export type Match = {
 };
 
 export const PageContainerStyling =
-  "flex-col rounded-3xl justify-center items-center dark:bg-gray-800 dark:text-white mx-auto";
+  'flex-col rounded-3xl justify-center items-center dark:bg-gray-800 dark:text-white mx-auto';
 
 type ELOLog = {
   id: number;
@@ -65,26 +63,24 @@ export type EnrichedPlayer = {
 
 type TeamRouteData = {
   players: EnrichedPlayer[];
-  teams: any[];
 };
 
 export const meta: MetaFunction = () => {
   return [
-    { title: "SB1U Krok Champions" },
+    { title: 'SB1U Krok Champions' },
     {
-      property: "og:title",
-      content: "SB1U Krokinole Champions",
+      property: 'og:title',
+      content: 'SB1U Krokinole Champions',
     },
     {
-      name: "description",
-      content: "Her kan du registrere resultater fra SB1U Krokinolekamper.",
+      name: 'description',
+      content: 'Her kan du registrere resultater fra SB1U Krokinolekamper.',
     },
   ];
 };
 
 export const loader: LoaderFunction = async () => {
   const players = await getPlayers();
-  const teams = await getTeams();
 
   // Get IDs of all players
   const playerIds = players.map((player) => player.id);
@@ -102,11 +98,11 @@ export const loader: LoaderFunction = async () => {
     },
   }));
 
-  return { players: playersWithStats, teams };
+  return { players: playersWithStats };
 };
 
 export const action: ActionFunction = async ({ request }) => {
-  console.log("Executing action function!");
+  console.log('Executing action function!');
 
   try {
     const formData = await request.formData();
@@ -129,28 +125,28 @@ export const action: ActionFunction = async ({ request }) => {
     const uniqueNames = new Set(allPlayerNames);
 
     if (uniqueNames.size !== allPlayerNames.length) {
-      console.error("A player cannot be on both teams.");
+      console.error('A player cannot be on both teams.');
       // Handle the error appropriately, e.g., return an error message to the client
       return {
-        error: "Each player must be unique and cannot be part of both teams.",
+        error: 'Each player must be unique and cannot be part of both teams.',
       };
     }
 
     if (
-      typeof team1Player1Name === "string" &&
-      typeof team1Player2Name === "string" &&
-      typeof team2Player1Name === "string" &&
-      typeof team2Player2Name === "string" &&
-      typeof winningTeam === "string"
+      typeof team1Player1Name === 'string' &&
+      typeof team1Player2Name === 'string' &&
+      typeof team2Player1Name === 'string' &&
+      typeof team2Player2Name === 'string' &&
+      typeof winningTeam === 'string'
     ) {
       console.log(
-        "Team player names:",
+        'Team player names:',
         team1Player1Name,
         team1Player2Name,
         team2Player1Name,
         team2Player2Name
       );
-      console.log("Winning team:", winningTeam);
+      console.log('Winning team:', winningTeam);
 
       const team1Player1 =
         (await findPlayerByName(team1Player1Name)) ||
@@ -171,7 +167,7 @@ export const action: ActionFunction = async ({ request }) => {
       const team1 = await createTeam(team1Player1.id, team1Player2.id);
       const team2 = await createTeam(team2Player1.id, team2Player2.id);
 
-      const team1IsWinner = winningTeam.trim().toLowerCase() === "team1";
+      const team1IsWinner = winningTeam.trim().toLowerCase() === 'team1';
 
       // Calculate new ELOs for each team
       const { newELOTeam1, newELOTeam2 } = calculateNewTeamELOs(
@@ -194,7 +190,7 @@ export const action: ActionFunction = async ({ request }) => {
       );
 
       console.log(
-        "New individual ELOs:",
+        'New individual ELOs:',
         newELOPlayer1Team1,
         newELOPlayer2Team1,
         newELOPlayer1Team2,
@@ -203,7 +199,7 @@ export const action: ActionFunction = async ({ request }) => {
       // Determine winner and loser team IDs
       const winnerTeamId = team1IsWinner ? team1.id : team2.id;
       const loserTeamId = team1IsWinner ? team2.id : team1.id;
-      console.log("Winner and loser team IDs:", winnerTeamId, loserTeamId);
+      console.log('Winner and loser team IDs:', winnerTeamId, loserTeamId);
 
       // Record team match
       const match = await recordTeamMatch(
@@ -234,14 +230,14 @@ export const action: ActionFunction = async ({ request }) => {
       });
     }
   } catch (error) {
-    console.error("Error in action function:", error);
+    console.error('Error in action function:', error);
   }
 
-  return redirect("/team-stats");
+  return redirect('/team-stats');
 };
 
 export default function Index() {
-  const { players, teams } = useLoaderData<TeamRouteData>();
+  const { players } = useLoaderData<TeamRouteData>();
   const team1Player1Ref = useRef(null);
   const team1Player2Ref = useRef(null);
   const team2Player1Ref = useRef(null);
@@ -249,11 +245,11 @@ export default function Index() {
 
   const fetcher = useFetcher();
 
-  const [team1Player1, setTeam1Player1] = useState("");
-  const [team1Player2, setTeam1Player2] = useState("");
-  const [team2Player1, setTeam2Player1] = useState("");
-  const [team2Player2, setTeam2Player2] = useState("");
-  const [winner, setWinner] = useState("");
+  const [team1Player1, setTeam1Player1] = useState('');
+  const [team1Player2, setTeam1Player2] = useState('');
+  const [team2Player1, setTeam2Player1] = useState('');
+  const [team2Player2, setTeam2Player2] = useState('');
+  const [winner, setWinner] = useState('');
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -266,7 +262,7 @@ export default function Index() {
       !team2Player2 ||
       !winner
     ) {
-      alert("All fields are required!");
+      alert('All fields are required!');
       return;
     }
 
@@ -275,7 +271,7 @@ export default function Index() {
 
     if (uniquePlayers.size !== allPlayers.length) {
       alert(
-        "A player cannot be on both teams or duplicated within the same team."
+        'A player cannot be on both teams or duplicated within the same team.'
       );
       return;
     }
@@ -283,15 +279,15 @@ export default function Index() {
     // Use the fetcher form to submit
     fetcher.submit(
       { team1Player1, team1Player2, team2Player1, team2Player2, winner },
-      { method: "post" }
+      { method: 'post' }
     );
 
     // Reset form fields
-    setTeam1Player1("");
-    setTeam1Player2("");
-    setTeam2Player1("");
-    setTeam2Player2("");
-    setWinner("");
+    setTeam1Player1('');
+    setTeam1Player2('');
+    setTeam2Player1('');
+    setTeam2Player2('');
+    setWinner('');
   };
 
   const playerOptions = players.map((player) => ({
@@ -300,55 +296,55 @@ export default function Index() {
   }));
 
   const handleTeam1Player1Change = (newValue: any) => {
-    setTeam1Player1(newValue ? newValue.value : "");
+    setTeam1Player1(newValue ? newValue.value : '');
   };
 
   const handleTeam1Player2Change = (newValue: any) => {
-    setTeam1Player2(newValue ? newValue.value : "");
+    setTeam1Player2(newValue ? newValue.value : '');
   };
 
   const handleTeam2Player1Change = (newValue: any) => {
-    setTeam2Player1(newValue ? newValue.value : "");
+    setTeam2Player1(newValue ? newValue.value : '');
   };
 
   const handleTeam2Player2Change = (newValue: any) => {
-    setTeam2Player2(newValue ? newValue.value : "");
+    setTeam2Player2(newValue ? newValue.value : '');
   };
 
   const winnerOptions = [
-    { value: "", label: "Velg vinner" },
-    { value: "team1", label: `${team1Player1} & ${team1Player2}` }, // Assuming player1 and player2 are names
-    { value: "team2", label: `${team2Player1} & ${team2Player2}` },
+    { value: '', label: 'Velg vinner' },
+    { value: 'team1', label: `${team1Player1} & ${team1Player2}` }, // Assuming player1 and player2 are names
+    { value: 'team2', label: `${team2Player1} & ${team2Player2}` },
   ];
 
   const handleWinnerChange = (selectedOption: any) => {
-    setWinner(selectedOption ? selectedOption.value : "");
+    setWinner(selectedOption ? selectedOption.value : '');
   };
 
   return (
     <div className={PageContainerStyling}>
       <div className="flex-col justify-center p-4">
-        <div className="flex-col items-center text-center justify-center">
-          <div className="flex md:flex-col justify-center">
-            <div className="text-4xl self-center md:text-3xl mb-2 md:mb-6 p-8 md:p-2">
+        <div className="flex-col items-center justify-center text-center">
+          <div className="flex justify-center md:flex-col">
+            <div className="mb-2 self-center p-8 text-4xl md:mb-6 md:p-2 md:text-3xl">
               2 mot 2
             </div>
-            <div className="flex self-center justify-center items-center w-1/3">
-              <div className="md:items-center mb-6 ">
+            <div className="flex w-1/3 items-center justify-center self-center">
+              <div className="mb-6 md:items-center ">
                 <img src="img/2v2krok.png" alt="2v2" className="rounded" />
               </div>
             </div>
           </div>
           <fetcher.Form method="post" onSubmit={handleSubmit} className="mb-8">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               {/* Team 1 */}
               <div className="gap-2 md:gap-6">
-                <h3 className="block dark:text-white text-lg font-medium text-gray-700">
+                <h3 className="block text-lg font-medium text-gray-700 dark:text-white">
                   Lag 1
                 </h3>
                 <label
                   htmlFor="team1player1"
-                  className="block dark:text-white text-sm font-medium text-gray-700"
+                  className="block text-sm font-medium text-gray-700 dark:text-white"
                 >
                   Spiller 1
                 </label>
@@ -358,12 +354,12 @@ export default function Index() {
                   ref={team1Player1Ref}
                   onChange={handleTeam1Player1Change}
                   options={playerOptions}
-                  className="mt-1 w-3/4 m-auto dark:text-black"
+                  className="m-auto mt-1 w-3/4 dark:text-black"
                   placeholder="Add P1 on Team 1"
                 />
                 <label
                   htmlFor="team1player2"
-                  className="block text-sm dark:text-white font-medium text-gray-700"
+                  className="block text-sm font-medium text-gray-700 dark:text-white"
                 >
                   Spiller 2
                 </label>
@@ -373,19 +369,19 @@ export default function Index() {
                   ref={team1Player2Ref}
                   onChange={handleTeam1Player2Change}
                   options={playerOptions}
-                  className="mt-1 w-3/4 m-auto dark:text-black"
+                  className="m-auto mt-1 w-3/4 dark:text-black"
                   placeholder="Add P2 on Team 1"
                 />
               </div>
 
               {/* Team 2 */}
               <div>
-                <h3 className="block dark:text-white text-lg font-medium text-gray-700">
+                <h3 className="block text-lg font-medium text-gray-700 dark:text-white">
                   Lag 2
                 </h3>
                 <label
                   htmlFor="team2player1"
-                  className="block dark:text-white text-sm font-medium text-gray-700"
+                  className="block text-sm font-medium text-gray-700 dark:text-white"
                 >
                   Spiller 1
                 </label>
@@ -395,12 +391,12 @@ export default function Index() {
                   ref={team2Player1Ref}
                   onChange={handleTeam2Player1Change}
                   options={playerOptions}
-                  className="mt-1 w-3/4 m-auto dark:text-black"
+                  className="m-auto mt-1 w-3/4 dark:text-black"
                   placeholder="Add P1 on Team 2"
                 />
                 <label
                   htmlFor="team2player2"
-                  className="block text-sm dark:text-white font-medium text-gray-700"
+                  className="block text-sm font-medium text-gray-700 dark:text-white"
                 >
                   Spiller 2
                 </label>
@@ -410,7 +406,7 @@ export default function Index() {
                   ref={team2Player2Ref}
                   onChange={handleTeam2Player2Change}
                   options={playerOptions}
-                  className="mt-1 w-3/4 m-auto dark:text-black"
+                  className="m-auto mt-1 w-3/4 dark:text-black"
                   placeholder="Add P2 on Team 2"
                 />
               </div>
@@ -419,7 +415,7 @@ export default function Index() {
             <div className="mt-4">
               <label
                 htmlFor="winningTeam"
-                className="block text-sm dark:text-white font-medium text-gray-700"
+                className="block text-sm font-medium text-gray-700 dark:text-white"
               >
                 Hvem vant?
               </label>
@@ -433,12 +429,12 @@ export default function Index() {
                 }
                 onChange={handleWinnerChange}
                 options={winnerOptions}
-                className="mb-4 md:w-1/2 m-auto dark:text-black w-2/3"
+                className="m-auto mb-4 w-2/3 md:w-1/2 dark:text-black"
                 classNamePrefix="react-select"
               />
               <button
                 type="submit"
-                className="m-4 bg-blue-600 dark:bg-white dark:text-black hover:bg-blue-700 dark:hover:bg-gray-400 focus:ring-4 focus:ring-blue-300 focus:outline-none text-white px-4 py-2 rounded"
+                className="m-4 rounded bg-blue-600 px-4 py-2 text-white hover:bg-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-300 dark:bg-white dark:text-black dark:hover:bg-gray-400"
               >
                 Lagre resultat
               </button>

@@ -1,5 +1,6 @@
-import { prisma } from "../prisma-client";
-import { updatePlayerTeamELO } from "./player-service";
+import { prisma } from '../prisma-client';
+import { Prisma } from '@prisma/client';
+import { updatePlayerTeamELO } from './player-service';
 
 // Function to calculate the number of wins for a team
 export const calculateTeamWins = async (teamId: number) => {
@@ -20,38 +21,22 @@ interface Player {
   previousTeamELO: number;
 }
 
-interface TeamMatch {
-  id: number;
-  date: string; // or Date if you prefer to work with Date objects
-  winnerTeamId: number;
-  loserTeamId: number;
-  winnerELO: number;
-  loserELO: number;
-}
-
-interface TeamELOLog {
-  id: number;
-  elo: number;
-  date: string; // or Date if you prefer to work with Date objects
-  teamId: number;
-  teamMatchId: number;
-}
-
-interface Team {
-  id: number;
-  currentELO: number;
-  previousELO: number;
-  players: Player[];
-  teamMatchesAsWinner: TeamMatch[];
-  teamMatchesAsLoser: TeamMatch[];
-  TeamELOLog: TeamELOLog[];
+export type Team = Prisma.TeamGetPayload<{
+  include: {
+    players: true;
+    teamMatchesAsWinner: true;
+    teamMatchesAsLoser: true;
+    TeamELOLog: true;
+  };
+}> & {
   wins: number;
   losses: number;
   totalMatches: number;
+  currentELO: number;
   name: string;
-}
+};
 
-export const getTeams = async () => {
+export const getTeams = async (): Promise<Team[]> => {
   const teams = await prisma.team.findMany({
     include: {
       players: true,
@@ -65,7 +50,7 @@ export const getTeams = async () => {
     const wins = team.teamMatchesAsWinner.length;
     const losses = team.teamMatchesAsLoser.length;
     const totalMatches = wins + losses;
-    const name = team.players[0].name + " & " + team.players[1].name;
+    const name = team.players[0].name + ' & ' + team.players[1].name;
     // Assuming the team's current ELO is the last entry in the ELO log
     const currentELO =
       team.TeamELOLog.length > 0
@@ -184,7 +169,7 @@ export type TeamMatchDetails = TeamMatchDetail[];
 export const getRecentTeamMatches = async (limit: number = 5) => {
   const recentMatches = await prisma.teamMatch.findMany({
     take: limit,
-    orderBy: { date: "desc" },
+    orderBy: { date: 'desc' },
     include: {
       winnerTeam: { include: { players: true } },
       loserTeam: { include: { players: true } },
@@ -215,7 +200,7 @@ export const getRecentTeamMatches = async (limit: number = 5) => {
           teamId: match.winnerTeamId,
           teamName: match.winnerTeam.players
             .map((player) => player.name)
-            .join(" & "),
+            .join(' & '),
           players: match.winnerTeam.players,
           elo: winnerELOLog ? winnerELOLog.elo : null, // Assuming null if no ELO log found
         },
@@ -223,7 +208,7 @@ export const getRecentTeamMatches = async (limit: number = 5) => {
           teamId: match.loserTeamId,
           teamName: match.loserTeam.players
             .map((player) => player.name)
-            .join(" & "),
+            .join(' & '),
           players: match.loserTeam.players,
           elo: loserELOLog ? loserELOLog.elo : null, // Assuming null if no ELO log found
         },
@@ -348,12 +333,12 @@ export const revertLatestTeamMatch = async () => {
     // Step 1: Find the latest match
     const latestMatch = await prisma.teamMatch.findFirst({
       orderBy: {
-        date: "desc",
+        date: 'desc',
       },
     });
 
     if (!latestMatch) {
-      console.error("No matches found to revert.");
+      console.error('No matches found to revert.');
       return;
     }
 
@@ -374,7 +359,7 @@ export const revertLatestTeamMatch = async () => {
           },
         },
         orderBy: {
-          date: "desc",
+          date: 'desc',
         },
       });
 
@@ -410,7 +395,7 @@ export const revertLatestTeamMatch = async () => {
           },
         },
         orderBy: {
-          date: "desc",
+          date: 'desc',
         },
       });
 
@@ -449,10 +434,10 @@ export const revertLatestTeamMatch = async () => {
     });
 
     console.log(
-      "Latest match and associated ELO changes successfully reverted."
+      'Latest match and associated ELO changes successfully reverted.'
     );
   } catch (error) {
-    console.error("Error in reverting the latest match:", error);
+    console.error('Error in reverting the latest match:', error);
   }
 };
 
@@ -488,7 +473,7 @@ export const getTeamDetails = async (teamId: number) => {
       },
       TeamELOLog: {
         orderBy: {
-          date: "asc",
+          date: 'asc',
         },
       },
     },
@@ -504,6 +489,6 @@ export const getTeamDetails = async (teamId: number) => {
 export async function getTeamELOHistory(teamId: number) {
   return prisma.teamELOLog.findMany({
     where: { teamId },
-    orderBy: { date: "asc" },
+    orderBy: { date: 'asc' },
   });
 }

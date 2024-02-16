@@ -1,34 +1,34 @@
 // NavMenu.tsx
-import { useState } from "react";
-import { Link } from "@remix-run/react";
-import { motion, AnimatePresence } from "framer-motion";
+import { useState } from 'react';
+import { Link } from '@remix-run/react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const NavMenu = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const menuItems = [
-    { name: "forside", path: "/" },
-    { name: "1v1", path: "/duel" },
-    { name: "2v2", path: "/team" },
-    { name: "stats 2v2", path: "/team-stats" },
-    { name: "stats 1v1", path: "/duel-stats" },
-    { name: "profilside", path: "/profile/0" },
-    { name: "lagside", path: "/team-profile/0" },
+    { name: 'forside', path: '/' },
+    { name: '1v1', path: '/duel' },
+    { name: '2v2', path: '/team' },
+    { name: 'stats 1v1', path: '/duel-stats' },
+    { name: 'stats 2v2', path: '/team-stats' },
+    { name: 'profilside', path: '/profile/0' },
+    { name: 'lagside', path: '/team-profile/0' },
   ];
 
   const menuVariants = {
     open: { opacity: 1, x: 0 },
-    closed: { opacity: 0, x: "-100%" },
+    closed: { opacity: 0, x: '-100%' },
   };
 
   return (
-    <nav className="mb-4 flex justify-end mr-4 relative">
-      <div className="hidden xl:flex w-full justify-between items-center">
+    <nav className="relative mb-4 mr-4 flex justify-end">
+      <div className="hidden w-full items-center justify-between xl:flex">
         {menuItems.map((item) => (
           <Link
             key={item.name}
             to={item.path}
-            className="dark:text-white hover:underline text-2xl"
+            className="text-2xl hover:underline dark:text-white"
           >
             {item.name.toLocaleUpperCase()}
           </Link>
@@ -36,7 +36,7 @@ const NavMenu = () => {
       </div>
 
       <button
-        className="text-2xl flex justify-start dark:text-white xl:hidden"
+        className="flex justify-start text-2xl xl:hidden dark:text-white"
         onClick={() => setIsMenuOpen(!isMenuOpen)}
       >
         <svg
@@ -45,7 +45,7 @@ const NavMenu = () => {
           viewBox="0 0 24 24"
           strokeWidth={1.5}
           stroke="currentColor"
-          className="w-12 h-12"
+          className="h-12 w-12"
         >
           <path
             strokeLinecap="round"
@@ -60,8 +60,8 @@ const NavMenu = () => {
           <>
             <button
               onClick={() => setIsMenuOpen(false)}
-              style={{ zIndex: "41" }}
-              className="absolute dark:text-white text-black top-0 right-0 m-8"
+              style={{ zIndex: '41' }}
+              className="absolute right-0 top-0 m-8 text-black dark:text-white"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -69,7 +69,7 @@ const NavMenu = () => {
                 viewBox="0 0 24 24"
                 strokeWidth={1.5}
                 stroke="currentColor"
-                className="w-12 h-12"
+                className="h-12 w-12"
               >
                 <path
                   strokeLinecap="round"
@@ -84,7 +84,7 @@ const NavMenu = () => {
               animate="open"
               exit="closed"
               variants={menuVariants}
-              className="flex flex-col items-center justify-center fixed inset-0 bg-white dark:bg-gray-800 text-2xl z-40"
+              className="fixed inset-0 z-40 flex flex-col items-center justify-center bg-white text-2xl dark:bg-gray-800"
             >
               {menuItems.map((item) => (
                 <motion.li
@@ -94,7 +94,7 @@ const NavMenu = () => {
                 >
                   <Link
                     to={item.path}
-                    className="dark:text-white hover:underline"
+                    className="hover:underline dark:text-white"
                     onClick={() => setIsMenuOpen(false)}
                   >
                     {item.name}
