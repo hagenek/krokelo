@@ -5,7 +5,7 @@ import {
   redirect,
 } from '@remix-run/node';
 import { useLoaderData, useFetcher } from '@remix-run/react';
-import { useState } from 'react';
+import { SetStateAction, useState } from 'react';
 import { createPlayer, getPlayers } from '../services/player-service';
 import {
   recordMatch,
@@ -92,9 +92,9 @@ export const action: ActionFunction = async ({ request }) => {
 
 export default function Index() {
   const { players } = useLoaderData<typeof loader>();
-  const [player1, setPlayer1] = useState('');
-  const [player2, setPlayer2] = useState('');
-  const [winner, setWinner] = useState('');
+  const [player1, setPlayer1] = useState(null);
+  const [player2, setPlayer2] = useState(null);
+  const [winner, setWinner] = useState(null);
 
   const fetcher = useFetcher();
 
@@ -102,24 +102,6 @@ export default function Index() {
     value: player.name,
     label: player.name,
   }));
-
-  const handlePlayer1Change = (newValue: any) => {
-    setPlayer1(newValue ? newValue.value : '');
-  };
-
-  const handlePlayer2Change = (newValue: any) => {
-    setPlayer2(newValue ? newValue.value : '');
-  };
-
-  const winnerOptions = [
-    { value: '', label: 'Velg vinner' },
-    { value: player1, label: player1 }, // Assuming player1 and player2 are names
-    { value: player2, label: player2 },
-  ];
-
-  const handleWinnerChange = (selectedOption: any) => {
-    setWinner(selectedOption ? selectedOption.value : '');
-  };
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -138,21 +120,21 @@ export default function Index() {
     // Use the fetcher form to submit
     fetcher.submit({ player1, player2, winner }, { method: 'post' });
 
-    // Reset form fields
-    setPlayer1('');
-    setPlayer2('');
-    setWinner('');
+    // // Reset form fields
+    // setPlayer1(null);
+    // setPlayer2(null);
+    // setWinner(null);
   };
 
-  const isFormValid = player1.trim() && player2.trim() && winner.trim();
+  const isFormValid = !!player1 && !!player2 && !!winner;
 
   return (
     <div className={PageContainerStyling}>
       <h1 className="font-arial p-4 text-center text-4xl font-bold dark:text-white">
         1v1
       </h1>
-      <div className="flex-col justify-center">
-        <details className="mb-4">
+      <div>
+        {/* <details className="mb-4">
           <summary className="dark:text-white">Hvordan bruke?</summary>
           <div className="dark:text-gray-400">
             <h2 className="mb-3 text-xl font-semibold dark:text-white">
@@ -172,73 +154,73 @@ export default function Index() {
               navnet deres i tabellen nedenfor.
             </p>
           </div>
-        </details>
+        </details> */}
 
-        <div className="mb-6 flex justify-center">
+        <div className="flex justify-center p-4">
           <img src="img/1v1krok.png" alt="1v1" className="w-1/3 rounded" />
         </div>
-        <fetcher.Form method="post" onSubmit={handleSubmit} className="mb-8">
-          <div className="mb-4 grid grid-cols-1 gap-4 md:grid-cols-2 ">
-            <div className="flex-col">
+        <fetcher.Form method="post" onSubmit={handleSubmit}>
+          <div className="grid grid-cols-12 gap-4 py-4">
+            <div className="col-span-8 col-start-3 flex flex-col items-start lg:col-span-4 lg:col-start-5">
               <label
                 htmlFor="player1"
-                className="block text-sm font-medium text-gray-700 dark:text-white"
+                className="text-sm font-medium text-gray-700 dark:text-white"
               >
                 Spiller 1
               </label>
               <CreatableSelect
                 id="player1"
                 isClearable
-                onChange={handlePlayer1Change}
+                onChange={(option) => setPlayer1(option ? option.value : '')}
                 options={playerOptions}
-                className="m-auto mt-1 w-3/4 dark:text-black"
+                className="mt-1 w-full dark:text-black"
                 placeholder="Legg til Spiller 1"
               />
-            </div>
-            <div>
               <label
                 htmlFor="player2"
-                className="block text-sm font-medium text-gray-700 dark:text-white"
+                className="mt-4 text-sm font-medium text-gray-700 dark:text-white"
               >
                 Spiller 2
               </label>
               <CreatableSelect
                 id="player2"
                 isClearable
-                onChange={handlePlayer2Change}
+                onChange={(option) => setPlayer2(option ? option.value : '')}
                 options={playerOptions}
-                className="m-auto mt-1 w-3/4 dark:text-black"
+                className="mt-1 w-full dark:text-black"
                 placeholder="Legg til Spiller 2"
               />
-            </div>
-          </div>
-
-          <div className="mt-4 grid w-full grid-cols-2">
-            <div>
-              <label
-                htmlFor="winner"
-                className="block text-sm font-medium text-gray-700 dark:text-white"
-              >
+              <p className="mt-4 text-sm font-medium text-gray-700 dark:text-white">
                 Hvem vant?
-              </label>
-              <Select
-                id="winner"
-                name="winner"
-                value={
-                  winnerOptions.find((option) => option.value === winner) ||
-                  null
-                }
-                onChange={handleWinnerChange}
-                options={winnerOptions}
-                className="m-auto mb-4 w-1/2 dark:text-black"
-                classNamePrefix="react-select"
-              />
-            </div>
-            <div className="flex justify-center">
+              </p>
+              <div className="flex flex-col items-start">
+                <label className="mt-2">
+                  <input
+                    type="radio"
+                    value={player1}
+                    disabled={!player1}
+                    checked={player1 ? player1 === winner : false}
+                    onChange={(e) => setWinner(e.target.value)}
+                    className="mr-2"
+                  />
+                  {player1 || 'Spiller 1'}
+                </label>
+                <label className="mt-2">
+                  <input
+                    type="radio"
+                    value={player2}
+                    disabled={!player2}
+                    checked={player2 ? player2 === winner : false}
+                    onChange={(e) => setWinner(e.target.value)}
+                    className="mr-2"
+                  />
+                  {player2 || 'Spiller 2'}
+                </label>
+              </div>
               <button
                 disabled={!isFormValid} // Disable the button if the form is not valid
                 type="submit"
-                className="m-4 w-1/2 rounded bg-blue-600 px-4 py-2 text-center text-white hover:bg-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-300 dark:bg-gray-400 dark:text-black"
+                className="mt-4 w-full rounded bg-blue-600 px-4 py-2 text-center text-white hover:bg-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-300 dark:bg-gray-400 dark:text-black"
               >
                 Lagre resultat
               </button>
