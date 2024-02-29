@@ -65,6 +65,7 @@ const GenericSearchableDropdown: React.FC<GenericSearchableDropdownProps> = ({
                 key={item.id}
                 onClick={() => {
                   onItemSelect(item.id);
+                  setSearchTerm(item.name);
                   setFocused(false);
                 }}
               >
