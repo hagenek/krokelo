@@ -148,8 +148,8 @@ export default function TeamStats() {
         </div>
       </section>
 
-      <div className="flex-col justify-center text-center mt-12">
-        <h2 className="text-xl m-2 font-semibold mb-3 dark:text-white">
+      <div className="mt-12 flex-col justify-center text-center">
+        <h2 className="m-2 mb-3 text-xl font-semibold dark:text-white">
           Individuell ranking ved lagspill top 5
         </h2>
         <table className="min-w-full table-auto">
@@ -172,21 +172,21 @@ export default function TeamStats() {
               .map((player, index) => (
                 <tr
                   key={player.id}
-                  className="border-t dark:border-gray-700 text-md md:text-xl"
+                  className="text-md border-t md:text-xl dark:border-gray-700"
                 >
                   <td className="px-4 py-2 font-semibold dark:text-white">
                     #{index + 1} {player.name}
                   </td>
-                  <td className="px-4 py-2 align-middle text-center dark:text-white">
+                  <td className="px-4 py-2 text-center align-middle dark:text-white">
                     {player.teamStats.wins}
                   </td>
-                  <td className="px-4 py-2 align-middle text-center dark:text-white">
+                  <td className="px-4 py-2 text-center align-middle dark:text-white">
                     {player.teamStats.losses}
                   </td>
-                  <td className="px-4 py-2 align-middle text-center dark:text-white">
+                  <td className="px-4 py-2 text-center align-middle dark:text-white">
                     {player.teamStats.totalMatches}
                   </td>
-                  <td className="px-4 py-2 align-middle text-center dark:text-white">
+                  <td className="px-4 py-2 text-center align-middle dark:text-white">
                     {player.currentTeamELO}
                   </td>
                 </tr>
