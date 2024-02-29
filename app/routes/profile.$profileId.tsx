@@ -10,10 +10,10 @@ import {
   getPlayerELOHistory,
   getPlayerTeamELOHistory,
   getPlayers,
-} from "~/services/player-service";
+} from '~/services/player-service';
 
-import GenericSearchableDropdown from "~/ui/searchable-dropdown";
-import { calculateWinPercentage } from "~/routes/team-profile.$teamId";
+import GenericSearchableDropdown from '~/ui/searchable-dropdown';
+import { calculateWinPercentage } from '~/routes/team-profile.$teamId';
 
 interface Opponent {
   name: string;
