@@ -45,6 +45,7 @@ const NavMenu = () => {
     { name: 'Stats 2v2', path: '/team-stats' },
     { name: 'Profilside', path: '/profile/0' },
     { name: 'Lagside', path: '/team-profile/0' },
+    { name: 'Sammenlign', path: '/compare-players' },
   ];
 
   return (
