@@ -235,8 +235,6 @@ export const calculateNewIndividualELOs = (
   };
 };
 
-export type Match = Prisma.MatchGetPayload;
-
 export type RecentMatch = Prisma.MatchGetPayload<{
   include: { winner: true; loser: true };
 }>;

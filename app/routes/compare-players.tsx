@@ -1,11 +1,9 @@
-// routes/index.tsx
 import { type MetaFunction } from '@remix-run/node';
 import { useLoaderData } from '@remix-run/react';
 import { useState } from 'react';
-import {Player, getPlayers, RecentMatch} from '../services/player-service';
+import { Player, getPlayers } from '../services/player-service';
 import GenericSearchableDropdown from '~/ui/searchable-dropdown';
 import { Jsonify } from '@remix-run/server-runtime/dist/jsonify';
-import { Player as PrismaPlayer} from "@prisma/client";
 
 export const meta: MetaFunction = () => {
   return [
@@ -26,70 +24,32 @@ export const loader = async () => {
   return { players };
 };
 
-const getEloForPlayerAfterMatch = (
-    player: PrismaPlayer,
-    match: Jsonify<RecentMatch>,
-    players: Jsonify<Player[]>
+const findPlayerWinStats = (
+  player: Jsonify<Player>,
+  playerToCompareTo: Jsonify<Player>
 ) => {
-  const enrichedPlayer = players.find((p) => p.id === player.id);
-  if (!enrichedPlayer) {
-    console.error(`Player ${player.name} not found in enriched player list`);
-    return 0;
-  }
+  const playerMatches = player.matchesAsWinner.concat(player.matchesAsLoser);
 
-  const matchEloIndex = enrichedPlayer.eloLogs.findIndex(
-      (log) => match.id === log.matchId
+  const allMatchesBetweenPlayers = playerMatches.filter(
+    (match) =>
+      match.winnerId === playerToCompareTo.id ||
+      match.loserId === playerToCompareTo.id
   );
-  // No match played
-  if (matchEloIndex === -1) {
-    return 1500;
-  }
-
-  return enrichedPlayer.eloLogs[matchEloIndex].elo;
-};
-
-const calculateEloExchangeBetweenPlayers = (
-  player1: Jsonify<Player>,
-  player2: Jsonify<Player>
-) => {
-  const player1Matches = player1.matchesAsWinner.concat(player1.matchesAsLoser);
-  const player2Matches = player2.matchesAsWinner.concat(player2.matchesAsLoser);
-  console.log('player1Matches', player1Matches);
-    console.log('player2Matches', player2Matches);
-  const allMatchesBetweenPlayers = player1Matches.filter(
-    (match) => match.winnerId === player2.id || match.loserId === player2.id
+  const matchesWonByPlayer = allMatchesBetweenPlayers.filter(
+    (match) => match.winnerId === player.id
   );
+  const numberOfMatches = allMatchesBetweenPlayers.length;
+  const numberOfMatchesWonByPlayer = matchesWonByPlayer.length;
+  const numberOfMatchesLostByPlayer =
+    numberOfMatches - numberOfMatchesWonByPlayer;
+  const winPercentage = (numberOfMatchesWonByPlayer / numberOfMatches) * 100;
 
-  console.log(player1)
-
-    console.log('allMatchesBetweenPlayers', allMatchesBetweenPlayers);
-    ;
-
-  // const player1Elo = player1.eloLogs[player1Matches - 1].elo;
-  // const player2Elo = player2.eloLogs[player2Matches - 1].elo;
-
-  // return Math.abs(player1Elo - player2Elo);
-
-  //   const matchEloIndex = enrichedPlayer.eloLogs.findIndex(
-  //     (log) => match.id === log.matchId
-  //   );
-  //   // First match, no prior matches so must handle from base elo of 1500
-  //   if (!matchEloIndex) {
-  //     return Math.abs(enrichedPlayer.eloLogs[0].elo - 1500);
-  //   }
-
-  //   const currentMatchElo = enrichedPlayer.eloLogs[matchEloIndex].elo;
-  //   const formerMatchElo = enrichedPlayer.eloLogs[matchEloIndex - 1].elo;
-
-  //   return Math.abs(currentMatchElo - formerMatchElo);
-};
-
-const PlayerSection = ({ player }: { player: Jsonify<Player> }) => {
-  return (
-    <div className="rounded p-10">
-      <h2>{player.name}</h2>
-    </div>
-  );
+  return {
+    numberOfMatches,
+    numberOfMatchesWonByPlayer,
+    numberOfMatchesLostByPlayer,
+    winPercentage,
+  };
 };
 
 export default function Index() {
@@ -102,8 +62,6 @@ export default function Index() {
     undefined
   );
 
-  //const player1Matches = player1?.matchesAsWinner + player1?.matchesAsLoser;
-
   const handlePlayerChange = (
     playerId: number,
     setPlayer: React.Dispatch<React.SetStateAction<Jsonify<Player> | undefined>>
@@ -112,12 +70,12 @@ export default function Index() {
     setPlayer(player);
   };
 
-  console.log('players', players);
-  console.log("difference", player2 && player1 ?calculateEloExchangeBetweenPlayers(player1, player2) : "no players selected")
+  const player1WinStats =
+    player1 && player2 ? findPlayerWinStats(player1, player2) : undefined;
 
+  // TODO: migrate datamodel to include elo gains/loses (recalculate elo values?)
   return (
     <>
-      <h1>Sammenlign spillere</h1>
       <div className="flex">
         <GenericSearchableDropdown
           className="mt-4"
@@ -132,20 +90,48 @@ export default function Index() {
           placeholder={'Velg spiller 2'}
         />
       </div>
-      <div className="flex justify-between">
-        {player1 && player2 && (
-          <>
-            <PlayerSection player={player1} />
-            <PlayerSection player={player2} />
-          </>
-        )}
-      </div>
-      <div>
-        <h2>Sammenligning</h2>
-        <div>
-          <h3>Matches</h3>
-        </div>
-      </div>
+
+      {player1 && player2 && (
+        <>
+          <div className="container flex flex-col justify-center">
+            <h2 className="mb-2 text-xl font-bold dark:text-green-200">
+              Sammenligning {player1.name} vs {player2.name}
+            </h2>
+            <table
+              className="mb-2 table-auto rounded-lg bg-blue-100
+             p-4 text-lg text-black shadow-lg dark:bg-gray-700 dark:text-white"
+            >
+              <thead>
+                <tr className="text-md">
+                  <th className="px-4 py-2"># kamper</th>
+                  <th className="px-4 py-2"># seiere</th>
+                  <th className="px-4 py-2"># tap</th>
+                  <th className="px-4 py-2"># overlegenhet</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr className="text-md">
+                  <td className="border px-4 py-2">
+                    {player1WinStats?.numberOfMatches}
+                  </td>
+                  <td className="border px-4 py-2">
+                    {player1WinStats?.numberOfMatchesWonByPlayer}
+                  </td>
+                  <td className="border px-4 py-2">
+                    {player1WinStats?.numberOfMatchesLostByPlayer}
+                  </td>
+                  <td className="border px-4 py-2">
+                    {player1WinStats?.winPercentage
+                      ? player1WinStats.winPercentage.toFixed(2)
+                      : 0}
+                    %
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </>
+      )}
     </>
   );
 }
