@@ -11,6 +11,7 @@ interface GenericSearchableDropdownProps {
   onItemSelect: (itemId: number) => void;
   placeholder: string;
   selectedItem?: DropdownItem;
+  className?: string;
 }
 
 const GenericSearchableDropdown: React.FC<GenericSearchableDropdownProps> = ({
@@ -18,6 +19,7 @@ const GenericSearchableDropdown: React.FC<GenericSearchableDropdownProps> = ({
   onItemSelect,
   placeholder,
   selectedItem,
+  className,
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filteredItems, setFilteredItems] = useState<DropdownItem[]>(items);
@@ -39,7 +41,9 @@ const GenericSearchableDropdown: React.FC<GenericSearchableDropdownProps> = ({
   }, [searchTerm, items]);
 
   return (
-    <div className="container relative w-full flex-col items-center justify-center">
+    <div
+      className={`container relative w-full flex-col items-center justify-center ${className}`}
+    >
       <input
         className="focus:ring-primary-500 focus:border-primary-500 w-1/2 rounded-md border
                    border-gray-300 bg-white px-3 py-2 text-center
