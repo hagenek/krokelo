@@ -9,7 +9,7 @@ import {
   revertLatestTeamMatch,
 } from '~/services/team-service';
 
-import { EnrichedPlayer, PageContainerStyling } from './team';
+import { EnrichedPlayer, PageContainerStyling } from './team-duel';
 import { BlueBadge, GreenBadge, YellowBadge } from '~/ui/badges';
 import { Team } from '@prisma/client';
 

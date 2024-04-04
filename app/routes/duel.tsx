@@ -19,8 +19,9 @@ import {
   calculateNewELOs,
   logIndividualELO,
 } from '../services/player-service';
-import { PageContainerStyling } from './team';
+import { PageContainerStyling } from './team-duel';
 import CreatableSelect from 'react-select/creatable';
+import { createFilter } from 'react-select';
 
 export const meta: MetaFunction = () => {
   return [
@@ -147,7 +148,14 @@ export default function Index() {
               </label>
               <CreatableSelect
                 id="player1"
+                className="mt-1 w-full dark:text-black"
+                placeholder="Legg til Spiller 1"
                 isClearable
+                options={playerOptions}
+                filterOption={(option, rawInput) =>
+                  createFilter()(option, rawInput) &&
+                  option.value !== duel.player2
+                }
                 onChange={(option) =>
                   setDuel({
                     ...duel,
@@ -155,9 +163,6 @@ export default function Index() {
                     winner: '',
                   })
                 }
-                options={playerOptions}
-                className="mt-1 w-full dark:text-black"
-                placeholder="Legg til Spiller 1"
               />
               {actionData?.validationErrors?.player1 && (
                 <em className="text-red-600">
@@ -172,7 +177,14 @@ export default function Index() {
               </label>
               <CreatableSelect
                 id="player2"
+                className="mt-1 w-full dark:text-black"
+                placeholder="Legg til Spiller 2"
                 isClearable
+                options={playerOptions}
+                filterOption={(option, rawInput) =>
+                  createFilter()(option, rawInput) &&
+                  option.value !== duel.player1
+                }
                 onChange={(option) =>
                   setDuel({
                     ...duel,
@@ -180,9 +192,6 @@ export default function Index() {
                     winner: '',
                   })
                 }
-                options={playerOptions}
-                className="mt-1 w-full dark:text-black"
-                placeholder="Legg til Spiller 2"
               />
               {actionData?.validationErrors?.player2 ? (
                 <em className="text-red-600">
