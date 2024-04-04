@@ -5,11 +5,6 @@ interface ActivityGraphProps {
   matches: MatchMinimal[];
 }
 
-const getDayNameInLocale = (dateString: string): string => {
-  const date = new Date(dateString);
-  return date.toLocaleDateString('no-NO', { weekday: 'short' });
-};
-
 export const ActivityGraph: React.FC<ActivityGraphProps> = ({ matches }) => {
   const getStartOfWeek = () => {
     const now = new Date();
@@ -58,7 +53,10 @@ export const ActivityGraph: React.FC<ActivityGraphProps> = ({ matches }) => {
       }
     }
 
-    return Array.from(weekMap.entries());
+    return Array.from(weekMap.entries()).map(([dateString, hours]) => [
+      new Date(dateString).toLocaleDateString('no-NO', { weekday: 'short' }),
+      hours,
+    ]);
   };
 
   const data = processData(matches);
@@ -94,7 +92,7 @@ export const ActivityGraph: React.FC<ActivityGraphProps> = ({ matches }) => {
               className="mb-1 flex h-[32px] items-center justify-center text-xs lg:text-sm"
               key={dayIndex}
             >
-              {getDayNameInLocale(day)}
+              {day}
             </h3>
           ))}
         </div>

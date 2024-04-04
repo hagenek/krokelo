@@ -93,8 +93,6 @@ export default function TeamProfile() {
 
   const navigate = useNavigate();
 
-  console.log('teams *** ', teams);
-
   if (!Array.isArray(teams)) {
     return <div>Laster...</div>;
   }
