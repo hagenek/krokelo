@@ -257,6 +257,7 @@ export default function Index() {
                 options={playerOptions}
                 isOptionDisabled={() => teamDuel.team1.length >= 2}
                 closeMenuOnSelect={teamDuel.team1.length > 0}
+                blurInputOnSelect={teamDuel.team1.length > 0}
                 filterOption={(option, rawInput) =>
                   createFilter()(option, rawInput) &&
                   !teamDuel.team2.includes(option.value)
@@ -289,6 +290,7 @@ export default function Index() {
                 options={playerOptions}
                 isOptionDisabled={() => teamDuel.team2.length >= 2}
                 closeMenuOnSelect={teamDuel.team2.length > 0}
+                blurInputOnSelect={teamDuel.team2.length > 0}
                 filterOption={(option, rawInput) =>
                   createFilter()(option, rawInput) &&
                   !teamDuel.team1.includes(option.value)
