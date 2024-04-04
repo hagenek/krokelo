@@ -88,17 +88,17 @@ export default function TeamStats() {
 
   return (
     <div className={PageContainerStyling}>
-      <section className="my-4 md:p-4">
-        <h2 className="mb-3 text-2xl font-bold dark:text-white">
+      <section className="py-4">
+        <h2 className="mb-3 text-xl font-bold md:text-2xl dark:text-white">
           Nylige kamper
         </h2>
         <div className="overflow-x-auto">
-          <table className="min-w-full table-auto text-left">
+          <table className="min-w-full">
             <thead>
               <tr className="border-b dark:border-gray-600">
-                <th className="px-4 py-2">Tidspunkt</th>
-                <th className="px-4 py-2">Vinnende Lag (ELO etter seier)</th>
-                <th className="px-4 py-2">Tapende Lag (ELO etter tap)</th>
+                <th className="w-1/3 py-2">Tidspunkt</th>
+                <th className="w-1/3 py-2">Vinner</th>
+                <th className="w-1/3 py-2">Taper</th>
                 <th></th>
               </tr>
             </thead>
@@ -108,7 +108,7 @@ export default function TeamStats() {
                   key={match.date}
                   className={`border-b dark:border-gray-600 ${getRowHighlightClass(idx, match.date)}`}
                 >
-                  <td className="px-4 py-2 dark:text-white">
+                  <td className="py-2 dark:text-white">
                     {new Date(match.date).toLocaleString('no-NO', {
                       day: '2-digit',
                       month: 'short',
@@ -116,21 +116,29 @@ export default function TeamStats() {
                       minute: '2-digit',
                     })}
                   </td>
-                  <td className="px-4 py-2 dark:text-white">
+                  <td className="py-2 dark:text-white">
                     <div>{getBadgeForTeam(match.winner.teamId, teams)}</div>
-                    <span className="mr-2 font-semibold">
+                    <span className="font-semibold">
                       {match.winner.teamName}
                     </span>
-                    <span className="text-sm">(ELO: {match.winner.elo})</span>
+                    <div>
+                      <span className="font-medium text-[#00754E] dark:text-[#70C7AA]">
+                        {match.winner.elo}
+                      </span>
+                    </div>
                   </td>
-                  <td className="px-4 py-2 dark:text-white">
+                  <td className="py-2 dark:text-white">
                     <div>{getBadgeForTeam(match.loser.teamId, teams)}</div>
                     <span className="font-semibold">
                       {match.loser.teamName}
-                    </span>{' '}
-                    <span className="text-sm">(ELO: {match.loser.elo})</span>
+                    </span>
+                    <div>
+                      <span className="font-medium text-[#E44244] dark:text-[#EC7B7C]">
+                        {match.loser.elo}
+                      </span>
+                    </div>
                   </td>
-                  <td className="px-4">
+                  <td>
                     {isLatestMatch(idx) &&
                       isMatchLessThan5MinutesOld(match.date) && (
                         <button
@@ -148,18 +156,17 @@ export default function TeamStats() {
         </div>
       </section>
 
-      <div className="mt-12 flex-col justify-center text-center">
-        <h2 className="m-2 mb-3 text-xl font-semibold dark:text-white">
+      <section className="py-4">
+        <h2 className="mb-3 text-xl font-bold md:text-2xl dark:text-white">
           Individuell ranking ved lagspill top 5
         </h2>
-        <table className="min-w-full table-auto">
+        <table className="min-w-full">
           <thead>
             <tr>
-              <th className="px-4 py-2 dark:text-white">Navn and Rank</th>
-              <th className="px-4 py-2 dark:text-white">Seiere</th>
-              <th className="px-4 py-2 dark:text-white">Tap</th>
-              <th className="px-4 py-2 dark:text-white"># Kamper</th>
-              <th className="px-4 py-2 dark:text-white">ELO</th>
+              <th className="w-2/5 py-2 dark:text-white">Navn</th>
+              <th className="w-1/5 py-2 dark:text-white">Seiere</th>
+              <th className="w-1/5 py-2 dark:text-white">Tap</th>
+              <th className="w-1/5 py-2 dark:text-white">ELO</th>
             </tr>
           </thead>
           <tbody>
@@ -169,43 +176,39 @@ export default function TeamStats() {
                   b.currentTeamELO - a.currentTeamELO
               )
               .slice(0, 5)
-              .map((player, index) => (
+              .map((player) => (
                 <tr
                   key={player.id}
                   className="text-md border-t md:text-xl dark:border-gray-700"
                 >
-                  <td className="px-4 py-2 font-semibold dark:text-white">
-                    #{index + 1} {player.name}
+                  <td className="py-2 font-semibold dark:text-white">
+                    {player.name}
                   </td>
-                  <td className="px-4 py-2 text-center align-middle dark:text-white">
+                  <td className="py-2 dark:text-white">
                     {player.teamStats.wins}
                   </td>
-                  <td className="px-4 py-2 text-center align-middle dark:text-white">
+                  <td className="py-2 dark:text-white">
                     {player.teamStats.losses}
                   </td>
-                  <td className="px-4 py-2 text-center align-middle dark:text-white">
-                    {player.teamStats.totalMatches}
-                  </td>
-                  <td className="px-4 py-2 text-center align-middle dark:text-white">
+                  <td className="py-2 dark:text-white">
                     {player.currentTeamELO}
                   </td>
                 </tr>
               ))}
           </tbody>
         </table>
-      </div>
-      <div>
-        <h2 className="m-2 mb-3 text-xl font-semibold dark:text-white">
+      </section>
+      <section className="py-4">
+        <h2 className="mb-3 text-xl font-bold md:text-2xl dark:text-white">
           Lagranking
         </h2>
-        <table className="mb min-w-full table-auto">
+        <table className="min-w-full">
           <thead>
             <tr>
-              <th className="px-4 py-2 text-center dark:text-white">Rank</th>
-              <th className="px-4 py-2 dark:text-white">Lagnavn</th>
-              <th className="px-4 py-2 dark:text-white">Seire</th>
-              <th className="px-4 py-2 dark:text-white">Tap</th>
-              <th className="px-4 py-2 dark:text-white">ELO</th>
+              <th className="w-2/5 py-2 dark:text-white">Navn</th>
+              <th className="w-1/5 py-2 dark:text-white">Seiere</th>
+              <th className="w-1/5 py-2 dark:text-white">Tap</th>
+              <th className="w-1/5 py-2 dark:text-white">ELO</th>
             </tr>
           </thead>
 
@@ -215,35 +218,21 @@ export default function TeamStats() {
                 (a: EnrichedPlayer, b: EnrichedPlayer) =>
                   b.currentELO - a.currentELO
               )
-              .map((team: any, index) => (
-                <tr
-                  key={team.id}
-                  className="border-t text-lg dark:border-gray-700"
-                >
-                  <td className="px-4 py-2 text-center dark:text-white">
-                    <span className="rounded-full bg-indigo-500 px-2 py-1 text-white">
-                      #{index + 1}
-                    </span>
-                  </td>
-                  <td className="text-md px-4 py-2 font-semibold dark:text-white">
+              .map((team) => (
+                <tr key={team.id} className="border-t dark:border-gray-700">
+                  <td className="py-2 font-semibold dark:text-white">
                     {team.players
                       .map((player: EnrichedPlayer) => player.name)
                       .join(' & ')}
                   </td>
-                  <td className="px-4 py-2 text-center align-middle dark:text-white">
-                    {team.wins}
-                  </td>
-                  <td className="px-4 py-2 text-center align-middle dark:text-white">
-                    {team.losses}
-                  </td>
-                  <td className="px-4 py-2 text-center align-middle dark:text-white">
-                    {team.currentELO}
-                  </td>
+                  <td className="py-2 dark:text-white">{team.wins}</td>
+                  <td className="py-2 dark:text-white">{team.losses}</td>
+                  <td className="py-2 dark:text-white">{team.currentELO}</td>
                 </tr>
               ))}
           </tbody>
         </table>
-      </div>
+      </section>
     </div>
   );
 }

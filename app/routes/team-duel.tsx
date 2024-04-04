@@ -324,7 +324,7 @@ export default function Index() {
                     className="mr-2"
                   />
                   {teamDuel.team1.length === 2
-                    ? teamDuel.team1.join(' og ')
+                    ? teamDuel.team1.join(' & ')
                     : 'Lag 1'}
                 </label>
                 <label className="mt-2">
@@ -339,7 +339,7 @@ export default function Index() {
                     className="mr-2"
                   />
                   {teamDuel.team2.length === 2
-                    ? teamDuel.team2.join(' og ')
+                    ? teamDuel.team2.join(' & ')
                     : 'Lag 2'}
                 </label>
               </div>
