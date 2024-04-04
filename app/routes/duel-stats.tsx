@@ -8,7 +8,7 @@ import {
   RecentMatch,
   calculatePlayerWinStreak,
 } from '~/services/player-service';
-import { PageContainerStyling } from './team';
+import { PageContainerStyling } from './team-duel';
 import { Player as PrismaPlayer } from '@prisma/client';
 import { Jsonify } from '@remix-run/server-runtime/dist/jsonify';
 

@@ -1,7 +1,7 @@
 // routes/index.tsx
 import type { LoaderFunction, MetaFunction } from '@remix-run/node';
 import { Link, useLoaderData } from '@remix-run/react';
-import { PageContainerStyling } from './team';
+import { PageContainerStyling } from './team-duel';
 import { ActivityGraph } from '~/ui/activity-graph';
 import {
   getMatchesLastSevenDays,
@@ -55,7 +55,7 @@ export default function Index() {
           />
         </Link>
         <Link
-          to="/team"
+          to="/team-duel"
           className=" flex flex-col items-center rounded px-4 py-2 font-bold text-white hover:bg-blue-700 dark:hover:bg-gray-700"
         >
           <span className="mt-2 text-2xl text-gray-900 md:mb-2 md:text-4xl dark:text-white">

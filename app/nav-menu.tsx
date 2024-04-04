@@ -40,7 +40,7 @@ const NavMenu = () => {
   const menuItems = [
     { name: 'Forside', path: '/' },
     { name: '1v1', path: '/duel' },
-    { name: '2v2', path: '/team' },
+    { name: '2v2', path: '/team-duel' },
     { name: 'Stats 1v1', path: '/duel-stats' },
     { name: 'Stats 2v2', path: '/team-stats' },
     { name: 'Profilside', path: '/profile/0' },
