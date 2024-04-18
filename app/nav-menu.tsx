@@ -1,41 +1,19 @@
 // NavMenu.tsx
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { NavLink } from '@remix-run/react';
 import { MdMenu, MdClose, MdDarkMode, MdLightMode } from 'react-icons/md';
+import { Theme, useTheme } from '~/utils/theme-provider';
 
 const NavMenu = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [darkMode, setDarkMode] = useState(false);
+  const [theme, setTheme] = useTheme();
 
-  useEffect(() => {
-    // Check if dark mode is set in localStorage
-    let isDarkMode = false;
-    if (localStorage) {
-      isDarkMode = localStorage.getItem('theme') === 'dark';
-    }
-    setDarkMode(isDarkMode);
-
-    // Apply the appropriate class to the document
-    if (isDarkMode) {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-    }
-  }, []);
-
-  const toggleDarkMode = () => {
-    // Toggle dark mode state
-    const newMode = !darkMode;
-    setDarkMode(newMode);
-
-    // Update localStorage and document class
-    localStorage.setItem('theme', newMode ? 'dark' : 'light');
-    if (newMode) {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-    }
+  const toggleTheme = () => {
+    setTheme((prevTheme) =>
+      prevTheme === Theme.LIGHT ? Theme.DARK : Theme.LIGHT
+    );
   };
+  const isDarkTheme = theme === Theme.DARK;
 
   const menuItems = [
     { name: 'Forside', path: '/' },
@@ -67,11 +45,13 @@ const NavMenu = () => {
         <div className="flex space-x-3 md:order-2 md:space-x-0 rtl:space-x-reverse">
           <button
             type="button"
-            aria-label={darkMode ? 'Aktiver mørk modus' : 'Aktiver lys modus'}
+            aria-label={
+              isDarkTheme ? 'Aktiver mørk modus' : 'Aktiver lys modus'
+            }
             className="rounded-lg px-3 py-2 text-sm text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200 md:px-2 dark:text-gray-400 dark:hover:bg-gray-700 dark:focus:ring-gray-600"
-            onClick={() => toggleDarkMode()}
+            onClick={() => toggleTheme()}
           >
-            {darkMode ? <MdDarkMode size={20} /> : <MdLightMode size={20} />}
+            {isDarkTheme ? <MdDarkMode size={20} /> : <MdLightMode size={20} />}
           </button>
           <button
             type="button"
