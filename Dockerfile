@@ -53,4 +53,6 @@ COPY --from=build /myapp/build /myapp/build
 COPY --from=build /myapp/public /myapp/public
 ADD . .
 
+ARG COOKIE_SECRET
+
 CMD ["npm", "start"]
