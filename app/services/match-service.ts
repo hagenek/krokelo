@@ -1,15 +1,14 @@
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, Prisma } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
-export interface MatchMinimal {
-  id: number;
-  date: Date;
-}
+export type MatchesMinimal = Prisma.PromiseReturnType<
+  typeof getMatchesLastSevenDays
+>;
 
-export const getMatchesLastSevenDays = async (): Promise<MatchMinimal[]> => {
+export const getMatchesLastSevenDays = async () => {
   const sevenDaysAgo = new Date();
-  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+  sevenDaysAgo.setUTCDate(sevenDaysAgo.getUTCDate() - 7);
 
   return prisma.match.findMany({
     where: {
@@ -17,9 +16,25 @@ export const getMatchesLastSevenDays = async (): Promise<MatchMinimal[]> => {
         gte: sevenDaysAgo,
       },
     },
-    select: {
-      id: true,
-      date: true,
+    select: { id: true, date: true },
+  });
+};
+
+export type RecentMatches = Prisma.PromiseReturnType<
+  typeof getRecent1v1Matches
+>;
+
+export type RecentMatch = RecentMatches[0];
+
+export const getRecent1v1Matches = async (limit: number = 5) => {
+  return await prisma.match.findMany({
+    take: limit,
+    orderBy: {
+      date: 'desc',
+    },
+    include: {
+      winner: true,
+      loser: true,
     },
   });
 };

@@ -2,12 +2,15 @@ import { ActionFunction } from '@remix-run/node';
 import { useLoaderData, useFetcher } from '@remix-run/react';
 import {
   getPlayers,
-  getRecent1v1Matches,
   revertLatestMatch,
   Player,
-  RecentMatch,
   calculatePlayerWinStreak,
 } from '~/services/player-service';
+import {
+  getRecent1v1Matches,
+  RecentMatches,
+  RecentMatch,
+} from '~/services/match-service';
 import { PageContainerStyling } from './team-duel';
 import { Player as PrismaPlayer } from '@prisma/client';
 import { Jsonify } from '@remix-run/server-runtime/dist/jsonify';
@@ -31,7 +34,7 @@ export const action: ActionFunction = async () => {
 
 const calculateEloChangeFromMatch = (
   player: PrismaPlayer,
-  match: Jsonify<RecentMatch>,
+  match: RecentMatch,
   players: Jsonify<Player[]>
 ) => {
   const enrichedPlayer = players.find((p) => p.id === player.id);
@@ -56,7 +59,7 @@ const calculateEloChangeFromMatch = (
 
 const getEloForPlayerAfterMatch = (
   player: PrismaPlayer,
-  match: Jsonify<RecentMatch>,
+  match: RecentMatch,
   players: Jsonify<Player[]>
 ) => {
   const enrichedPlayer = players.find((p) => p.id === player.id);
@@ -78,12 +81,12 @@ const getEloForPlayerAfterMatch = (
 
 const isLatestMatch = (idx: number) => idx === 0;
 
-const isMatchLessThan5MinutesOld = (matchDate: string) => {
+const isMatchLessThan5MinutesOld = (matchDate: Date) => {
   const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
-  return new Date(matchDate) > fiveMinutesAgo;
+  return matchDate > fiveMinutesAgo;
 };
 
-const getRowHighlightClass = (idx: number, matchDate: string) =>
+const getRowHighlightClass = (idx: number, matchDate: Date) =>
   isLatestMatch(idx) && isMatchLessThan5MinutesOld(matchDate)
     ? 'bg-slate-100 dark:bg-gray-700'
     : '';
@@ -91,6 +94,13 @@ const getRowHighlightClass = (idx: number, matchDate: string) =>
 const DuelStats = () => {
   const fetcher = useFetcher();
   const { players, recent1v1Matches } = useLoaderData<typeof loader>();
+
+  const parsedRecent1v1Matches: RecentMatches = recent1v1Matches.map(
+    (match) => ({
+      ...match,
+      date: new Date(match.date),
+    })
+  );
 
   return (
     <div className={PageContainerStyling}>
@@ -109,17 +119,18 @@ const DuelStats = () => {
               </tr>
             </thead>
             <tbody>
-              {recent1v1Matches.map((match, idx) => (
+              {parsedRecent1v1Matches.map((match, idx) => (
                 <tr
                   key={match.id}
                   className={`border-b dark:border-gray-600 ${getRowHighlightClass(idx, match.date)}`}
                 >
                   <td className="py-2 dark:text-white">
-                    {new Date(match.date).toLocaleString('no-NO', {
+                    {match.date.toLocaleString('no-NO', {
                       day: '2-digit',
                       month: 'short',
                       hour: '2-digit',
                       minute: '2-digit',
+                      timeZone: 'Europe/Oslo',
                     })}
                   </td>
                   <td className="py-2 dark:text-white">

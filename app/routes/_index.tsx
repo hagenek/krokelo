@@ -1,11 +1,11 @@
 // routes/index.tsx
-import type { LoaderFunction, MetaFunction } from '@remix-run/node';
+import type { MetaFunction } from '@remix-run/node';
 import { Link, useLoaderData } from '@remix-run/react';
 import { PageContainerStyling } from './team-duel';
 import { ActivityGraph } from '~/ui/activity-graph';
 import {
   getMatchesLastSevenDays,
-  MatchMinimal,
+  MatchesMinimal,
 } from '~/services/match-service';
 
 export const meta: MetaFunction = () => {
@@ -22,28 +22,27 @@ export const meta: MetaFunction = () => {
   ];
 };
 
-export const loader: LoaderFunction = async () => {
-  const fetchedMatches = await getMatchesLastSevenDays();
-
-  return fetchedMatches.map((match) => ({
-    ...match,
-    date: new Date(match.date),
-  }));
+export const loader = async () => {
+  const matchesLastSevenDays = await getMatchesLastSevenDays();
+  return matchesLastSevenDays;
 };
 
 export default function Index() {
-  const matches = useLoaderData<MatchMinimal[]>();
-  const parsedMatches: MatchMinimal[] = matches.map((match) => ({
-    ...match,
-    date: new Date(match.date),
-  }));
+  const matchesLastSevenDays = useLoaderData<typeof loader>();
+
+  const parsedMatchesLastSevenDays: MatchesMinimal = matchesLastSevenDays.map(
+    (match) => ({
+      ...match,
+      date: new Date(match.date),
+    })
+  );
 
   return (
     <div className={PageContainerStyling}>
       <div className="grid gap-4 md:gap-6 xl:grid-cols-2">
         <Link
           to="/duel"
-          className=" flex flex-col items-center rounded px-4 py-2 font-bold text-white hover:bg-blue-700 dark:hover:bg-gray-700"
+          className="flex flex-col items-center rounded px-4 py-2 font-bold text-white hover:bg-blue-700 dark:hover:bg-gray-700"
         >
           <span className="mt-2 text-2xl text-gray-900 md:mb-2 md:text-4xl dark:text-white">
             1v1
@@ -56,7 +55,7 @@ export default function Index() {
         </Link>
         <Link
           to="/team-duel"
-          className=" flex flex-col items-center rounded px-4 py-2 font-bold text-white hover:bg-blue-700 dark:hover:bg-gray-700"
+          className="flex flex-col items-center rounded px-4 py-2 font-bold text-white hover:bg-blue-700 dark:hover:bg-gray-700"
         >
           <span className="mt-2 text-2xl text-gray-900 md:mb-2 md:text-4xl dark:text-white">
             2v2
@@ -69,7 +68,7 @@ export default function Index() {
         </Link>
       </div>
       <div className="p-4">
-        <ActivityGraph matches={parsedMatches} />
+        <ActivityGraph matches={parsedMatchesLastSevenDays} />
       </div>
     </div>
   );

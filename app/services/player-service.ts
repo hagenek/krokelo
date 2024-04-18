@@ -235,25 +235,6 @@ export const calculateNewIndividualELOs = (
   };
 };
 
-export type RecentMatch = Prisma.MatchGetPayload<{
-  include: { winner: true; loser: true };
-}>;
-
-export const getRecent1v1Matches = async (
-  limit: number = 5
-): Promise<RecentMatch[]> => {
-  return await prisma.match.findMany({
-    take: limit,
-    orderBy: {
-      date: 'desc',
-    },
-    include: {
-      winner: true,
-      loser: true,
-    },
-  });
-};
-
 export const updateELO = async (playerId: number, newELO: number) => {
   const player = await prisma.player.findUnique({
     where: { id: playerId },

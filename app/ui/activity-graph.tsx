@@ -1,26 +1,31 @@
 import React from 'react';
-import { MatchMinimal } from '../services/match-service';
+import { MatchesMinimal } from '../services/match-service';
 
 interface ActivityGraphProps {
-  matches: MatchMinimal[];
+  matches: MatchesMinimal;
 }
 
-export const ActivityGraph: React.FC<ActivityGraphProps> = ({ matches }) => {
+export const ActivityGraph = ({ matches }: ActivityGraphProps) => {
   const getStartOfWeek = () => {
     const now = new Date();
-    now.setDate(now.getDate() - 7);
+    now.setUTCDate(now.getUTCDate() - 7);
     return now;
   };
 
   const startOfWeek = getStartOfWeek();
 
-  const processData = (matches: MatchMinimal[]): Array<[string, number[]]> => {
+  const processData = (matches: MatchesMinimal): Array<[string, number[]]> => {
     const weekMap = new Map<string, number[]>();
     const now = new Date();
     const currentDayISO = now.toISOString().split('T')[0]; // Current day in ISO format
-    const currentHour = now.getHours();
+    const currentHour = now.getUTCHours();
+    const startHour = 6; // 06:00 UTC time / 08:00 Norwegian time
 
-    for (let d = new Date(startOfWeek); d <= now; d.setDate(d.getDate() + 1)) {
+    for (
+      let d = new Date(startOfWeek);
+      d <= now;
+      d.setUTCDate(d.getUTCDate() + 1)
+    ) {
       const dayISO = d.toISOString().split('T')[0];
       const hourArray = Array.from({ length: 11 }, () => 0); // Initialize hour array with 0 for each hour.
       weekMap.set(dayISO, hourArray);
@@ -29,8 +34,8 @@ export const ActivityGraph: React.FC<ActivityGraphProps> = ({ matches }) => {
     matches.forEach((match) => {
       const matchDate = new Date(match.date);
       const matchDayISO = matchDate.toISOString().split('T')[0];
-      const matchHour = matchDate.getHours();
-      const hourIndex = matchHour - 8;
+      const matchHour = matchDate.getUTCHours();
+      const hourIndex = matchHour - startHour;
 
       if (weekMap.has(matchDayISO)) {
         const hourArray = weekMap.get(matchDayISO);
@@ -44,7 +49,7 @@ export const ActivityGraph: React.FC<ActivityGraphProps> = ({ matches }) => {
     if (weekMap.has(currentDayISO)) {
       const hourArray = weekMap.get(currentDayISO);
       if (hourArray) {
-        for (let i = currentHour - 8 + 1; i < hourArray.length; i++) {
+        for (let i = currentHour - startHour + 1; i < hourArray.length; i++) {
           // Start marking as -1 from the hour after the current hour
           if (i >= 0) {
             hourArray[i] = -1;
@@ -54,24 +59,27 @@ export const ActivityGraph: React.FC<ActivityGraphProps> = ({ matches }) => {
     }
 
     return Array.from(weekMap.entries()).map(([dateString, hours]) => [
-      new Date(dateString).toLocaleDateString('no-NO', { weekday: 'short' }),
+      new Date(dateString).toLocaleString('no-NO', {
+        weekday: 'short',
+        timeZone: 'Europe/Oslo',
+      }),
       hours,
     ]);
   };
 
   const data = processData(matches);
-  const hoursLabel = [
-    '08',
-    '09',
-    '10',
-    '11',
-    '12',
-    '13',
-    '14',
-    '15',
-    '16',
-    '17',
-    '18',
+  const hoursLabels = [
+    '08:00',
+    '09:00',
+    '10:00',
+    '11:00',
+    '12:00',
+    '13:00',
+    '14:00',
+    '15:00',
+    '16:00',
+    '17:00',
+    '18:00',
   ];
 
   const getColor = (count: number) => {
@@ -97,10 +105,10 @@ export const ActivityGraph: React.FC<ActivityGraphProps> = ({ matches }) => {
           ))}
         </div>
         <div className="flex">
-          {hoursLabel.map((hour, hourIndex) => (
+          {hoursLabels.map((hoursLabel, hourIndex) => (
             <div key={hourIndex} className="mx-1 flex flex-col items-center">
               <div className="w-[40px] text-center text-xs lg:text-sm">
-                {hour}:00
+                {hoursLabel}
               </div>
               {data.map(([, hours], dayIndex) => (
                 <div
