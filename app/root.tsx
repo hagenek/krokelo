@@ -1,8 +1,4 @@
-import {
-  HtmlLinkDescriptor,
-  LoaderFunctionArgs,
-  type LinksFunction,
-} from '@remix-run/node';
+import { HtmlLinkDescriptor, type LinksFunction } from '@remix-run/node';
 import stylesheet from '~/tailwind.css';
 import {
   Link,
@@ -12,11 +8,8 @@ import {
   Scripts,
   ScrollRestoration,
   useRouteError,
-  useLoaderData,
 } from '@remix-run/react';
 import Layout from './layout';
-import { ThemeProvider, useTheme } from '~/utils/theme-provider';
-import { getCookieThemeHandler } from '~/utils/theme.server';
 
 /**
  * links
@@ -33,19 +26,9 @@ export const links: LinksFunction = (): HtmlLinkDescriptor[] => {
   ];
 };
 
-export const loader = async ({ request }: LoaderFunctionArgs) => {
-  const cookieThemeHandler = await getCookieThemeHandler(request);
-
-  return {
-    themeFromCookie: await cookieThemeHandler.getTheme(),
-  };
-};
-
-function App() {
-  const [theme] = useTheme();
-
+export default function App() {
   return (
-    <html lang="en" className={theme ? theme.toString() : ''}>
+    <html lang="en">
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -59,16 +42,6 @@ function App() {
         <LiveReload />
       </body>
     </html>
-  );
-}
-
-export default function AppWithProviders() {
-  const data = useLoaderData<typeof loader>();
-
-  return (
-    <ThemeProvider initialTheme={data.themeFromCookie}>
-      <App />
-    </ThemeProvider>
   );
 }
 
