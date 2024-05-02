@@ -9,17 +9,17 @@ import {
   Legend,
   ResponsiveContainer,
 } from 'recharts';
+import {
+  type ELOLog,
+  type TeamELOLog,
+  type TeamPlayerELOLog,
+} from '@prisma/client';
 
-interface ELODataPoint {
-  date: string;
-  elo: number;
+interface Props {
+  data: ELOLog[] | TeamELOLog[] | TeamPlayerELOLog[];
 }
 
-interface EloHistoryChartProps {
-  data: any;
-}
-
-const EloHistoryChart: React.FC<EloHistoryChartProps> = ({ data }) => {
+export const EloHistoryChart = ({ data }: Props) => {
   const massagedData =
     data.length > 0
       ? [
@@ -29,7 +29,7 @@ const EloHistoryChart: React.FC<EloHistoryChartProps> = ({ data }) => {
             ).toISOString(),
             elo: 1500,
           },
-          ...data.map((dataPoint: any) => ({
+          ...data.map((dataPoint) => ({
             date: dataPoint.date,
             elo: dataPoint.elo,
           })),
@@ -45,10 +45,8 @@ const EloHistoryChart: React.FC<EloHistoryChartProps> = ({ data }) => {
         }))
       : [];
 
-  console.log(massagedData);
-
-  const minElo = Math.min(...data.map((d: ELODataPoint) => d.elo));
-  const maxElo = Math.max(...data.map((d: ELODataPoint) => d.elo));
+  const minElo = Math.min(...data.map((d) => d.elo));
+  const maxElo = Math.max(...data.map((d) => d.elo));
 
   const yAxisDomain = [minElo - 50, maxElo + 50];
 
@@ -70,5 +68,3 @@ const EloHistoryChart: React.FC<EloHistoryChartProps> = ({ data }) => {
     </ResponsiveContainer>
   );
 };
-
-export default EloHistoryChart;

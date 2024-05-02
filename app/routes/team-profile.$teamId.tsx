@@ -1,74 +1,10 @@
-import { TeamELOLog } from '@prisma/client';
-import { LoaderFunction, MetaFunction } from '@remix-run/node';
-import { useLoaderData } from '@remix-run/react';
-import { useState } from 'react';
+import { type LoaderFunctionArgs, type MetaFunction } from '@remix-run/node';
 import { useNavigate } from '@remix-run/react';
-import { Jsonify } from '@remix-run/server-runtime/dist/jsonify';
-
-import EloHistoryChart from '~/components/elo-history-charts';
-
-import {
-  getTeamDetails,
-  getTeamELOHistory,
-  getTeams,
-  Team,
-} from '~/services/team-service';
-import GenericSearchableDropdown from '~/ui/searchable-dropdown';
-
-interface Opponent {
-  name: string;
-}
-
-interface MatchSummary {
-  id: number;
-  date: string;
-  winnerELO?: number;
-  loserELO?: number;
-  loser?: Opponent;
-  winner?: Opponent;
-}
-
-interface TeamDetails {
-  id: number;
-  name: string;
-  currentELO: number;
-  previousELO: number | null;
-  teamMatchesAsWinner: MatchSummary[];
-  teamMatchesAsLoser: MatchSummary[];
-  eloLogs: TeamELOLog[];
-}
-
-export function calculateWinPercentage(
-  wins: number,
-  totalMatches: number
-): string {
-  if (totalMatches === 0) return '0'; // Handling division by zero
-  return ((wins / totalMatches) * 100).toFixed(2);
-}
-
-export const loader: LoaderFunction = async ({ params }) => {
-  const teamId = parseInt(params.teamId || '0', 10);
-
-  const teams = await getTeams();
-
-  if (teamId < 1) {
-    return { eloHistory: [], teamDetails: null, teams };
-  }
-
-  try {
-    const eloHistory = await getTeamELOHistory(teamId);
-    console.log('Fetching team details with id ' + teamId);
-    const teamDetails = await getTeamDetails(teamId);
-    console.log('teamdetails response: ', teamDetails);
-
-    return { eloHistory, teamDetails, teams };
-  } catch (error) {
-    console.error('Failed to fetch team data:', error);
-    throw new Response(`Internal Server Error: ${error?.toString()}`, {
-      status: 500,
-    });
-  }
-};
+import { EloHistoryChart } from '~/components/elo-history-charts';
+import { getTeams } from '~/services/team-service';
+import { typedjson, useTypedLoaderData } from 'remix-typedjson';
+import Select from 'react-select';
+import { PageContainerStyling } from './team-duel';
 
 export const meta: MetaFunction = () => {
   return [
@@ -81,46 +17,54 @@ export const meta: MetaFunction = () => {
   ];
 };
 
-interface LoaderData {
-  eloHistory: TeamELOLog[];
-  teamDetails: TeamDetails;
-  teams: Team[];
-}
+export const loader = async ({ params }: LoaderFunctionArgs) => {
+  const teamId = parseInt(params.teamId || '0', 10);
 
-export default function TeamProfile() {
-  const { eloHistory, teamDetails, teams } = useLoaderData<LoaderData>();
-  const [selectedTeam, setSelectedTeam] = useState<Jsonify<Team> | null>();
+  const teams = await getTeams();
+  const team = teams.find((team) => team.id === teamId);
 
+  return typedjson({ teams, team });
+};
+
+export default function Index() {
   const navigate = useNavigate();
+  const { teams, team } = useTypedLoaderData<typeof loader>();
 
-  if (!Array.isArray(teams)) {
-    return <div>Laster...</div>;
-  }
-
-  const teamsRankedByELO = [...teams]?.sort(
+  const teamsRankedByELO = [...teams].sort(
     (t1, t2) => t1.currentELO - t2.currentELO
   );
 
-  const handleTeamChange = (teamId: number) => {
-    setSelectedTeam(teams.find((t) => t?.id === teamId) || null);
-    navigate(`/team-profile/${teamId}`);
-  };
+  const teamOptions = teams.map((team) => ({
+    value: team.id,
+    label: team.name,
+  }));
+
+  const numberOfWins = team ? team.teamMatchesAsWinner.length : 0;
+  const numberOfLosses = team ? team.teamMatchesAsLoser.length : 0;
+  const numberOfMatches = numberOfWins + numberOfLosses;
+  const winPercentage = (numberOfWins / numberOfMatches) * 100;
 
   return (
-    <div className="container w-full items-center justify-center p-4">
-      <GenericSearchableDropdown
-        items={teams.map((t) => ({ id: t.id, name: t.name }))}
-        onItemSelect={handleTeamChange}
-        placeholder={'Velg lag'}
-      />
+    <div className={PageContainerStyling}>
+      <div className="flex justify-center py-4">
+        <Select
+          id="teamProfileSelect"
+          value={teamOptions.find((p) => p.value === team?.id)}
+          className="basis-2/3 md:basis-1/3 dark:text-black"
+          placeholder="Velg lag"
+          isClearable
+          options={teamOptions}
+          onChange={(option) => {
+            navigate(`/team-profile/${option ? option.value : 0}`);
+          }}
+        />
+      </div>
 
-      {selectedTeam && selectedTeam.id > 0 && teamDetails && (
+      {team && (
         <div>
-          <ul className="container mb-2 mt-4 flex items-center justify-center space-y-2 rounded-lg bg-blue-100 p-4 text-center text-center text-lg text-black shadow-lg dark:bg-gray-700 dark:text-white">
+          <ul className="mb-2 mt-4 flex items-center justify-center space-y-2 rounded-lg bg-blue-100 p-4 text-center text-center text-lg text-black shadow-lg dark:bg-gray-700 dark:text-white">
             <div>
-              {teamsRankedByELO.findIndex(
-                (team) => team.id === selectedTeam?.id
-              ) < 5 && (
+              {teamsRankedByELO.findIndex((t) => t.id === team.id) < 5 && (
                 <span className="group">
                   <img
                     src="/img/medal.png"
@@ -139,11 +83,11 @@ export default function TeamProfile() {
             <li>
               Rating lagspill:{' '}
               <span className="font-bold dark:text-green-200">
-                {teamDetails.currentELO}
+                {team.currentELO}
               </span>
             </li>
           </ul>
-          <div className="container flex flex-col justify-center">
+          <div className="flex flex-col justify-center">
             <h2 className="mb-2 text-xl font-bold dark:text-green-200">
               Duellspill
             </h2>
@@ -153,45 +97,36 @@ export default function TeamProfile() {
             >
               <thead>
                 <tr className="text-md">
-                  <th className="px-4 py-2"># kamper</th>
-                  <th className="px-4 py-2"># seiere</th>
-                  <th className="px-4 py-2"># tap</th>
+                  <th className="w-1/5 py-2"># kamper</th>
+                  <th className="w-1/5 py-2"># seiere</th>
+                  <th className="w-1/5 py-2"># tap</th>
+                  <th className="w-2/5 py-2"># overlegenhet</th>
                 </tr>
               </thead>
               <tbody>
                 <tr className="text-md">
-                  <td className="border px-4 py-2">
-                    {teamDetails.teamMatchesAsWinner?.length ??
-                      0 + teamDetails.teamMatchesAsLoser?.length ??
-                      0}
-                  </td>
-                  <td className="border px-4 py-2">
-                    {teamDetails.teamMatchesAsWinner?.length ?? 0}
-                  </td>
-                  <td className="border px-4 py-2">
-                    {teamDetails.teamMatchesAsLoser?.length ?? 0}
+                  <td className="border py-2">{numberOfMatches}</td>
+                  <td className="border py-2">{numberOfWins}</td>
+                  <td className="border py-2">{numberOfLosses}</td>
+                  <td className="border py-2">
+                    {`${winPercentage ? winPercentage.toFixed(2) : 0} %`}
                   </td>
                 </tr>
               </tbody>
             </table>
           </div>
-          <EloHistoryChart data={eloHistory} />
-          <p>
-            Matches played:{' '}
-            {(teamDetails.teamMatchesAsWinner?.length ?? 0) +
-              (teamDetails.teamMatchesAsLoser?.length ?? 0)}
-          </p>
-          <p>Matches won: {teamDetails.teamMatchesAsWinner?.length ?? 0}</p>
-          <p>Loss: {teamDetails.teamMatchesAsLoser?.length ?? 0}</p>
-          <p>
-            Win percentage:{' '}
-            {calculateWinPercentage(
-              teamDetails.teamMatchesAsWinner?.length ?? 0,
-              teamDetails.teamMatchesAsWinner?.length +
-                teamDetails.teamMatchesAsLoser?.length ?? 0
-            )}
-            %
-          </p>
+          {team.TeamELOLog.length > 0 && (
+            <>
+              <h1 className="my-4 text-xl font-bold">
+                {team.name} sin ELO-historikk i lagspill
+              </h1>
+              <EloHistoryChart
+                data={team.TeamELOLog.sort(
+                  (a, b) => a.date.getTime() - b.date.getTime()
+                )}
+              />
+            </>
+          )}
         </div>
       )}
     </div>

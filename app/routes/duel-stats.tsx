@@ -1,74 +1,63 @@
-import { ActionFunction } from '@remix-run/node';
-import { useLoaderData, useFetcher } from '@remix-run/react';
+import { useFetcher } from '@remix-run/react';
+import { type PlayersWithStats, getPlayers } from '~/services/player-service';
 import {
-  getPlayers,
-  revertLatestMatch,
-  Player,
-  calculatePlayerWinStreak,
-} from '~/services/player-service';
-import {
+  type RecentMatchPlayer,
+  type RecentMatch,
   getRecent1v1Matches,
-  RecentMatches,
-  RecentMatch,
+  revertLatestMatch,
 } from '~/services/match-service';
 import { PageContainerStyling } from './team-duel';
-import { Player as PrismaPlayer } from '@prisma/client';
-import { Jsonify } from '@remix-run/server-runtime/dist/jsonify';
+import { typedjson, useTypedLoaderData } from 'remix-typedjson';
 
 export const loader = async () => {
   const players = await getPlayers();
   const recent1v1Matches = await getRecent1v1Matches(5);
 
-  const playersWithWinStreak = players.map((player) => ({
-    ...player,
-    winStreak: calculatePlayerWinStreak(player),
-  }));
-
-  return { players: playersWithWinStreak, recent1v1Matches };
+  return typedjson({ players, recent1v1Matches });
 };
 
-export const action: ActionFunction = async () => {
+export const action = async () => {
   await revertLatestMatch();
   return null;
 };
 
 const calculateEloChangeFromMatch = (
-  player: PrismaPlayer,
+  player: RecentMatchPlayer,
   match: RecentMatch,
-  players: Jsonify<Player[]>
+  players: PlayersWithStats
 ) => {
-  const enrichedPlayer = players.find((p) => p.id === player.id);
-  if (!enrichedPlayer) {
+  const playerWithStats = players.find((p) => p.id === player.id);
+  if (!playerWithStats) {
     console.error(`Player ${player.name} not found in enriched player list`);
     return 0;
   }
 
-  const matchEloIndex = enrichedPlayer.eloLogs.findIndex(
+  const matchEloIndex = playerWithStats.eloLogs.findIndex(
     (log) => match.id === log.matchId
   );
   // First match, no prior matches so must handle from base elo of 1500
   if (!matchEloIndex) {
-    return Math.abs(enrichedPlayer.eloLogs[0].elo - 1500);
+    return Math.abs(playerWithStats.eloLogs[0].elo - 1500);
   }
 
-  const currentMatchElo = enrichedPlayer.eloLogs[matchEloIndex].elo;
-  const formerMatchElo = enrichedPlayer.eloLogs[matchEloIndex - 1].elo;
+  const currentMatchElo = playerWithStats.eloLogs[matchEloIndex].elo;
+  const formerMatchElo = playerWithStats.eloLogs[matchEloIndex - 1].elo;
 
   return Math.abs(currentMatchElo - formerMatchElo);
 };
 
 const getEloForPlayerAfterMatch = (
-  player: PrismaPlayer,
+  player: RecentMatchPlayer,
   match: RecentMatch,
-  players: Jsonify<Player[]>
+  players: PlayersWithStats
 ) => {
-  const enrichedPlayer = players.find((p) => p.id === player.id);
-  if (!enrichedPlayer) {
+  const playerWithStats = players.find((p) => p.id === player.id);
+  if (!playerWithStats) {
     console.error(`Player ${player.name} not found in enriched player list`);
     return 0;
   }
 
-  const matchEloIndex = enrichedPlayer.eloLogs.findIndex(
+  const matchEloIndex = playerWithStats.eloLogs.findIndex(
     (log) => match.id === log.matchId
   );
   // No match played
@@ -76,7 +65,7 @@ const getEloForPlayerAfterMatch = (
     return 1500;
   }
 
-  return enrichedPlayer.eloLogs[matchEloIndex].elo;
+  return playerWithStats.eloLogs[matchEloIndex].elo;
 };
 
 const isLatestMatch = (idx: number) => idx === 0;
@@ -91,16 +80,9 @@ const getRowHighlightClass = (idx: number, matchDate: Date) =>
     ? 'bg-slate-100 dark:bg-gray-700'
     : '';
 
-const DuelStats = () => {
+export default function Index() {
   const fetcher = useFetcher();
-  const { players, recent1v1Matches } = useLoaderData<typeof loader>();
-
-  const parsedRecent1v1Matches: RecentMatches = recent1v1Matches.map(
-    (match) => ({
-      ...match,
-      date: new Date(match.date),
-    })
-  );
+  const { players, recent1v1Matches } = useTypedLoaderData<typeof loader>();
 
   return (
     <div className={PageContainerStyling}>
@@ -119,7 +101,7 @@ const DuelStats = () => {
               </tr>
             </thead>
             <tbody>
-              {parsedRecent1v1Matches.map((match, idx) => (
+              {recent1v1Matches.map((match, idx) => (
                 <tr
                   key={match.id}
                   className={`border-b dark:border-gray-600 ${getRowHighlightClass(idx, match.date)}`}
@@ -160,7 +142,7 @@ const DuelStats = () => {
                       isMatchLessThan5MinutesOld(match.date) && (
                         <button
                           onClick={() => fetcher.submit({}, { method: 'post' })}
-                          className="rounded bg-blue-600 px-2 py-1 font-bold text-white hover:bg-blue-700 dark:bg-purple-600 dark:hover:bg-purple-800"
+                          className="mx-4 rounded bg-blue-600 px-2 py-1 font-bold text-white hover:bg-blue-700 dark:bg-purple-600 dark:hover:bg-purple-800"
                         >
                           Angre
                         </button>
@@ -255,6 +237,4 @@ const DuelStats = () => {
       </section>
     </div>
   );
-};
-
-export default DuelStats;
+}

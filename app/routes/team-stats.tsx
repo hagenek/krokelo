@@ -1,17 +1,14 @@
-import { ActionFunction, LoaderFunction } from '@remix-run/node';
-import { useLoaderData, useFetcher } from '@remix-run/react';
+import { useFetcher } from '@remix-run/react';
 import { getPlayers } from '~/services/player-service';
 import {
   getTeams,
-  getMultiplePlayerTeamMatchStats,
   getRecentTeamMatches,
-  TeamMatchDetails,
   revertLatestTeamMatch,
 } from '~/services/team-service';
-
-import { EnrichedPlayer, PageContainerStyling } from './team-duel';
-import { BlueBadge, GreenBadge, YellowBadge } from '~/ui/badges';
+import { PageContainerStyling } from './team-duel';
+import { BlueBadge, GreenBadge, YellowBadge } from '~/components/badges';
 import { Team } from '@prisma/client';
+import { typedjson, useTypedLoaderData } from 'remix-typedjson';
 
 const getBadgeForTeam = (teamId: number, teams: Team[]) => {
   const topThreeTeamIds = teams.slice(0, 3).map((team) => team.id);
@@ -23,60 +20,39 @@ const getBadgeForTeam = (teamId: number, teams: Team[]) => {
   return null;
 };
 
-type TeamRouteData = {
-  players: EnrichedPlayer[];
-  teams: any[];
-  recentMatches: TeamMatchDetails;
-  showRevertCard: boolean;
-};
-
-export const loader: LoaderFunction = async () => {
+export const loader = async () => {
   const players = await getPlayers();
-  let teams = await getTeams();
-
-  // Get IDs of all players
-  const playerIds = players.map((player) => player.id);
-
-  // Fetch team match stats for all players
-  const teamMatchStats = await getMultiplePlayerTeamMatchStats(playerIds);
-
-  teams = teams.sort((a, b) => b.currentELO - a.currentELO);
-
-  // Add the stats to the players
-  const playersWithStats = players.map((player) => ({
-    ...player,
-    teamStats: teamMatchStats[player.id] || {
-      totalMatches: 0,
-      wins: 0,
-      losses: 0,
-    },
-  }));
+  const teams = await getTeams();
 
   const recentMatches = await getRecentTeamMatches(5);
 
-  return { players: playersWithStats, teams, recentMatches };
+  return typedjson({
+    players,
+    teams: teams.sort((a, b) => b.currentELO - a.currentELO),
+    recentMatches,
+  });
 };
 
-export const action: ActionFunction = async () => {
-  revertLatestTeamMatch();
+export const action = async () => {
+  await revertLatestTeamMatch();
   return null;
 };
 
 const isLatestMatch = (idx: number) => idx === 0;
 
-const isMatchLessThan5MinutesOld = (matchDate: string) => {
+const isMatchLessThan5MinutesOld = (matchDate: Date) => {
   const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
-  return new Date(matchDate) > fiveMinutesAgo;
+  return matchDate > fiveMinutesAgo;
 };
 
-const getRowHighlightClass = (idx: number, matchDate: string) =>
+const getRowHighlightClass = (idx: number, matchDate: Date) =>
   isLatestMatch(idx) && isMatchLessThan5MinutesOld(matchDate)
     ? 'bg-slate-100 dark:bg-gray-700'
     : '';
 
-export default function TeamStats() {
+export default function Index() {
   const fetcher = useFetcher();
-  const { players, teams, recentMatches } = useLoaderData<TeamRouteData>();
+  const { players, teams, recentMatches } = useTypedLoaderData<typeof loader>();
 
   if (teams.length === 0) {
     return (
@@ -105,7 +81,7 @@ export default function TeamStats() {
             <tbody>
               {recentMatches.map((match, idx) => (
                 <tr
-                  key={match.date}
+                  key={match.date.getTime()}
                   className={`border-b dark:border-gray-600 ${getRowHighlightClass(idx, match.date)}`}
                 >
                   <td className="py-2 dark:text-white">
@@ -143,7 +119,7 @@ export default function TeamStats() {
                       isMatchLessThan5MinutesOld(match.date) && (
                         <button
                           onClick={() => fetcher.submit({}, { method: 'post' })}
-                          className="rounded bg-blue-600 px-2 py-1 font-bold text-white hover:bg-blue-700 dark:bg-purple-600 dark:hover:bg-purple-800"
+                          className="mx-4 rounded bg-blue-600 px-2 py-1 font-bold text-white hover:bg-blue-700 dark:bg-purple-600 dark:hover:bg-purple-800"
                         >
                           Angre
                         </button>
@@ -171,10 +147,7 @@ export default function TeamStats() {
           </thead>
           <tbody>
             {players
-              .sort(
-                (a: EnrichedPlayer, b: EnrichedPlayer) =>
-                  b.currentTeamELO - a.currentTeamELO
-              )
+              .sort((a, b) => b.currentTeamELO - a.currentTeamELO)
               .slice(0, 5)
               .map((player) => (
                 <tr
@@ -185,10 +158,18 @@ export default function TeamStats() {
                     {player.name}
                   </td>
                   <td className="py-2 dark:text-white">
-                    {player.teamStats.wins}
+                    {player.teams.reduce(
+                      (teamMatchesWins, team) =>
+                        teamMatchesWins + team.teamMatchesAsWinner.length,
+                      0
+                    )}
                   </td>
                   <td className="py-2 dark:text-white">
-                    {player.teamStats.losses}
+                    {player.teams.reduce(
+                      (teamMatchesLosses, team) =>
+                        teamMatchesLosses + team.teamMatchesAsLoser.length,
+                      0
+                    )}
                   </td>
                   <td className="py-2 dark:text-white">
                     {player.currentTeamELO}
@@ -214,16 +195,11 @@ export default function TeamStats() {
 
           <tbody>
             {teams
-              .sort(
-                (a: EnrichedPlayer, b: EnrichedPlayer) =>
-                  b.currentELO - a.currentELO
-              )
+              .sort((a, b) => b.currentELO - a.currentELO)
               .map((team) => (
                 <tr key={team.id} className="border-t dark:border-gray-700">
                   <td className="py-2 font-semibold dark:text-white">
-                    {team.players
-                      .map((player: EnrichedPlayer) => player.name)
-                      .join(' & ')}
+                    {team.players.map((player) => player.name).join(' & ')}
                   </td>
                   <td className="py-2 dark:text-white">{team.wins}</td>
                   <td className="py-2 dark:text-white">{team.losses}</td>

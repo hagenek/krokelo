@@ -18,9 +18,7 @@
     "typecheck": "tsc --build tsconfig.json && :"
   },
   "dependencies": {
-    "@heroicons/react": "^2.1.1",
     "@prisma/client": "^5.7.1",
-    "@radix-ui/themes": "^2.0.3",
     "@remix-run/css-bundle": "^2.4.0",
     "@remix-run/node": "^2.4.0",
     "@remix-run/react": "^2.4.0",
@@ -32,9 +30,8 @@
     "react-dom": "^18.2.0",
     "react-icons": "^4.12.0",
     "react-select": "^5.8.0",
-    "react-toastify": "^9.1.3",
     "recharts": "^2.10.3",
-    "remix-utils": "^7.5.0"
+    "remix-typedjson": "^0.4.1"
   },
   "devDependencies": {
     "@remix-run/dev": "^2.4.0",

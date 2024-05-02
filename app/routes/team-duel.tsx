@@ -1,4 +1,3 @@
-// routes/index.tsx
 import {
   type MetaFunction,
   type ActionFunctionArgs,
@@ -6,63 +5,24 @@ import {
 } from '@remix-run/node';
 import CreatableSelect from 'react-select/creatable';
 import { createFilter } from 'react-select';
-import {
-  useLoaderData,
-  useActionData,
-  useSubmit,
-  Form,
-} from '@remix-run/react';
+import { useActionData, useSubmit, Form } from '@remix-run/react';
 import { useState } from 'react';
 import {
   calculateNewIndividualELOs,
   createPlayer,
-  createTeam,
   getPlayers,
+  findPlayerByName,
 } from '../services/player-service';
 import {
   recordTeamMatch,
   updateAndLogELOsTeamPlay,
-} from '../services/team-service';
-import {
-  findPlayerByName,
   calculateNewTeamELOs,
-} from '../services/player-service';
-
-export type Match = {
-  id: number;
-  date: string;
-  winnerId: number;
-  loserId: number;
-  winnerELO: number;
-  loserELO: number;
-  playerId: number | null;
-};
+  createTeam,
+} from '../services/team-service';
+import { typedjson, useTypedLoaderData } from 'remix-typedjson';
 
 export const PageContainerStyling =
   'flex-col rounded-3xl justify-center items-center dark:bg-gray-800 dark:text-white mx-auto';
-
-type ELOLog = {
-  id: number;
-  playerId: number;
-  elo: number;
-  date: string;
-  matchId: number;
-};
-
-export type EnrichedPlayer = {
-  id: number;
-  name: string;
-  currentELO: number;
-  currentTeamELO: number;
-  matchesAsWinner: Match[];
-  matchesAsLoser: Match[];
-  eloLogs: ELOLog[];
-  teamStats: {
-    totalMatches: number;
-    wins: number;
-    losses: number;
-  };
-};
 
 export const meta: MetaFunction = () => {
   return [
@@ -80,7 +40,7 @@ export const meta: MetaFunction = () => {
 
 export const loader = async () => {
   const players = await getPlayers();
-  return { players };
+  return typedjson({ players });
 };
 
 export const action = async ({ request }: ActionFunctionArgs) => {
@@ -98,9 +58,6 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     team2: '',
     winner: '',
   };
-
-  console.log('team1', team1);
-  console.log('team2', team2);
 
   if (team1.length !== 2) {
     validationErrors.team1 = 'Laget må ha to spillere';
@@ -206,7 +163,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 };
 
 export default function Index() {
-  const { players } = useLoaderData<typeof loader>();
+  const { players } = useTypedLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>();
   const submit = useSubmit();
 

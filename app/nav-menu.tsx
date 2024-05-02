@@ -1,10 +1,9 @@
-// NavMenu.tsx
 import { useState } from 'react';
 import { NavLink } from '@remix-run/react';
 import { MdMenu, MdClose, MdDarkMode, MdLightMode } from 'react-icons/md';
 import { Theme, useTheme } from '~/utils/theme-provider';
 
-const NavMenu = () => {
+export const NavMenu = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [theme, setTheme] = useTheme();
 
@@ -23,7 +22,7 @@ const NavMenu = () => {
     { name: 'Stats 2v2', path: '/team-stats' },
     { name: 'Profilside', path: '/profile/0' },
     { name: 'Lagside', path: '/team-profile/0' },
-    { name: 'Sammenlign', path: '/compare-players' },
+    { name: 'Sammenlign', path: '/compare-players/0/0' },
   ];
 
   return (
@@ -90,5 +89,3 @@ const NavMenu = () => {
     </nav>
   );
 };
-
-export default NavMenu;

@@ -1,6 +1,6 @@
 import {
-  HtmlLinkDescriptor,
-  LoaderFunctionArgs,
+  type HtmlLinkDescriptor,
+  type LoaderFunctionArgs,
   type LinksFunction,
 } from '@remix-run/node';
 import stylesheet from '~/tailwind.css';
@@ -14,9 +14,9 @@ import {
   useRouteError,
   useLoaderData,
 } from '@remix-run/react';
-import Layout from './layout';
 import { ThemeProvider, useTheme } from '~/utils/theme-provider';
 import { getCookieThemeHandler } from '~/utils/theme.server';
+import Layout from './layout';
 
 /**
  * links

@@ -1,27 +1,23 @@
-// routes/index.tsx
 import {
   type MetaFunction,
   type ActionFunctionArgs,
   redirect,
 } from '@remix-run/node';
-import {
-  useLoaderData,
-  useActionData,
-  Form,
-  useSubmit,
-} from '@remix-run/react';
+import { useActionData, Form, useSubmit } from '@remix-run/react';
 import { useState } from 'react';
-import { createPlayer, getPlayers } from '../services/player-service';
 import {
-  recordMatch,
-  updateELO,
+  createPlayer,
+  getPlayers,
+  updatePlayerELO,
   findPlayerByName,
   calculateNewELOs,
   logIndividualELO,
 } from '../services/player-service';
+import { recordMatch } from '../services/match-service';
 import { PageContainerStyling } from './team-duel';
 import CreatableSelect from 'react-select/creatable';
 import { createFilter } from 'react-select';
+import { typedjson, useTypedLoaderData } from 'remix-typedjson';
 
 export const meta: MetaFunction = () => {
   return [
@@ -39,7 +35,7 @@ export const meta: MetaFunction = () => {
 
 export const loader = async () => {
   const players = await getPlayers();
-  return { players };
+  return typedjson({ players });
 };
 
 export const action = async ({ request }: ActionFunctionArgs) => {
@@ -100,9 +96,9 @@ export const action = async ({ request }: ActionFunctionArgs) => {
       player1IsWinner ? newELOPlayer1 : newELOPlayer2,
       player1IsWinner ? newELOPlayer2 : newELOPlayer1
     );
-    await updateELO(player1.id, newELOPlayer1);
+    await updatePlayerELO(player1.id, newELOPlayer1);
     await logIndividualELO(player1.id, newELOPlayer1, match.id); // Log the new ELO for player 1
-    await updateELO(player2.id, newELOPlayer2);
+    await updatePlayerELO(player2.id, newELOPlayer2);
     await logIndividualELO(player2.id, newELOPlayer2, match.id); // Log the new ELO for player 2
   } catch (err) {
     console.error(err);
@@ -112,7 +108,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 };
 
 export default function Index() {
-  const { players } = useLoaderData<typeof loader>();
+  const { players } = useTypedLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>();
   const submit = useSubmit();
 

@@ -1,12 +1,9 @@
-// routes/index.tsx
-import type { MetaFunction } from '@remix-run/node';
-import { Link, useLoaderData } from '@remix-run/react';
+import { type MetaFunction } from '@remix-run/node';
+import { Link } from '@remix-run/react';
 import { PageContainerStyling } from './team-duel';
-import { ActivityGraph } from '~/ui/activity-graph';
-import {
-  getMatchesLastSevenDays,
-  MatchesMinimal,
-} from '~/services/match-service';
+import { ActivityGraph } from '~/components/activity-graph';
+import { getMatchesLastSevenDays } from '~/services/match-service';
+import { typedjson, useTypedLoaderData } from 'remix-typedjson';
 
 export const meta: MetaFunction = () => {
   return [
@@ -24,18 +21,11 @@ export const meta: MetaFunction = () => {
 
 export const loader = async () => {
   const matchesLastSevenDays = await getMatchesLastSevenDays();
-  return matchesLastSevenDays;
+  return typedjson(matchesLastSevenDays);
 };
 
 export default function Index() {
-  const matchesLastSevenDays = useLoaderData<typeof loader>();
-
-  const parsedMatchesLastSevenDays: MatchesMinimal = matchesLastSevenDays.map(
-    (match) => ({
-      ...match,
-      date: new Date(match.date),
-    })
-  );
+  const matchesLastSevenDays = useTypedLoaderData<typeof loader>();
 
   return (
     <div className={PageContainerStyling}>
@@ -68,7 +58,7 @@ export default function Index() {
         </Link>
       </div>
       <div className="p-4">
-        <ActivityGraph matches={parsedMatchesLastSevenDays} />
+        <ActivityGraph matches={matchesLastSevenDays} />
       </div>
     </div>
   );
