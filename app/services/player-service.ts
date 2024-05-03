@@ -38,16 +38,8 @@ export const getPlayers = async () => {
           date: 'desc',
         },
       },
-      eloLogs: {
-        orderBy: {
-          date: 'desc',
-        },
-      },
-      teamPlayerELOLog: {
-        orderBy: {
-          date: 'desc',
-        },
-      },
+      eloLogs: true,
+      teamPlayerELOLog: true,
       teams: {
         include: {
           teamMatchesAsWinner: true,
