@@ -1,8 +1,9 @@
 import EloRank from 'elo-rank';
 import { prisma } from '../prisma-client';
 import { Prisma } from '@prisma/client';
+import { BASE_ELO, K_FACTOR } from '~/utils/constants';
 
-const elo = new EloRank(100);
+const elo = new EloRank(K_FACTOR);
 
 export type Player = Prisma.PromiseReturnType<typeof createPlayer>;
 
@@ -38,8 +39,16 @@ export const getPlayers = async () => {
           date: 'desc',
         },
       },
-      eloLogs: true,
-      teamPlayerELOLog: true,
+      eloLogs: {
+        orderBy: {
+          date: 'desc',
+        },
+      },
+      teamPlayerELOLog: {
+        orderBy: {
+          date: 'desc',
+        },
+      },
       teams: {
         include: {
           teamMatchesAsWinner: true,
@@ -66,8 +75,8 @@ export const createPlayer = async (name: string) => {
   return await prisma.player.create({
     data: {
       name,
-      currentELO: 1500,
-      currentTeamELO: 1500,
+      currentELO: BASE_ELO,
+      currentTeamELO: BASE_ELO,
     },
   });
 };

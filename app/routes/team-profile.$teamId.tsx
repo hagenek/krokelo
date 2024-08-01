@@ -30,9 +30,10 @@ export default function Index() {
   const navigate = useNavigate();
   const { teams, team } = useTypedLoaderData<typeof loader>();
 
-  const teamsRankedByELO = [...teams].sort(
-    (t1, t2) => t1.currentELO - t2.currentELO
+  const teamsSortedOnELODesc = [...teams].sort(
+    (t1, t2) => t2.currentELO - t1.currentELO
   );
+  const topFiveTeamIds = teamsSortedOnELODesc.slice(0, 5).map((t) => t.id);
 
   const teamOptions = teams.map((team) => ({
     value: team.id,
@@ -64,7 +65,7 @@ export default function Index() {
         <div>
           <ul className="mb-2 mt-4 flex items-center justify-center space-y-2 rounded-lg bg-blue-100 p-4 text-center text-center text-lg text-black shadow-lg dark:bg-gray-700 dark:text-white">
             <div>
-              {teamsRankedByELO.findIndex((t) => t.id === team.id) < 5 && (
+              {topFiveTeamIds.includes(team.id) && (
                 <span className="group">
                   <img
                     src="/img/medal.png"
@@ -120,11 +121,7 @@ export default function Index() {
               <h1 className="my-4 text-xl font-bold">
                 {team.name} sin ELO-historikk i lagspill
               </h1>
-              <EloHistoryChart
-                data={team.TeamELOLog.sort(
-                  (a, b) => a.date.getTime() - b.date.getTime()
-                )}
-              />
+              <EloHistoryChart data={[...team.TeamELOLog].reverse()} />
             </>
           )}
         </div>

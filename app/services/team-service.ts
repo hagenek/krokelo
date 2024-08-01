@@ -2,8 +2,9 @@ import EloRank from 'elo-rank';
 import { prisma } from '../prisma-client';
 import { Prisma } from '@prisma/client';
 import { updatePlayerTeamELO } from './player-service';
+import { BASE_ELO, K_FACTOR } from '~/utils/constants';
 
-const elo = new EloRank(100);
+const elo = new EloRank(K_FACTOR);
 
 export type Teams = Prisma.PromiseReturnType<typeof getTeams>;
 
@@ -15,7 +16,11 @@ export const getTeams = async () => {
       players: true,
       teamMatchesAsWinner: true,
       teamMatchesAsLoser: true,
-      TeamELOLog: true,
+      TeamELOLog: {
+        orderBy: {
+          date: 'desc',
+        },
+      },
     },
   });
 
@@ -24,11 +29,9 @@ export const getTeams = async () => {
     const losses = team.teamMatchesAsLoser.length;
     const totalMatches = wins + losses;
     const name = team.players[0].name + ' & ' + team.players[1].name;
-    // Assuming the team's current ELO is the last entry in the ELO log
+    // Assuming the team's current ELO is the latest entry in the ELO log
     const currentELO =
-      team.TeamELOLog.length > 0
-        ? team.TeamELOLog[team.TeamELOLog.length - 1].elo
-        : team.currentELO;
+      team.TeamELOLog.length > 0 ? team.TeamELOLog[0].elo : team.currentELO;
 
     return {
       ...team,
@@ -312,7 +315,7 @@ export const revertLatestTeamMatch = async () => {
         // Example: Reset to default ELO
         await prisma.team.update({
           where: { id: log.teamId },
-          data: { currentELO: 1500 }, // Or any default/fallback value
+          data: { currentELO: BASE_ELO }, // Or any default/fallback value
         });
       }
     }
@@ -347,7 +350,7 @@ export const revertLatestTeamMatch = async () => {
         // Handle the case where there's no previous log
         await prisma.player.update({
           where: { id: log.playerId },
-          data: { currentTeamELO: 1500 }, // Or any default/fallback value
+          data: { currentTeamELO: BASE_ELO }, // Or any default/fallback value
         });
       }
     }

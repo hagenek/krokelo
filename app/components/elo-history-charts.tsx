@@ -1,4 +1,3 @@
-import React from 'react';
 import {
   LineChart,
   Line,
@@ -14,6 +13,7 @@ import {
   type TeamELOLog,
   type TeamPlayerELOLog,
 } from '@prisma/client';
+import { BASE_ELO } from '~/utils/constants';
 
 interface Props {
   data: ELOLog[] | TeamELOLog[] | TeamPlayerELOLog[];
@@ -27,7 +27,7 @@ export const EloHistoryChart = ({ data }: Props) => {
             date: new Date(
               new Date(data[0].date).getTime() - 5 * 60000
             ).toISOString(),
-            elo: 1500,
+            elo: BASE_ELO,
           },
           ...data.map((dataPoint) => ({
             date: dataPoint.date,

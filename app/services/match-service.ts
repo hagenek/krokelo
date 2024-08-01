@@ -1,5 +1,6 @@
 import { prisma } from '../prisma-client';
 import { Prisma, type Player } from '@prisma/client';
+import { BASE_ELO } from '~/utils/constants';
 
 export type MatchesMinimal = Prisma.PromiseReturnType<
   typeof getMatchesLastSevenDays
@@ -92,7 +93,7 @@ export const revertLatestMatch = async () => {
       } else {
         await prisma.player.update({
           where: { id: playerId },
-          data: { currentELO: 1500 },
+          data: { currentELO: BASE_ELO },
         });
       }
     }

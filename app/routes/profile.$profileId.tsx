@@ -33,11 +33,11 @@ export default function Index() {
   const navigate = useNavigate();
   const { players, player } = useTypedLoaderData<typeof loader>();
 
-  const playersRankedByELO = [...players].sort(
+  const playersSortedOnELODesc = [...players].sort(
     (p1, p2) => p2.currentELO - p1.currentELO
   );
 
-  const playersRankedByTeamELO = [...players].sort(
+  const playersSortedOnTeamELODesc = [...players].sort(
     (p1, p2) => p2.currentTeamELO - p1.currentTeamELO
   );
 
@@ -86,7 +86,7 @@ export default function Index() {
             <div className="grid gap-2 md:grid-cols-2">
               <li className="flex items-center justify-center space-x-2 text-center">
                 <span className="flex text-lg">
-                  {playersRankedByELO.findIndex((p) => p.id === player.id) <
+                  {playersSortedOnELODesc.findIndex((p) => p.id === player.id) <
                     5 && (
                     <div className="group">
                       <img
@@ -104,14 +104,15 @@ export default function Index() {
                   )}
                   Rangering duellspill:{' '}
                   <span className="ml-2 font-bold dark:text-blue-200">
-                    {`${playersRankedByELO.findIndex((p) => p.id === player.id) + 1} / ${playersRankedByELO?.length}`}
+                    {`${playersSortedOnELODesc.findIndex((p) => p.id === player.id) + 1} / ${playersSortedOnELODesc?.length}`}
                   </span>
                 </span>
               </li>
               <li className="flex items-center justify-center space-x-2">
                 <span className="flex p-2 text-lg">
-                  {playersRankedByTeamELO.findIndex((p) => p.id === player.id) <
-                    5 && (
+                  {playersSortedOnTeamELODesc.findIndex(
+                    (p) => p.id === player.id
+                  ) < 5 && (
                     <div className="group text-center">
                       <img
                         src="/img/medal.png"
@@ -125,7 +126,7 @@ export default function Index() {
                   )}
                   Rangering lagspill:{' '}
                   <span className="ml-2 font-bold dark:text-blue-200">
-                    {`${playersRankedByTeamELO.findIndex((p) => p.id === player.id) + 1} / ${playersRankedByTeamELO.length}`}
+                    {`${playersSortedOnTeamELODesc.findIndex((p) => p.id === player.id) + 1} / ${playersSortedOnTeamELODesc.length}`}
                   </span>
                 </span>
               </li>
@@ -164,11 +165,7 @@ export default function Index() {
               <h1 className="my-4 text-xl font-bold">
                 {player.name} sin ELO-historikk i lagspill
               </h1>
-              <EloHistoryChart
-                data={player.teamPlayerELOLog.sort(
-                  (a, b) => a.date.getTime() - b.date.getTime()
-                )}
-              />
+              <EloHistoryChart data={[...player.teamPlayerELOLog].reverse()} />
             </>
           )}
           {player.eloLogs.length > 0 && (
@@ -176,11 +173,7 @@ export default function Index() {
               <h1 className="my-4 text-xl font-bold">
                 {player.name} sin ELO-historikk i duellspill
               </h1>
-              <EloHistoryChart
-                data={player.eloLogs.sort(
-                  (a, b) => a.date.getTime() - b.date.getTime()
-                )}
-              />
+              <EloHistoryChart data={[...player.eloLogs].reverse()} />
             </>
           )}
         </div>

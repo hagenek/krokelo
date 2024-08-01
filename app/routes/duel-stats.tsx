@@ -8,6 +8,7 @@ import {
 } from '~/services/match-service';
 import { PageContainerStyling } from './team-duel';
 import { typedjson, useTypedLoaderData } from 'remix-typedjson';
+import { BASE_ELO } from '~/utils/constants';
 
 export const loader = async () => {
   const players = await getPlayers();
@@ -28,20 +29,22 @@ const calculateEloChangeFromMatch = (
 ) => {
   const playerWithStats = players.find((p) => p.id === player.id);
   if (!playerWithStats) {
-    console.error(`Player ${player.name} not found in enriched player list`);
+    console.error(`Player ${player.name} not found in player list`);
     return 0;
   }
 
-  const matchEloIndex = playerWithStats.eloLogs.findIndex(
-    (log) => match.id === log.matchId
-  );
   // First match, no prior matches so must handle from base elo of 1500
-  if (!matchEloIndex) {
-    return Math.abs(playerWithStats.eloLogs[0].elo - 1500);
+  if (playerWithStats.eloLogs.length === 1) {
+    return Math.abs(playerWithStats.eloLogs[0].elo - BASE_ELO);
   }
 
-  const currentMatchElo = playerWithStats.eloLogs[matchEloIndex].elo;
-  const formerMatchElo = playerWithStats.eloLogs[matchEloIndex - 1].elo;
+  const currentMatchEloIndex = playerWithStats.eloLogs.findIndex(
+    (log) => match.id === log.matchId
+  );
+  const formerMatchEloIndex = currentMatchEloIndex + 1;
+
+  const currentMatchElo = playerWithStats.eloLogs[currentMatchEloIndex].elo;
+  const formerMatchElo = playerWithStats.eloLogs[formerMatchEloIndex].elo;
 
   return Math.abs(currentMatchElo - formerMatchElo);
 };
@@ -62,7 +65,7 @@ const getEloForPlayerAfterMatch = (
   );
   // No match played
   if (matchEloIndex === -1) {
-    return 1500;
+    return BASE_ELO;
   }
 
   return playerWithStats.eloLogs[matchEloIndex].elo;
@@ -84,8 +87,9 @@ export default function Index() {
   const fetcher = useFetcher();
   const { players, recent1v1Matches } = useTypedLoaderData<typeof loader>();
 
-  console.log('recent1v1Matches', recent1v1Matches);
-  console.log('players', players);
+  const rankedPlayersSortedOnELODesc = [...players]
+    .filter((a) => a.currentELO !== BASE_ELO)
+    .sort((p1, p2) => p2.currentELO - p1.currentELO);
 
   return (
     <div className={PageContainerStyling}>
@@ -173,12 +177,10 @@ export default function Index() {
           </thead>
 
           <tbody>
-            {players
-              .sort((a, b) => b.currentELO - a.currentELO)
+            {rankedPlayersSortedOnELODesc
               .filter(
                 (a) => a.matchesAsWinner.length + a.matchesAsLoser.length > 3
               )
-              .filter((a) => a.currentELO !== 1500)
               .map((player) => (
                 <tr
                   key={player.id}
@@ -211,12 +213,10 @@ export default function Index() {
                 </div>
               </th>
             </tr>
-            {players
-              .sort((a, b) => b.currentELO - a.currentELO)
+            {rankedPlayersSortedOnELODesc
               .filter(
                 (a) => a.matchesAsWinner.length + a.matchesAsLoser.length <= 3
               )
-              .filter((a) => a.currentELO !== 1500)
               .map((player) => (
                 <tr
                   key={player.id}

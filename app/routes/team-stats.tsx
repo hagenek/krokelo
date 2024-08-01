@@ -10,12 +10,10 @@ import { BlueBadge, GreenBadge, YellowBadge } from '~/components/badges';
 import { Team } from '@prisma/client';
 import { typedjson, useTypedLoaderData } from 'remix-typedjson';
 
-const getBadgeForTeam = (teamId: number, teams: Team[]) => {
-  const topThreeTeamIds = teams.slice(0, 3).map((team) => team.id);
-
-  if (teamId === topThreeTeamIds[0]) return <YellowBadge>Rank 1</YellowBadge>;
-  if (teamId === topThreeTeamIds[1]) return <GreenBadge>Rank 2</GreenBadge>;
-  if (teamId === topThreeTeamIds[2]) return <BlueBadge>Rank 3</BlueBadge>;
+const getBadgeForTopThreeTeam = (teamId: number, topThreeTeams: Team[]) => {
+  if (teamId === topThreeTeams[0].id) return <YellowBadge>Rank 1</YellowBadge>;
+  if (teamId === topThreeTeams[1].id) return <GreenBadge>Rank 2</GreenBadge>;
+  if (teamId === topThreeTeams[2].id) return <BlueBadge>Rank 3</BlueBadge>;
 
   return null;
 };
@@ -24,13 +22,9 @@ export const loader = async () => {
   const players = await getPlayers();
   const teams = await getTeams();
 
-  const recentMatches = await getRecentTeamMatches(5);
+  const recentTeamMatches = await getRecentTeamMatches(5);
 
-  return typedjson({
-    players,
-    teams: teams.sort((a, b) => b.currentELO - a.currentELO),
-    recentMatches,
-  });
+  return typedjson({ players, teams, recentTeamMatches });
 };
 
 export const action = async () => {
@@ -52,7 +46,8 @@ const getRowHighlightClass = (idx: number, matchDate: Date) =>
 
 export default function Index() {
   const fetcher = useFetcher();
-  const { players, teams, recentMatches } = useTypedLoaderData<typeof loader>();
+  const { players, teams, recentTeamMatches } =
+    useTypedLoaderData<typeof loader>();
 
   if (teams.length === 0) {
     return (
@@ -61,6 +56,17 @@ export default function Index() {
       </div>
     );
   }
+
+  const teamsSortedOnELODesc = [...teams].sort(
+    (t1, t2) => t2.currentELO - t1.currentELO
+  );
+
+  const playersSortedOnTeamELODesc = [...players].sort(
+    (p1, p2) => p2.currentTeamELO - p1.currentTeamELO
+  );
+
+  const topThreeTeams = teamsSortedOnELODesc.slice(0, 3);
+  const topFiveTeamPlayers = playersSortedOnTeamELODesc.slice(0, 5);
 
   return (
     <div className={PageContainerStyling}>
@@ -79,7 +85,7 @@ export default function Index() {
               </tr>
             </thead>
             <tbody>
-              {recentMatches.map((match, idx) => (
+              {recentTeamMatches.map((match, idx) => (
                 <tr
                   key={match.date.getTime()}
                   className={`border-b dark:border-gray-600 ${getRowHighlightClass(idx, match.date)}`}
@@ -93,7 +99,12 @@ export default function Index() {
                     })}
                   </td>
                   <td className="py-2 dark:text-white">
-                    <div>{getBadgeForTeam(match.winner.teamId, teams)}</div>
+                    <div>
+                      {getBadgeForTopThreeTeam(
+                        match.winner.teamId,
+                        topThreeTeams
+                      )}
+                    </div>
                     <span className="font-semibold">
                       {match.winner.teamName}
                     </span>
@@ -104,7 +115,12 @@ export default function Index() {
                     </div>
                   </td>
                   <td className="py-2 dark:text-white">
-                    <div>{getBadgeForTeam(match.loser.teamId, teams)}</div>
+                    <div>
+                      {getBadgeForTopThreeTeam(
+                        match.loser.teamId,
+                        topThreeTeams
+                      )}
+                    </div>
                     <span className="font-semibold">
                       {match.loser.teamName}
                     </span>
@@ -146,36 +162,33 @@ export default function Index() {
             </tr>
           </thead>
           <tbody>
-            {players
-              .sort((a, b) => b.currentTeamELO - a.currentTeamELO)
-              .slice(0, 5)
-              .map((player) => (
-                <tr
-                  key={player.id}
-                  className="text-md border-t md:text-xl dark:border-gray-700"
-                >
-                  <td className="py-2 font-semibold dark:text-white">
-                    {player.name}
-                  </td>
-                  <td className="py-2 dark:text-white">
-                    {player.teams.reduce(
-                      (teamMatchesWins, team) =>
-                        teamMatchesWins + team.teamMatchesAsWinner.length,
-                      0
-                    )}
-                  </td>
-                  <td className="py-2 dark:text-white">
-                    {player.teams.reduce(
-                      (teamMatchesLosses, team) =>
-                        teamMatchesLosses + team.teamMatchesAsLoser.length,
-                      0
-                    )}
-                  </td>
-                  <td className="py-2 dark:text-white">
-                    {player.currentTeamELO}
-                  </td>
-                </tr>
-              ))}
+            {topFiveTeamPlayers.map((player) => (
+              <tr
+                key={player.id}
+                className="text-md border-t md:text-xl dark:border-gray-700"
+              >
+                <td className="py-2 font-semibold dark:text-white">
+                  {player.name}
+                </td>
+                <td className="py-2 dark:text-white">
+                  {player.teams.reduce(
+                    (teamMatchesWins, team) =>
+                      teamMatchesWins + team.teamMatchesAsWinner.length,
+                    0
+                  )}
+                </td>
+                <td className="py-2 dark:text-white">
+                  {player.teams.reduce(
+                    (teamMatchesLosses, team) =>
+                      teamMatchesLosses + team.teamMatchesAsLoser.length,
+                    0
+                  )}
+                </td>
+                <td className="py-2 dark:text-white">
+                  {player.currentTeamELO}
+                </td>
+              </tr>
+            ))}
           </tbody>
         </table>
       </section>
@@ -194,18 +207,16 @@ export default function Index() {
           </thead>
 
           <tbody>
-            {teams
-              .sort((a, b) => b.currentELO - a.currentELO)
-              .map((team) => (
-                <tr key={team.id} className="border-t dark:border-gray-700">
-                  <td className="py-2 font-semibold dark:text-white">
-                    {team.players.map((player) => player.name).join(' & ')}
-                  </td>
-                  <td className="py-2 dark:text-white">{team.wins}</td>
-                  <td className="py-2 dark:text-white">{team.losses}</td>
-                  <td className="py-2 dark:text-white">{team.currentELO}</td>
-                </tr>
-              ))}
+            {teamsSortedOnELODesc.map((team) => (
+              <tr key={team.id} className="border-t dark:border-gray-700">
+                <td className="py-2 font-semibold dark:text-white">
+                  {team.players.map((player) => player.name).join(' & ')}
+                </td>
+                <td className="py-2 dark:text-white">{team.wins}</td>
+                <td className="py-2 dark:text-white">{team.losses}</td>
+                <td className="py-2 dark:text-white">{team.currentELO}</td>
+              </tr>
+            ))}
           </tbody>
         </table>
       </section>
