@@ -84,6 +84,9 @@ export default function Index() {
   const fetcher = useFetcher();
   const { players, recent1v1Matches } = useTypedLoaderData<typeof loader>();
 
+  console.log('recent1v1Matches', recent1v1Matches);
+  console.log('players', players);
+
   return (
     <div className={PageContainerStyling}>
       <section className="py-4">
