@@ -33,18 +33,17 @@ const calculateEloChangeFromMatch = (
     return 0;
   }
 
-  // First match, no prior matches so must handle from base elo of 1500
-  if (playerWithStats.eloLogs.length === 1) {
-    return Math.abs(playerWithStats.eloLogs[0].elo - BASE_ELO);
-  }
-
   const currentMatchEloIndex = playerWithStats.eloLogs.findIndex(
     (log) => match.id === log.matchId
   );
   const formerMatchEloIndex = currentMatchEloIndex + 1;
 
   const currentMatchElo = playerWithStats.eloLogs[currentMatchEloIndex].elo;
-  const formerMatchElo = playerWithStats.eloLogs[formerMatchEloIndex].elo;
+
+  const formerMatchElo =
+    formerMatchEloIndex === playerWithStats.eloLogs.length
+      ? BASE_ELO // Use BASE_ELO when there is no former match
+      : playerWithStats.eloLogs[formerMatchEloIndex].elo;
 
   return Math.abs(currentMatchElo - formerMatchElo);
 };
