@@ -13,7 +13,7 @@ import {
   calculateNewELOs,
   logIndividualELO,
 } from '../services/player-service';
-import { recordMatch } from '../services/match-service';
+import { record1v1Match } from '../services/match-service';
 import { PageContainerStyling } from './team-duel';
 import CreatableSelect from 'react-select/creatable';
 import { createFilter } from 'react-select';
@@ -90,7 +90,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     const winnerId = player1IsWinner ? player1.id : player2.id;
     const loserId = player1IsWinner ? player2.id : player1.id;
 
-    const match = await recordMatch(
+    const match = await record1v1Match(
       winnerId,
       loserId,
       player1IsWinner ? newELOPlayer1 : newELOPlayer2,

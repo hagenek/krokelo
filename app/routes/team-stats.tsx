@@ -1,22 +1,13 @@
 import { useFetcher } from '@remix-run/react';
 import { getPlayers } from '~/services/player-service';
+import { getTeams, type Team } from '~/services/team-service';
 import {
-  getTeams,
   getRecentTeamMatches,
   revertLatestTeamMatch,
-} from '~/services/team-service';
+} from '~/services/team-match-service';
 import { PageContainerStyling } from './team-duel';
 import { BlueBadge, GreenBadge, YellowBadge } from '~/components/badges';
-import { Team } from '@prisma/client';
 import { typedjson, useTypedLoaderData } from 'remix-typedjson';
-
-const getBadgeForTopThreeTeam = (teamId: number, topThreeTeams: Team[]) => {
-  if (teamId === topThreeTeams[0].id) return <YellowBadge>Rank 1</YellowBadge>;
-  if (teamId === topThreeTeams[1].id) return <GreenBadge>Rank 2</GreenBadge>;
-  if (teamId === topThreeTeams[2].id) return <BlueBadge>Rank 3</BlueBadge>;
-
-  return null;
-};
 
 export const loader = async () => {
   const players = await getPlayers();
@@ -29,6 +20,14 @@ export const loader = async () => {
 
 export const action = async () => {
   await revertLatestTeamMatch();
+  return null;
+};
+
+const getBadgeForTopThreeTeam = (teamId: number, topThreeTeams: Team[]) => {
+  if (teamId === topThreeTeams[0].id) return <YellowBadge>Rank 1</YellowBadge>;
+  if (teamId === topThreeTeams[1].id) return <GreenBadge>Rank 2</GreenBadge>;
+  if (teamId === topThreeTeams[2].id) return <BlueBadge>Rank 3</BlueBadge>;
+
   return null;
 };
 
@@ -87,7 +86,7 @@ export default function Index() {
             <tbody>
               {recentTeamMatches.map((match, idx) => (
                 <tr
-                  key={match.date.getTime()}
+                  key={match.id}
                   className={`border-b dark:border-gray-600 ${getRowHighlightClass(idx, match.date)}`}
                 >
                   <td className="py-2 dark:text-white">
@@ -101,33 +100,39 @@ export default function Index() {
                   <td className="py-2 dark:text-white">
                     <div>
                       {getBadgeForTopThreeTeam(
-                        match.winner.teamId,
+                        match.winnerTeam.id,
                         topThreeTeams
                       )}
                     </div>
                     <span className="font-semibold">
-                      {match.winner.teamName}
+                      {match.winnerTeam.players
+                        .map((player) => player.name)
+                        .join(' & ')}
                     </span>
                     <div>
                       <span className="font-medium text-[#00754E] dark:text-[#70C7AA]">
-                        {match.winner.elo}
+                        {match.winnerTeam.eloAfterMatch}
                       </span>
+                      {` (+${match.winnerTeam.eloDifference}) `}
                     </div>
                   </td>
                   <td className="py-2 dark:text-white">
                     <div>
                       {getBadgeForTopThreeTeam(
-                        match.loser.teamId,
+                        match.loserTeam.id,
                         topThreeTeams
                       )}
                     </div>
                     <span className="font-semibold">
-                      {match.loser.teamName}
+                      {match.loserTeam.players
+                        .map((player) => player.name)
+                        .join(' & ')}
                     </span>
                     <div>
                       <span className="font-medium text-[#E44244] dark:text-[#EC7B7C]">
-                        {match.loser.elo}
+                        {match.loserTeam.eloAfterMatch}
                       </span>
+                      {` (-${match.loserTeam.eloDifference}) `}
                     </div>
                   </td>
                   <td>

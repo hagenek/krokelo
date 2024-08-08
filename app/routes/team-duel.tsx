@@ -14,11 +14,11 @@ import {
   findPlayerByName,
 } from '../services/player-service';
 import {
-  recordTeamMatch,
   updateAndLogELOsTeamPlay,
   calculateNewTeamELOs,
   createTeam,
 } from '../services/team-service';
+import { recordTeamMatch } from '../services/team-match-service';
 import { typedjson, useTypedLoaderData } from 'remix-typedjson';
 
 export const PageContainerStyling =

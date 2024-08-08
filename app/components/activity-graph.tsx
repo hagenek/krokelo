@@ -1,11 +1,8 @@
-import React from 'react';
-import { MatchesMinimal } from '../services/match-service';
-
 interface ActivityGraphProps {
-  matches: MatchesMinimal;
+  dates: Date[];
 }
 
-export const ActivityGraph = ({ matches }: ActivityGraphProps) => {
+export const ActivityGraph = ({ dates }: ActivityGraphProps) => {
   const getStartOfWeek = () => {
     const now = new Date();
     now.setUTCDate(now.getUTCDate() - 7);
@@ -14,7 +11,7 @@ export const ActivityGraph = ({ matches }: ActivityGraphProps) => {
 
   const startOfWeek = getStartOfWeek();
 
-  const processData = (matches: MatchesMinimal): Array<[string, number[]]> => {
+  const processDates = (dates: Date[]): Array<[string, number[]]> => {
     const weekMap = new Map<string, number[]>();
     const now = new Date();
     const currentDayISO = now.toISOString().split('T')[0]; // Current day in ISO format
@@ -31,8 +28,8 @@ export const ActivityGraph = ({ matches }: ActivityGraphProps) => {
       weekMap.set(dayISO, hourArray);
     }
 
-    matches.forEach((match) => {
-      const matchDate = new Date(match.date);
+    dates.forEach((date) => {
+      const matchDate = new Date(date);
       const matchDayISO = matchDate.toISOString().split('T')[0];
       const matchHour = matchDate.getUTCHours();
       const hourIndex = matchHour - startHour;
@@ -67,7 +64,7 @@ export const ActivityGraph = ({ matches }: ActivityGraphProps) => {
     ]);
   };
 
-  const data = processData(matches);
+  const processedDates = processDates(dates);
   const hoursLabels = [
     '08:00',
     '09:00',
@@ -95,7 +92,7 @@ export const ActivityGraph = ({ matches }: ActivityGraphProps) => {
       <div className="flex min-w-max lg:min-w-0">
         <div className="flex flex-shrink-0 flex-col items-center justify-between">
           <div className="text-xs lg:text-sm">Time</div>
-          {data.map(([day], dayIndex) => (
+          {processedDates.map(([day], dayIndex) => (
             <h3
               className="mb-1 flex h-[32px] items-center justify-center text-xs lg:text-sm"
               key={dayIndex}
@@ -110,7 +107,7 @@ export const ActivityGraph = ({ matches }: ActivityGraphProps) => {
               <div className="w-[40px] text-center text-xs lg:text-sm">
                 {hoursLabel}
               </div>
-              {data.map(([, hours], dayIndex) => (
+              {processedDates.map(([, hours], dayIndex) => (
                 <div
                   key={dayIndex}
                   className={`mb-1 flex h-[40px] w-[40px] items-center justify-center text-xs lg:text-base dark:text-black ${getColor(hours[hourIndex])}`}

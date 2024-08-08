@@ -1,12 +1,29 @@
 import { prisma } from '../prisma-client';
-import { Prisma, type Player } from '@prisma/client';
+import { Prisma } from '@prisma/client';
 import { BASE_ELO } from '~/utils/constants';
 
-export type MatchesMinimal = Prisma.PromiseReturnType<
-  typeof getMatchesLastSevenDays
->;
+type Recent1v1MatchWithPlayers = Prisma.MatchGetPayload<{
+  include: {
+    winner: {
+      include: {
+        eloLogs: true;
+      };
+    };
+    loser: {
+      include: {
+        eloLogs: true;
+      };
+    };
+  };
+}>;
 
-export const getMatchesLastSevenDays = async () => {
+type Recent1v1MatchPlayer = Prisma.PlayerGetPayload<{
+  include: {
+    eloLogs: true;
+  };
+}>;
+
+export const getDatesFrom1v1MatchesLastSevenDays = async () => {
   const sevenDaysAgo = new Date();
   sevenDaysAgo.setUTCDate(sevenDaysAgo.getUTCDate() - 7);
 
@@ -20,28 +37,61 @@ export const getMatchesLastSevenDays = async () => {
   });
 };
 
-export type RecentMatches = Prisma.PromiseReturnType<
-  typeof getRecent1v1Matches
->;
+const calculatePlayerEloValuesFromMatch = (
+  player: Recent1v1MatchPlayer,
+  match: Recent1v1MatchWithPlayers
+) => {
+  const currentMatchEloIndex = player.eloLogs.findIndex(
+    (log) => log.matchId === match.id
+  );
+  const formerMatchEloIndex = currentMatchEloIndex + 1;
 
-export type RecentMatch = RecentMatches[0];
+  const currentMatchElo = player.eloLogs[currentMatchEloIndex].elo;
+  const formerMatchElo =
+    formerMatchEloIndex === player.eloLogs.length
+      ? BASE_ELO // Use BASE_ELO when there is no former match
+      : player.eloLogs[formerMatchEloIndex].elo;
 
-export type RecentMatchPlayer = Player;
+  return {
+    eloAfterMatch: currentMatchElo,
+    eloDifference: Math.abs(currentMatchElo - formerMatchElo),
+  };
+};
 
 export const getRecent1v1Matches = async (limit: number = 5) => {
-  return await prisma.match.findMany({
+  const recent1v1Matches = await prisma.match.findMany({
     take: limit,
     orderBy: {
       date: 'desc',
     },
     include: {
-      winner: true,
-      loser: true,
+      winner: {
+        include: {
+          eloLogs: { orderBy: { date: 'desc' } },
+        },
+      },
+      loser: {
+        include: {
+          eloLogs: { orderBy: { date: 'desc' } },
+        },
+      },
     },
   });
+
+  return recent1v1Matches.map((match) => ({
+    ...match,
+    winner: {
+      ...match.winner,
+      ...calculatePlayerEloValuesFromMatch(match.winner, match),
+    },
+    loser: {
+      ...match.loser,
+      ...calculatePlayerEloValuesFromMatch(match.loser, match),
+    },
+  }));
 };
 
-export const recordMatch = async (
+export const record1v1Match = async (
   winnerId: number,
   loserId: number,
   winnerELO: number,
@@ -57,7 +107,7 @@ export const recordMatch = async (
   });
 };
 
-export const revertLatestMatch = async () => {
+export const revertLatest1v1Match = async () => {
   try {
     // Step 1: Find the latest 1v1 player match
     const latestMatch = await prisma.match.findFirst({

@@ -2,7 +2,8 @@ import { type MetaFunction } from '@remix-run/node';
 import { Link } from '@remix-run/react';
 import { PageContainerStyling } from './team-duel';
 import { ActivityGraph } from '~/components/activity-graph';
-import { getMatchesLastSevenDays } from '~/services/match-service';
+import { getDatesFrom1v1MatchesLastSevenDays } from '~/services/match-service';
+import { getDatesFromTeamMatchesLastSevenDays } from '~/services/team-match-service';
 import { typedjson, useTypedLoaderData } from 'remix-typedjson';
 
 export const meta: MetaFunction = () => {
@@ -20,12 +21,24 @@ export const meta: MetaFunction = () => {
 };
 
 export const loader = async () => {
-  const matchesLastSevenDays = await getMatchesLastSevenDays();
-  return typedjson(matchesLastSevenDays);
+  const datesFrom1v1MatchesLastSevenDays =
+    await getDatesFrom1v1MatchesLastSevenDays();
+  const datesFromTeamMatchesLastSevenDays =
+    await getDatesFromTeamMatchesLastSevenDays();
+
+  const datesFromAllMatchesLastSevenDays = datesFrom1v1MatchesLastSevenDays
+    .map((match) => match.date)
+    .concat(datesFromTeamMatchesLastSevenDays.map((match) => match.date));
+
+  datesFromAllMatchesLastSevenDays.sort(
+    (d1, d2) => d2.getTime() - d1.getTime()
+  );
+
+  return typedjson(datesFromAllMatchesLastSevenDays);
 };
 
 export default function Index() {
-  const matchesLastSevenDays = useTypedLoaderData<typeof loader>();
+  const datesFromAllMatchesLastSevenDays = useTypedLoaderData<typeof loader>();
 
   return (
     <div className={PageContainerStyling}>
@@ -58,7 +71,7 @@ export default function Index() {
         </Link>
       </div>
       <div className="p-4">
-        <ActivityGraph matches={matchesLastSevenDays} />
+        <ActivityGraph dates={datesFromAllMatchesLastSevenDays} />
       </div>
     </div>
   );

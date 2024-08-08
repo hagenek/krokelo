@@ -1,10 +1,8 @@
 import { useFetcher } from '@remix-run/react';
-import { type PlayersWithStats, getPlayers } from '~/services/player-service';
+import { getPlayers } from '~/services/player-service';
 import {
-  type RecentMatchPlayer,
-  type RecentMatch,
   getRecent1v1Matches,
-  revertLatestMatch,
+  revertLatest1v1Match,
 } from '~/services/match-service';
 import { PageContainerStyling } from './team-duel';
 import { typedjson, useTypedLoaderData } from 'remix-typedjson';
@@ -18,56 +16,8 @@ export const loader = async () => {
 };
 
 export const action = async () => {
-  await revertLatestMatch();
+  await revertLatest1v1Match();
   return null;
-};
-
-const calculateEloChangeFromMatch = (
-  player: RecentMatchPlayer,
-  match: RecentMatch,
-  players: PlayersWithStats
-) => {
-  const playerWithStats = players.find((p) => p.id === player.id);
-  if (!playerWithStats) {
-    console.error(`Player ${player.name} not found in player list`);
-    return 0;
-  }
-
-  const currentMatchEloIndex = playerWithStats.eloLogs.findIndex(
-    (log) => match.id === log.matchId
-  );
-  const formerMatchEloIndex = currentMatchEloIndex + 1;
-
-  const currentMatchElo = playerWithStats.eloLogs[currentMatchEloIndex].elo;
-
-  const formerMatchElo =
-    formerMatchEloIndex === playerWithStats.eloLogs.length
-      ? BASE_ELO // Use BASE_ELO when there is no former match
-      : playerWithStats.eloLogs[formerMatchEloIndex].elo;
-
-  return Math.abs(currentMatchElo - formerMatchElo);
-};
-
-const getEloForPlayerAfterMatch = (
-  player: RecentMatchPlayer,
-  match: RecentMatch,
-  players: PlayersWithStats
-) => {
-  const playerWithStats = players.find((p) => p.id === player.id);
-  if (!playerWithStats) {
-    console.error(`Player ${player.name} not found in enriched player list`);
-    return 0;
-  }
-
-  const matchEloIndex = playerWithStats.eloLogs.findIndex(
-    (log) => match.id === log.matchId
-  );
-  // No match played
-  if (matchEloIndex === -1) {
-    return BASE_ELO;
-  }
-
-  return playerWithStats.eloLogs[matchEloIndex].elo;
 };
 
 const isLatestMatch = (idx: number) => idx === 0;
@@ -125,22 +75,18 @@ export default function Index() {
                     <span className="font-semibold">{match.winner.name}</span>
                     <div>
                       <span className="font-medium text-[#00754E] dark:text-[#70C7AA]">
-                        {getEloForPlayerAfterMatch(
-                          match.winner,
-                          match,
-                          players
-                        )}
+                        {match.winner.eloAfterMatch}
                       </span>
-                      {` (+${calculateEloChangeFromMatch(match.winner, match, players)}) `}
+                      {` (+${match.winner.eloDifference}) `}
                     </div>
                   </td>
                   <td className="py-2 dark:text-white">
                     <span className="font-semibold">{match.loser.name}</span>
                     <div>
                       <span className="font-medium text-[#E44244] dark:text-[#EC7B7C]">
-                        {getEloForPlayerAfterMatch(match.loser, match, players)}
+                        {match.loser.eloAfterMatch}
                       </span>
-                      {` (-${calculateEloChangeFromMatch(match.loser, match, players)})`}
+                      {` (-${match.loser.eloDifference})`}
                     </div>
                   </td>
                   <td>
