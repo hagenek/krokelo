@@ -10,7 +10,6 @@ import { getPlayers, updatePlayerStatus } from '~/services/player-service';
 import { typedjson, useTypedLoaderData } from 'remix-typedjson';
 import Select from 'react-select';
 import { PageContainerStyling } from './team-duel';
-import { useEffect, useState } from 'react';
 
 export const meta: MetaFunction = () => {
   return [
@@ -47,16 +46,10 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 export default function Index() {
   const navigate = useNavigate();
   const { players, player } = useTypedLoaderData<typeof loader>();
-  const [playerInactive, setPlayerInactive] = useState(player?.inactive);
   const submit = useSubmit();
   const playersSortedOnELODesc = [...players].sort(
     (p1, p2) => p2.currentELO - p1.currentELO
   );
-
-  useEffect(() => {
-    if (player) setPlayerInactive(player.inactive);
-  }),
-    [player];
 
   const playersSortedOnTeamELODesc = [...players].sort(
     (p1, p2) => p2.currentTeamELO - p1.currentTeamELO
@@ -163,9 +156,8 @@ export default function Index() {
                     type="checkbox"
                     name="inactive"
                     className="form-checkbox h-5 w-5 text-blue-600"
-                    checked={playerInactive}
+                    checked={player.inactive}
                     onChange={(e) => {
-                      setPlayerInactive(e.target.checked);
                       submit(e.currentTarget.form);
                     }}
                   />
