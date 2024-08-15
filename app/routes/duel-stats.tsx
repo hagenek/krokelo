@@ -124,7 +124,9 @@ export default function Index() {
           <tbody>
             {rankedPlayersSortedOnELODesc
               .filter(
-                (a) => a.matchesAsWinner.length + a.matchesAsLoser.length > 3
+                (a) =>
+                  a.matchesAsWinner.length + a.matchesAsLoser.length > 3 &&
+                  !a.inactive
               )
               .map((player) => (
                 <tr
@@ -160,7 +162,9 @@ export default function Index() {
             </tr>
             {rankedPlayersSortedOnELODesc
               .filter(
-                (a) => a.matchesAsWinner.length + a.matchesAsLoser.length <= 3
+                (a) =>
+                  a.matchesAsWinner.length + a.matchesAsLoser.length <= 3 &&
+                  !a.inactive
               )
               .map((player) => (
                 <tr
@@ -178,6 +182,40 @@ export default function Index() {
                     {player.matchesAsLoser.length}
                   </td>
                   <td></td>
+                </tr>
+              ))}
+          </tbody>
+        </table>
+        <h2 className="mb-3 text-xl font-bold md:text-2xl dark:text-white">
+          Inaktive spillere
+        </h2>
+        <table className="min-w-full">
+          <thead>
+            <tr>
+              <th className="w-2/5 py-2 dark:text-white">Navn</th>
+              <th className="w-1/5 py-2 dark:text-white">Seiere</th>
+              <th className="w-1/5 py-2 dark:text-white">Tap</th>
+              <th className="w-1/5 py-2 dark:text-white">ELO</th>
+            </tr>
+          </thead>
+          <tbody>
+            {rankedPlayersSortedOnELODesc
+              .filter((a) => a.inactive)
+              .map((player) => (
+                <tr
+                  key={player.id}
+                  className="border-t text-lg dark:border-gray-700"
+                >
+                  <td className="py-2 font-semibold dark:text-white">
+                    {player.name}
+                  </td>
+                  <td className="py-2 dark:text-white">
+                    {`${player.matchesAsWinner.length}`}
+                  </td>
+                  <td className="py-2 dark:text-white">
+                    {player.matchesAsLoser.length}
+                  </td>
+                  <td className="py-2 dark:text-white">{player.currentELO}</td>
                 </tr>
               ))}
           </tbody>

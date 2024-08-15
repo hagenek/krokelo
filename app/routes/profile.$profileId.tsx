@@ -1,10 +1,16 @@
-import { type LoaderFunctionArgs, type MetaFunction } from '@remix-run/node';
-import { useNavigate } from '@remix-run/react';
+import {
+  type ActionFunctionArgs,
+  type LoaderFunctionArgs,
+  type MetaFunction,
+  redirect,
+} from '@remix-run/node';
+import { Form, useNavigate, useSubmit } from '@remix-run/react';
 import { EloHistoryChart } from '~/components/elo-history-charts';
-import { getPlayers } from '~/services/player-service';
+import { getPlayers, updatePlayerStatus } from '~/services/player-service';
 import { typedjson, useTypedLoaderData } from 'remix-typedjson';
 import Select from 'react-select';
 import { PageContainerStyling } from './team-duel';
+import { useEffect, useState } from 'react';
 
 export const meta: MetaFunction = () => {
   return [
@@ -29,13 +35,28 @@ export const loader = async ({ params }: LoaderFunctionArgs) => {
   return typedjson({ players, player });
 };
 
+export const action = async ({ request }: ActionFunctionArgs) => {
+  const formData = await request.formData();
+  const playerId = parseInt(formData.get('playerId') as string, 10);
+  const inactive = formData.get('inactive') === 'on';
+  await updatePlayerStatus(playerId, inactive);
+
+  return redirect(`/profile/${playerId}`);
+};
+
 export default function Index() {
   const navigate = useNavigate();
   const { players, player } = useTypedLoaderData<typeof loader>();
-
+  const [playerInactive, setPlayerInactive] = useState(player?.inactive);
+  const submit = useSubmit();
   const playersSortedOnELODesc = [...players].sort(
     (p1, p2) => p2.currentELO - p1.currentELO
   );
+
+  useEffect(() => {
+    if (player) setPlayerInactive(player.inactive);
+  }),
+    [player];
 
   const playersSortedOnTeamELODesc = [...players].sort(
     (p1, p2) => p2.currentTeamELO - p1.currentTeamELO
@@ -129,6 +150,26 @@ export default function Index() {
                     {`${playersSortedOnTeamELODesc.findIndex((p) => p.id === player.id) + 1} / ${playersSortedOnTeamELODesc.length}`}
                   </span>
                 </span>
+              </li>
+              <li className="text-lg">
+                Inaktiv spiller:{' '}
+                <Form
+                  method="post"
+                  action={`/profile/${player.id}`}
+                  onChange={(e) => submit(e.currentTarget)}
+                >
+                  <input type="hidden" name="playerId" value={player.id} />
+                  <input
+                    type="checkbox"
+                    name="inactive"
+                    className="form-checkbox h-5 w-5 text-blue-600"
+                    checked={playerInactive}
+                    onChange={(e) => {
+                      setPlayerInactive(e.target.checked);
+                      submit(e.currentTarget.form);
+                    }}
+                  />
+                </Form>
               </li>
             </div>
           </ul>

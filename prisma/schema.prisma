@@ -10,6 +10,7 @@ generator client {
 model Player {
   id               Int                @id @default(autoincrement())
   name             String             @unique
+  inactive         Boolean            @default(false)
   currentELO       Int                @default(1500)
   currentTeamELO   Int                @default(1500)
   matchesAsWinner  Match[]            @relation("MatchWinner")
