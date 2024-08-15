@@ -224,3 +224,18 @@ export const updatePlayerTeamELO = async (playerId: number, newELO: number) => {
     });
   }
 };
+
+export const updatePlayerStatus = async (playerId: number, status: boolean) => {
+  const player = await prisma.player.findUnique({
+    where: { id: playerId },
+  });
+
+  if (player) {
+    await prisma.player.update({
+      where: { id: playerId },
+      data: {
+        inactive: status,
+      },
+    });
+  }
+};
