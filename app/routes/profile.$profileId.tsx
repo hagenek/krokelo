@@ -65,6 +65,32 @@ export default function Index() {
   const numberOfMatches = numberOfWins + numberOfLosses;
   const winPercentage = (numberOfWins / numberOfMatches) * 100;
 
+  const findLongestWinStreak = (eloLogs) => {
+    if (eloLogs.length === 0) return 0;
+
+    const logs = [...eloLogs].reverse();
+    let longestWinStreak = 0;
+    let currentWinStreak = 0;
+    logs[0].elo > 1500 && (currentWinStreak = 1);
+    for (let i = 1; i < logs.length; i++) {
+      if (logs[i].elo > logs[i - 1].elo) {
+        currentWinStreak++;
+      } else {
+        if (currentWinStreak > longestWinStreak) {
+          longestWinStreak = currentWinStreak;
+        }
+        currentWinStreak = 0;
+      }
+    }
+
+    // Final check in case the longest streak is at the end
+    if (currentWinStreak > longestWinStreak) {
+      longestWinStreak = currentWinStreak;
+    }
+
+    return longestWinStreak;
+  };
+
   return (
     <div className={PageContainerStyling}>
       <div className="flex justify-center py-4">
@@ -86,16 +112,51 @@ export default function Index() {
           <ul className="mb-2 flex-col items-center space-y-2 rounded-lg bg-blue-100 p-4 text-center text-lg text-black shadow-lg dark:bg-gray-700 dark:text-white">
             <li className="text-4xl">{player.name}</li>
             <li>
-              Rating lagspill:{' '}
-              <span className="font-bold dark:text-green-200">
-                {player.currentTeamELO}
-              </span>
+              <div className="grid gap-2 md:grid-cols-2">
+                <div>
+                  Rating duellspill:{' '}
+                  <span className="font-bold dark:text-green-200">
+                    {player.currentELO}
+                  </span>
+                </div>
+                <div>
+                  Rating lagspill:{' '}
+                  <span className="font-bold dark:text-green-200">
+                    {player.currentTeamELO}
+                  </span>
+                </div>
+              </div>
             </li>
             <li>
-              Rating duellspill:{' '}
-              <span className="font-bold dark:text-green-200">
-                {player.currentELO}
-              </span>
+              <div className="grid gap-2 md:grid-cols-2">
+                <div>
+                  Høyeste rating duellspill 🏔️:{' '}
+                  <span className="font-bold dark:text-green-200">
+                    {Math.max(1500, ...player.eloLogs.map((log) => log.elo))}
+                  </span>
+                </div>
+                <div>
+                  Høyeste rating lagspill 🏔️:{' '}
+                  <span className="font-bold dark:text-green-200">
+                    {Math.max(
+                      1500,
+                      ...player.teamPlayerELOLog.map((log) => log.elo)
+                    )}
+                  </span>
+                </div>
+                <div>
+                  Lengste win streak - duell 🔥:{' '}
+                  <span className="font-bold dark:text-green-200">
+                    {findLongestWinStreak(player.eloLogs)}
+                  </span>
+                </div>
+                <div>
+                  Lengste win streak - lag 🔥:{' '}
+                  <span className="font-bold dark:text-green-200">
+                    {findLongestWinStreak(player.teamPlayerELOLog)}
+                  </span>
+                </div>
+              </div>
             </li>
             <div className="grid gap-2 md:grid-cols-2">
               {!player.inactive && (
