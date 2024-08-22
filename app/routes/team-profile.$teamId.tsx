@@ -90,7 +90,7 @@ export default function Index() {
           </ul>
           <div className="flex flex-col justify-center">
             <h2 className="mb-2 text-xl font-bold dark:text-green-200">
-              Duellspill
+              Lagspill
             </h2>
             <table
               className="mb-2 table-auto rounded-lg bg-blue-100

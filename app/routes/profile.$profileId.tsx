@@ -47,13 +47,13 @@ export default function Index() {
   const navigate = useNavigate();
   const { players, player } = useTypedLoaderData<typeof loader>();
   const submit = useSubmit();
-  const playersSortedOnELODesc = [...players].sort(
-    (p1, p2) => p2.currentELO - p1.currentELO
-  );
+  const playersSortedOnELODesc = [...players]
+    .filter((player) => !player.inactive)
+    .sort((p1, p2) => p2.currentELO - p1.currentELO);
 
-  const playersSortedOnTeamELODesc = [...players].sort(
-    (p1, p2) => p2.currentTeamELO - p1.currentTeamELO
-  );
+  const playersSortedOnTeamELODesc = [...players]
+    .filter((player) => !player.inactive)
+    .sort((p1, p2) => p2.currentTeamELO - p1.currentTeamELO);
 
   const playerOptions = players.map((player) => ({
     value: player.id,
@@ -98,71 +98,76 @@ export default function Index() {
               </span>
             </li>
             <div className="grid gap-2 md:grid-cols-2">
-              <li className="flex items-center justify-center space-x-2 text-center">
-                <span className="flex text-lg">
-                  {playersSortedOnELODesc.findIndex((p) => p.id === player.id) <
-                    5 && (
-                    <div className="group">
-                      <img
-                        src="/img/medal.png"
-                        alt="Medalje for topp 5 plassering"
-                        className="mr-2 h-8 w-8"
-                      />
-                      <span
-                        className="text-md absolute bottom-full left-1/2 hidden -translate-x-1/2 translate-y-1 transform
+              {!player.inactive && (
+                <li className="flex items-center justify-center space-x-2 text-center">
+                  <span className="flex text-lg">
+                    {playersSortedOnELODesc.findIndex(
+                      (p) => p.id === player.id
+                    ) < 5 && (
+                      <div className="group">
+                        <img
+                          src="/img/medal.png"
+                          alt="Medalje for topp 5 plassering"
+                          className="mr-2 h-8 w-8"
+                        />
+                        <span
+                          className="text-md absolute bottom-full left-1/2 hidden -translate-x-1/2 translate-y-1 transform
                     rounded bg-black px-2 py-1 pb-1 text-white opacity-0 transition-opacity duration-300 group-hover:block group-hover:opacity-100"
-                      >
-                        Medalje for topp 5 plassering
-                      </span>
-                    </div>
-                  )}
-                  Rangering duellspill:{' '}
-                  <span className="ml-2 font-bold dark:text-blue-200">
-                    {`${playersSortedOnELODesc.findIndex((p) => p.id === player.id) + 1} / ${playersSortedOnELODesc?.length}`}
+                        >
+                          Medalje for topp 5 plassering
+                        </span>
+                      </div>
+                    )}
+                    Rangering duellspill:{' '}
+                    <span className="ml-2 font-bold dark:text-blue-200">
+                      {`${playersSortedOnELODesc.findIndex((p) => p.id === player.id) + 1} / ${playersSortedOnELODesc?.length}`}
+                    </span>
                   </span>
-                </span>
-              </li>
-              <li className="flex items-center justify-center space-x-2">
-                <span className="flex p-2 text-lg">
-                  {playersSortedOnTeamELODesc.findIndex(
-                    (p) => p.id === player.id
-                  ) < 5 && (
-                    <div className="group text-center">
-                      <img
-                        src="/img/medal.png"
-                        alt="Medalje for topp 5 plassering"
-                        className="mr-2 h-8 w-8"
-                      />
-                      <span className="text-md absolute bottom-full left-1/2 hidden -translate-x-1/2 translate-y-1 transform rounded bg-black px-2 py-1 pb-1 text-white opacity-0 transition-opacity duration-300 group-hover:block group-hover:opacity-100">
-                        Medalje for topp 5 plassering
-                      </span>
-                    </div>
-                  )}
-                  Rangering lagspill:{' '}
-                  <span className="ml-2 font-bold dark:text-blue-200">
-                    {`${playersSortedOnTeamELODesc.findIndex((p) => p.id === player.id) + 1} / ${playersSortedOnTeamELODesc.length}`}
+                </li>
+              )}
+              {!player.inactive && (
+                <li className="flex items-center justify-center space-x-2">
+                  <span className="flex p-2 text-lg">
+                    {playersSortedOnTeamELODesc.findIndex(
+                      (p) => p.id === player.id
+                    ) < 5 && (
+                      <div className="group text-center">
+                        <img
+                          src="/img/medal.png"
+                          alt="Medalje for topp 5 plassering"
+                          className="mr-2 h-8 w-8"
+                        />
+                        <span className="text-md absolute bottom-full left-1/2 hidden -translate-x-1/2 translate-y-1 transform rounded bg-black px-2 py-1 pb-1 text-white opacity-0 transition-opacity duration-300 group-hover:block group-hover:opacity-100">
+                          Medalje for topp 5 plassering
+                        </span>
+                      </div>
+                    )}
+                    Rangering lagspill:{' '}
+                    <span className="ml-2 font-bold dark:text-blue-200">
+                      {`${playersSortedOnTeamELODesc.findIndex((p) => p.id === player.id) + 1} / ${playersSortedOnTeamELODesc.length}`}
+                    </span>
                   </span>
-                </span>
-              </li>
-              <li className="text-lg">
-                Inaktiv spiller:{' '}
-                <Form
-                  method="post"
-                  action={`/profile/${player.id}`}
-                  onChange={(e) => submit(e.currentTarget)}
-                >
-                  <input type="hidden" name="playerId" value={player.id} />
-                  <input
-                    type="checkbox"
-                    name="inactive"
-                    className="form-checkbox h-5 w-5 text-blue-600"
-                    checked={player.inactive}
-                    onChange={(e) => {
-                      submit(e.currentTarget.form);
-                    }}
-                  />
-                </Form>
-              </li>
+                </li>
+              )}
+            </div>
+            <div className="text-lg">
+              Inaktiv spiller:{' '}
+              <Form
+                method="post"
+                action={`/profile/${player.id}`}
+                onChange={(e) => submit(e.currentTarget)}
+              >
+                <input type="hidden" name="playerId" value={player.id} />
+                <input
+                  type="checkbox"
+                  name="inactive"
+                  className="form-checkbox h-5 w-5 text-blue-600"
+                  checked={player.inactive}
+                  onChange={(e) => {
+                    submit(e.currentTarget.form);
+                  }}
+                />
+              </Form>
             </div>
           </ul>
           <div className="flex flex-col justify-center">

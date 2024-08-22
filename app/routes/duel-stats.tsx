@@ -125,7 +125,7 @@ export default function Index() {
             {rankedPlayersSortedOnELODesc
               .filter(
                 (a) =>
-                  a.matchesAsWinner.length + a.matchesAsLoser.length > 3 &&
+                  a.matchesAsWinner.length + a.matchesAsLoser.length > 4 &&
                   !a.inactive
               )
               .map((player) => (
@@ -155,7 +155,7 @@ export default function Index() {
                 </span>
                 <div>
                   <span className="pl-2 text-sm dark:text-gray-400">
-                    (Mindre enn 4 kamper spilt)
+                    (Mindre enn 5 kamper spilt)
                   </span>
                 </div>
               </th>
@@ -163,7 +163,7 @@ export default function Index() {
             {rankedPlayersSortedOnELODesc
               .filter(
                 (a) =>
-                  a.matchesAsWinner.length + a.matchesAsLoser.length <= 3 &&
+                  a.matchesAsWinner.length + a.matchesAsLoser.length <= 4 &&
                   !a.inactive
               )
               .map((player) => (
