@@ -64,8 +64,12 @@ export default function Index() {
     (p1, p2) => p2.currentTeamELO - p1.currentTeamELO
   );
 
-  const topThreeTeams = teamsSortedOnELODesc.slice(0, 3);
-  const topFiveTeamPlayers = playersSortedOnTeamELODesc.slice(0, 5);
+  const topThreeTeams = teamsSortedOnELODesc
+    .filter((a) => a.players.every((player) => !player.inactive))
+    .slice(0, 3);
+  const topFiveTeamPlayers = playersSortedOnTeamELODesc
+    .filter((player) => !player.inactive)
+    .slice(0, 5);
 
   return (
     <div className={PageContainerStyling}>
@@ -210,18 +214,80 @@ export default function Index() {
               <th className="w-1/5 py-2 dark:text-white">ELO</th>
             </tr>
           </thead>
-
           <tbody>
-            {teamsSortedOnELODesc.map((team) => (
-              <tr key={team.id} className="border-t dark:border-gray-700">
-                <td className="py-2 font-semibold dark:text-white">
-                  {team.players.map((player) => player.name).join(' & ')}
-                </td>
-                <td className="py-2 dark:text-white">{team.wins}</td>
-                <td className="py-2 dark:text-white">{team.losses}</td>
-                <td className="py-2 dark:text-white">{team.currentELO}</td>
-              </tr>
-            ))}
+            {teamsSortedOnELODesc
+              .filter(
+                (a) =>
+                  a.totalMatches > 4 &&
+                  a.players.every((player) => !player.inactive)
+              )
+              .map((team) => (
+                <tr key={team.id} className="border-t dark:border-gray-700">
+                  <td className="py-2 font-semibold dark:text-white">
+                    {team.players.map((player) => player.name).join(' & ')}
+                  </td>
+                  <td className="py-2 dark:text-white">{team.wins}</td>
+                  <td className="py-2 dark:text-white">{team.losses}</td>
+                  <td className="py-2 dark:text-white">{team.currentELO}</td>
+                </tr>
+              ))}
+          </tbody>
+          <tbody>
+            <tr>
+              <th colSpan={4} scope="col" className="py-4">
+                <span className="text-xl font-bold md:text-2xl dark:text-white">
+                  Lag med få kamper
+                </span>
+                <div>
+                  <span className="pl-2 text-sm dark:text-gray-400">
+                    (Mindre enn 5 kamper spilt)
+                  </span>
+                </div>
+              </th>
+            </tr>
+            {teamsSortedOnELODesc
+              .filter(
+                (a) =>
+                  a.totalMatches <= 4 &&
+                  a.players.every((player) => !player.inactive)
+              )
+              .map((team) => (
+                <tr key={team.id} className="border-t dark:border-gray-700">
+                  <td className="py-2 font-semibold dark:text-white">
+                    {team.players.map((player) => player.name).join(' & ')}
+                  </td>
+                  <td className="py-2 dark:text-white">{team.wins}</td>
+                  <td className="py-2 dark:text-white">{team.losses}</td>
+                  <td className="py-2 dark:text-white">{team.currentELO}</td>
+                </tr>
+              ))}
+          </tbody>
+        </table>
+        <h2 className="mb-3 text-xl font-bold md:text-2xl dark:text-white">
+          Lag med inaktive spillere
+        </h2>
+        <table className="min-w-full">
+          <thead>
+            <tr>
+              <th className="w-2/5 py-2 dark:text-white">Navn</th>
+              <th className="w-1/5 py-2 dark:text-white">Seiere</th>
+              <th className="w-1/5 py-2 dark:text-white">Tap</th>
+              <th className="w-1/5 py-2 dark:text-white">ELO</th>
+            </tr>
+          </thead>
+          <tbody>
+            {teamsSortedOnELODesc
+              .filter((a) => a.players.some((player) => player.inactive))
+              .map((team) => (
+                <tr key={team.id} className="border-t dark:border-gray-700">
+                  <td className="py-2 font-semibold dark:text-white">
+                    {team.players.map((player) => player.name).join(' & ')}
+                  </td>
+                  <td className="py-2 dark:text-white">{team.wins}</td>
+                  <td className="py-2 dark:text-white">{team.losses}</td>
+                  <td className="py-2 dark:text-white">{team.currentELO}</td>
+                </tr>
+              ))}
           </tbody>
         </table>
       </section>

@@ -47,13 +47,13 @@ export default function Index() {
   const navigate = useNavigate();
   const { players, player } = useTypedLoaderData<typeof loader>();
   const submit = useSubmit();
-  const playersSortedOnELODesc = [...players].sort(
-    (p1, p2) => p2.currentELO - p1.currentELO
-  );
+  const playersSortedOnELODesc = [...players]
+    .filter((player) => !player.inactive)
+    .sort((p1, p2) => p2.currentELO - p1.currentELO);
 
-  const playersSortedOnTeamELODesc = [...players].sort(
-    (p1, p2) => p2.currentTeamELO - p1.currentTeamELO
-  );
+  const playersSortedOnTeamELODesc = [...players]
+    .filter((player) => !player.inactive)
+    .sort((p1, p2) => p2.currentTeamELO - p1.currentTeamELO);
 
   const playerOptions = players.map((player) => ({
     value: player.id,
@@ -64,6 +64,32 @@ export default function Index() {
   const numberOfLosses = player ? player.matchesAsLoser.length : 0;
   const numberOfMatches = numberOfWins + numberOfLosses;
   const winPercentage = (numberOfWins / numberOfMatches) * 100;
+
+  const findLongestWinStreak = (eloLogs) => {
+    if (eloLogs.length === 0) return 0;
+
+    const logs = [...eloLogs].reverse();
+    let longestWinStreak = 0;
+    let currentWinStreak = 0;
+    logs[0].elo > 1500 && (currentWinStreak = 1);
+    for (let i = 1; i < logs.length; i++) {
+      if (logs[i].elo > logs[i - 1].elo) {
+        currentWinStreak++;
+      } else {
+        if (currentWinStreak > longestWinStreak) {
+          longestWinStreak = currentWinStreak;
+        }
+        currentWinStreak = 0;
+      }
+    }
+
+    // Final check in case the longest streak is at the end
+    if (currentWinStreak > longestWinStreak) {
+      longestWinStreak = currentWinStreak;
+    }
+
+    return longestWinStreak;
+  };
 
   return (
     <div className={PageContainerStyling}>
@@ -86,83 +112,123 @@ export default function Index() {
           <ul className="mb-2 flex-col items-center space-y-2 rounded-lg bg-blue-100 p-4 text-center text-lg text-black shadow-lg dark:bg-gray-700 dark:text-white">
             <li className="text-4xl">{player.name}</li>
             <li>
-              Rating lagspill:{' '}
-              <span className="font-bold dark:text-green-200">
-                {player.currentTeamELO}
-              </span>
+              <div className="grid gap-2 md:grid-cols-2">
+                <div>
+                  Rating duellspill:{' '}
+                  <span className="font-bold dark:text-green-200">
+                    {player.currentELO}
+                  </span>
+                </div>
+                <div>
+                  Rating lagspill:{' '}
+                  <span className="font-bold dark:text-green-200">
+                    {player.currentTeamELO}
+                  </span>
+                </div>
+              </div>
             </li>
             <li>
-              Rating duellspill:{' '}
-              <span className="font-bold dark:text-green-200">
-                {player.currentELO}
-              </span>
+              <div className="grid gap-2 md:grid-cols-2">
+                <div>
+                  Høyeste rating duellspill 🏔️:{' '}
+                  <span className="font-bold dark:text-green-200">
+                    {Math.max(1500, ...player.eloLogs.map((log) => log.elo))}
+                  </span>
+                </div>
+                <div>
+                  Høyeste rating lagspill 🏔️:{' '}
+                  <span className="font-bold dark:text-green-200">
+                    {Math.max(
+                      1500,
+                      ...player.teamPlayerELOLog.map((log) => log.elo)
+                    )}
+                  </span>
+                </div>
+                <div>
+                  Lengste win streak - duell 🔥:{' '}
+                  <span className="font-bold dark:text-green-200">
+                    {findLongestWinStreak(player.eloLogs)}
+                  </span>
+                </div>
+                <div>
+                  Lengste win streak - lag 🔥:{' '}
+                  <span className="font-bold dark:text-green-200">
+                    {findLongestWinStreak(player.teamPlayerELOLog)}
+                  </span>
+                </div>
+              </div>
             </li>
             <div className="grid gap-2 md:grid-cols-2">
-              <li className="flex items-center justify-center space-x-2 text-center">
-                <span className="flex text-lg">
-                  {playersSortedOnELODesc.findIndex((p) => p.id === player.id) <
-                    5 && (
-                    <div className="group">
-                      <img
-                        src="/img/medal.png"
-                        alt="Medalje for topp 5 plassering"
-                        className="mr-2 h-8 w-8"
-                      />
-                      <span
-                        className="text-md absolute bottom-full left-1/2 hidden -translate-x-1/2 translate-y-1 transform
+              {!player.inactive && (
+                <li className="flex items-center justify-center space-x-2 text-center">
+                  <span className="flex text-lg">
+                    {playersSortedOnELODesc.findIndex(
+                      (p) => p.id === player.id
+                    ) < 5 && (
+                      <div className="group">
+                        <img
+                          src="/img/medal.png"
+                          alt="Medalje for topp 5 plassering"
+                          className="mr-2 h-8 w-8"
+                        />
+                        <span
+                          className="text-md absolute bottom-full left-1/2 hidden -translate-x-1/2 translate-y-1 transform
                     rounded bg-black px-2 py-1 pb-1 text-white opacity-0 transition-opacity duration-300 group-hover:block group-hover:opacity-100"
-                      >
-                        Medalje for topp 5 plassering
-                      </span>
-                    </div>
-                  )}
-                  Rangering duellspill:{' '}
-                  <span className="ml-2 font-bold dark:text-blue-200">
-                    {`${playersSortedOnELODesc.findIndex((p) => p.id === player.id) + 1} / ${playersSortedOnELODesc?.length}`}
+                        >
+                          Medalje for topp 5 plassering
+                        </span>
+                      </div>
+                    )}
+                    Rangering duellspill:{' '}
+                    <span className="ml-2 font-bold dark:text-blue-200">
+                      {`${playersSortedOnELODesc.findIndex((p) => p.id === player.id) + 1} / ${playersSortedOnELODesc?.length}`}
+                    </span>
                   </span>
-                </span>
-              </li>
-              <li className="flex items-center justify-center space-x-2">
-                <span className="flex p-2 text-lg">
-                  {playersSortedOnTeamELODesc.findIndex(
-                    (p) => p.id === player.id
-                  ) < 5 && (
-                    <div className="group text-center">
-                      <img
-                        src="/img/medal.png"
-                        alt="Medalje for topp 5 plassering"
-                        className="mr-2 h-8 w-8"
-                      />
-                      <span className="text-md absolute bottom-full left-1/2 hidden -translate-x-1/2 translate-y-1 transform rounded bg-black px-2 py-1 pb-1 text-white opacity-0 transition-opacity duration-300 group-hover:block group-hover:opacity-100">
-                        Medalje for topp 5 plassering
-                      </span>
-                    </div>
-                  )}
-                  Rangering lagspill:{' '}
-                  <span className="ml-2 font-bold dark:text-blue-200">
-                    {`${playersSortedOnTeamELODesc.findIndex((p) => p.id === player.id) + 1} / ${playersSortedOnTeamELODesc.length}`}
+                </li>
+              )}
+              {!player.inactive && (
+                <li className="flex items-center justify-center space-x-2">
+                  <span className="flex p-2 text-lg">
+                    {playersSortedOnTeamELODesc.findIndex(
+                      (p) => p.id === player.id
+                    ) < 5 && (
+                      <div className="group text-center">
+                        <img
+                          src="/img/medal.png"
+                          alt="Medalje for topp 5 plassering"
+                          className="mr-2 h-8 w-8"
+                        />
+                        <span className="text-md absolute bottom-full left-1/2 hidden -translate-x-1/2 translate-y-1 transform rounded bg-black px-2 py-1 pb-1 text-white opacity-0 transition-opacity duration-300 group-hover:block group-hover:opacity-100">
+                          Medalje for topp 5 plassering
+                        </span>
+                      </div>
+                    )}
+                    Rangering lagspill:{' '}
+                    <span className="ml-2 font-bold dark:text-blue-200">
+                      {`${playersSortedOnTeamELODesc.findIndex((p) => p.id === player.id) + 1} / ${playersSortedOnTeamELODesc.length}`}
+                    </span>
                   </span>
-                </span>
-              </li>
-              <li className="text-lg">
-                Inaktiv spiller:{' '}
-                <Form
-                  method="post"
-                  action={`/profile/${player.id}`}
-                  onChange={(e) => submit(e.currentTarget)}
-                >
-                  <input type="hidden" name="playerId" value={player.id} />
-                  <input
-                    type="checkbox"
-                    name="inactive"
-                    className="form-checkbox h-5 w-5 text-blue-600"
-                    checked={player.inactive}
-                    onChange={(e) => {
-                      submit(e.currentTarget.form);
-                    }}
-                  />
-                </Form>
-              </li>
+                </li>
+              )}
+            </div>
+            <div className="text-lg">
+              Inaktiv spiller:{' '}
+              <Form
+                method="post"
+                action={`/profile/${player.id}`}
+                onChange={(e) => submit(e.currentTarget)}
+              >
+                <input type="hidden" name="playerId" value={player.id} />
+                <input
+                  type="checkbox"
+                  name="inactive"
+                  className="form-checkbox h-5 w-5 text-blue-600"
+                  checked={player.inactive}
+                  onChange={(e) => {
+                    submit(e.currentTarget.form);
+                  }}
+                />
+              </Form>
             </div>
           </ul>
           <div className="flex flex-col justify-center">
