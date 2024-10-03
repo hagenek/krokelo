@@ -1,12 +1,4 @@
-# Welcome to Remix!
-
-- [Remix Docs](https://remix.run/docs)
-
-## Possible Todos
-
-- [ ] Make it possible for players to be anonymous at stats and profile page.
-- [ ] Match history for players
-- [ ] Heat map for time of matches
+# This repo is deprecated. The repo has been moved and is active at https://github.com/sparebank1utvikling/krokelo
 
 ## Development
 
